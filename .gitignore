@@ -1,0 +1,15 @@
+.#*
+*.aux
+*.toc
+*.gz
+*.out
+*.log
+*.lof
+*.blg
+*.bbl
+*.fls
+*.dvi
+*.lot
+*.fdb_latexmk
+.DS_Store
+Icon?
