@@ -79,17 +79,18 @@ support in the research leading to this proposal. Furthermore, I would like to
 thank Prof. Renato Pajarola for his long-term commitment to my research work.
 
 \bigskip
-\noindent\textit{Neuch\^atel, \today}
+\noindent\textit{Z\"urich, \today}
 \hfill Stefan Eilemann
 \clearpage
 
-% \tableofcontents
-% \listoffigures
+\tableofcontents
+\listoffigures
 % \listoftables
 
 \setlength{\parskip}{1em}
 
-\section{Motivation} % 1-2 pages
+\section{Background}
+\subsection{Motivation} % 1-2 pages
 
 After decades of exponential growth in computational performance, storage and
 data acquisition, computing is now well in the big data age, where future
@@ -156,8 +157,9 @@ degree of parallelism, as well as generic applicability of high-performance
 interactive visualization methods and systems are recognized among the major
 current and future challenges.
 
+\subsection{Interactive Visualization}
 
-\section{Related Work} % 2-6
+\subsection{Parallel Rendering}
 
 The main performance indicator for Large Data Interactive Rendering is the
 performance of the rendering algorithm, that is, the framerate with which the
@@ -180,7 +182,7 @@ the sorting stage.
 \end{figure}
 
 
-\subsection{Domain specific solutions}
+\subsubsection{Domain specific solutions}
 
 Cluster-based parallel rendering has been commercialized for off-line rendering
 (i.e. distributed ray-tracing) for computer generated animated movies or special
@@ -200,7 +202,7 @@ parallel rendering system, basic concepts presented in \cite{NC:07} such as load
 management and adaptive LOD data traversal can be carried over to other
 sort-first parallel rendering solutions.
 
-\subsection{Special-purpose architectures}
+\subsubsection{Special-purpose architectures}
 
 Historically, high-performance real-time rendering systems have relied on an
 integrated proprietary system architecture, such as the early SGI graphics super
@@ -221,7 +223,7 @@ such as PCI Express, NVLink and other modern interconnects, combinations of
 software and GPU-based solutions offer more flexibility at comparable
 performance.
 
-\subsection{Generic approaches}
+\subsubsection{Generic approaches}
 
 A number of algorithms and systems for parallel rendering have been developed in
 the past. On one hand, some general concepts applicable to cluster parallel
@@ -350,6 +352,52 @@ application is a web application distributed across browser instances.
 {Sage}, but provide a few native content applications integrated into the
 display servers. These solutions implement a scalable display environment and
 are a target display platform for scalable 3D graphics applications.
+
+\subsection{Dissertation Structure}
+
+
+\section{Contributions}
+
+\subsection{Generic Parallel Rendering Framework}
+
+\subsection{New Parallel Rendering Modes}
+
+\subsection{Load Balancing}
+
+\subsection{Applications}
+
+
+\section{The Architecture of a Parallel Rendering Framework}
+
+entities, roles, and relationships
+
+\subsection{Asynchronous Execution Model}
+
+\subsection{Decomposition}
+
+\subsection{Load Balancing}
+
+\subsection{Compositing}
+
+
+\section{New Decomposition Modes}
+
+
+\section{Compositing Optimisations}
+
+
+\section{New Load Balancing Algorithms}
+
+
+\section{Data Distribution and Synchronization}
+
+
+\section{Conclusion}
+
+\subsection{Future Work}
+
+
+
 
 \section{Problem Statement}
 
@@ -620,153 +668,6 @@ setups. improved automatic load-balancing using region of interest.
 \item[M45-46: Fourth Publication:] Benchmarking and updated systems paper.
 \item[M47-52: Dissertation:] Write and defend dissertation.
 \end{compactdesc}
-
-\appendix
-\section{Reviewer Comments}
-
-In the following we quote the comments from the oral defense, and how they have
-been addressed in this revised proposal.
-
-\begin{displayquote} The core part of the proposal should explain in detail how
-you want to address the research questions. This is missing. While four research
-questions are stated in section 3 (Problem Statement) these are not revisited in
-Section 4 (Proposed Solution). It remains unclear how exactly you want to
-approach your research questions and how you want to evaluate your solutions.
-
-Section 4 is too short. Discuss each research question in turn and state the
-expected outcomes (e.g., deadline and venue to which you have planned to submit
-a paper; tentative title of paper).
-
-A research plan should be added.
-\end{displayquote}
-
-Section 4 now contains back-references to the research questions, as well as a
-list of planned and accepted publications. A new Section 5 contains the research
-plan.
-
-
-\begin{displayquote} Although the aim to create a “generic parallel rendering
-system” is commendable. I would recommend having the initial scope of the system
-clearly defined. For example, describing a set of (1) the data characteristics
-and (2) the interactive tasks that the system will initially support. Having
-this clear scope would allow the author to know when to stop broadening the
-support of the system and start addressing other goals of the thesis.
-\end{displayquote}
-
-The proposal does not clearly show the history and context since it would incur
-too much software engineering context: The generic parallel rendering system is
-developed, with a clearly defined scope and roadmap based on previous work. The
-added \sref{sPlan} shows the effective timeline, where your concern would be
-covered by month 1 to month 30. Furthermore, a substantial part of the
-implementation needed for the fourth publication was supported by commercial
-activities.
-
-\begin{displayquote} As the author pointed out the latency from “data
-processing” may slow down users’ workflow  during interactive exploration.
-While the author develops the rendering system, what would be the strategy to
-prevent the influence of (currently inefficient) data processing? For example,
-when the author tests the rendering system on a large cluster of GPU with a
-large amount of data, how would he be able to distinguish the latency of
-rendering from the latency of data processing? How would such strategy ensure
-ecological validity (i.e., the test setting is representative to how the
-rendering system will be actually used)?
-\end{displayquote}
-
-For research, these two components can often be decoupled for evaluating one
-aspect of the system. For example, a parallel compositing algorithm can be
-optimised and benchmarked on synthetic data which has no significant data
-processing. Likewise, an improved data loading can be optimised against its
-traditional implementation while keeping the parallel rendering configuration
-(decomposition, load-balancing, and compositing) constant. If desired, a whole
-system evaluation can be evaluated against the time-to solution, for example by
-benchmarking the time needed to perform a recorded navigation against a baseline
-implementation and any variation of new parallel rendering and data processing
-algorithms. This would closely mirror the user experience, which is governed by
-the reactiveness of the application.
-
-During the review of the proposal we realized that the data processing component
-should not be part of this proposal, since it represents an orthogonal research
-question, and should be kept separate to avoid confusion.
-
-\begin{displayquote} To address contribution “2. easy specification…” and “7.
-minimally invasive programming model”, the author proposed porting current
-science via applications onto the proposed rendering system. I agree that this
-will validate the “applicability”, it falls short at validating the “ease of
-use” of the API. I would suggest to work closely with other software developers
-in the Blue Brain project and observe how they use the API of the rendering
-system. Use their feedback to iteratively improve the API. In the final version
-of the API, observe how long these developers take to learn the rendering system
-until they successfully port their application.
-\end{displayquote}
-
-Since this proposal is research-oriented it does not address this concern. In
-reality, the API has been developed based on experience and developer feedback
-with OpenGL Multipipe SDK, as well as during the development of the Equalizer
-parallel rendering framework, open source community engagement, commercial
-consulting activities, and work at the Blue Brain Project. Below are some
-quotations from these activities:
-
-\begin{compactdesc}
-\item[September 2012, Alessandro Febretti, Ph.D. Student, EVL, University of Illinois at Chicago:] I have been working with Equalizer for more than a year now and overall it has been a fantastic experience. Equalizer simplified my development work a whole lot.
-\item[February 2009, Brian Gianforcarom, Computer Science at Rochester Institute of Technology:] I've worked on projects trying to do similar things without Equalizer, and I can honestly say it was pretty bad. We only got it barely working. After finding Equalizer later, I can't imagine how much easier it would have been with such a tool.
-\item[November 2008, Dan Wilcox, developer at Ars Electronica Futurelab:] Equalizer abstracts the windowing and distribution of shared objects which, trust me, is well worth the overhead of learning it. It's one thing to have each machine running the same rendering thread and it's quite another to send control and input dynamically between them. Plus it runs on Mac, Windows, and Linux. (source)
-\item[April 2008, Nicolas Cuntz, researcher at the University of Siegen:]Equalizer bundles multi-node rendering and synchronization tools into an easy-to-use and well-structured object-oriented framework. Porting to Equalizer can be achieved without completely restructuring the application. However, one has to deal with data synchronization and possible problems related to threading and parallelism, which is a problem that cannot completely be delegated to a library.
-\end{compactdesc}
-
-\begin{displayquote} It is unclear which stage of the PhD study the author is
-currently at, and how does the previous work of the author fit into this
-proposal. For example, is the Equalizer project a part of the PhD study? What
-papers from the PhD work are published and what are planned?
-\end{displayquote}
-
-The new \sref{sPlan} has a marker for the current state at the PhD proposal. We
-plan to publish an updated systems paper on Equalizer and a publication of
-parallel rendering for out-of-core volume rendering. Published and relevant for
-the dissertation are \cite{EMP:09, EEP:11, EP:07, HBBES:13, EBAHMP:12, MEP:10}
-as well as unpublished work in the context of key-value storage and
-visualization web services.
-
-\begin{displayquote} The claim of “sustainable” parallel rendering framework
-needs clear specification and evaluation criteria. In particular, how would you
-know that your implementation covers necessary and sufficient building blocks
-for further research/development on parallel implementation? (See point 1,
-above.)
-\end{displayquote}
-
-This is arguably a soft criteria, which has some needed but not necessarily sufficient requirements:
-\begin{compactitem}
-\item Open Source implementation and community
-\item Successful porting of different types of applications to Equalizer
-\item Other independent research based on Equalizer
-\end{compactitem}
-
-So far, we have worked with different applications for large volume rendering,
-scientific visualization, as well as commercial application for high-quality
-design renderings. Equalizer is maintained on github, and has attracted
-third-party research both in Prof. Pajarola's lab \cite{GMBP:10, EBAHMP:12,
-MEP:10, GEMPG:13} and externally \cite{Omegalib, FNTTL:13}.
-
-\begin{displayquote} The performance evaluation (point 2, above) is further
-compounded by the introduction of supports for cloud data storage, which will
-further impose latency in “data processing” step. I would suggest describing
-clear evaluation strategies.
-\end{displayquote}
-
-Correct, some of this is addressed above. My working hypothesis is that
-key-value stores can actually decrease the latency over HPC-style parallel file
-systems for visualization workloads. Visualization workload tends to have more
-random access of smaller data items from a few processes, whereas parallel file
-systems tend to be optimized for large sequential operations from a large amount
-of processes. Some preliminary work in this direction has been published in
-\cite{Eilemann:15}. As mentioned above, we have decided to omit this part from
-the revised proposal.
-
-
-\begin{displayquote}
-\end{displayquote}
-
-\begin{displayquote}
-\end{displayquote}
 
 
 \clearpage
