@@ -1,0 +1,37 @@
+\setcounter{tocdepth}{2}
+
+\input{front/title_0}
+\input{front/title_1}
+
+\pagenumbering{roman}
+\input{front/abstract}
+\input{front/abstract_german}
+\input{front/acknowledgments}
+
+\tableofcontents
+\newpage
+
+
+% LATEX BUG: chapters of type chapter* following the table of contents show always the table of contents header.
+% Workaround: change header manually
+\markboth{NOTATIONS}{}
+
+% unix command to update notations list: makeindex thesis.nlo -s nomencl.ist -o thesis.nls
+% (set in latex, then makeindex, then set again in latex)
+% nomenclature groups are defined in format/styles/thesis.sty
+\input{front/nomenclature}
+\printnomenclature
+
+
+\listoffigures
+\listoftables
+
+% LATEX BUG: newpage is necessary, otherwise the list of tables gets an arabic page numbering instead of a roman one
+\newpage
+
+% *hack*: this adds another empty page after the list of tables.
+\newpage
+\thispagestyle{empty}
+\quad
+\newpage
+\setcounter{page}{1}

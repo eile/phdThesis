@@ -1,0 +1,38 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix style
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\definecolor{numColor}{rgb}{0.22,0.37,0.56}
+
+% The first makeatletter is to define the chapter layout in the real "Chapter" chapters
+
+\makeatletter
+\def\@makechapterhead#1{%
+%    \vspace*{10\p@}%
+%    \hrule
+
+    \line(1,0){0}
+    \newline
+    {
+         %\begin{tabular}{|@{}l|r@{}@{}|}
+	 \begin{tabular}{@{}lr@{}@{}} 
+	 %\hline
+	 \linethickness{ 4px }\color{numColor}\line(1,0){260} 
+	 & \multirow{2}{*}{\fontsize{100}{62}\usefont{OT1}{ptm}{m}{n}\selectfont \color{numColor} \thechapter}\\ % ptm
+	 & \\ 
+	 % \Huge \bfseries \usefont{OT1}{phv}{m}{n}\selectfont \scshape\@chapapp \hspace{8.25cm} & \\
+	 %\scshape \bfseries\Huge \@chapapp \hspace{8.25cm}
+	 \scshape \LARGE \usefont{T1}{fvs}{sc}{n}\selectfont \letterspace to 2.5\naturalwidth{APPENDIX} \hspace{19mm}
+	 & \\ 
+	 %\hline
+	 \end{tabular}
+
+         \vskip 100\p@
+         \raggedleft
+         \interlinepenalty\@M
+         \scshape \fontsize{24}{30} \usefont{T1}{fvs}{n}{n}\selectfont \scshape \MakeUppercase{#1}\par\nobreak
+         \vskip 80\p@%60
+    }
+}
+

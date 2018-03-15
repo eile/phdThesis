@@ -1,0 +1,27 @@
+% apalike.sty style, used in conjunction with apalike.bst,
+% will produce an apa-like bibliography style:
+%
+% ¤) Multiple references in the form (Author1, 1986; Author2, 1987)
+%
+% To be used as an optional argument to the \documentstyle command; for example
+%	\documentstyle[11pt,apalike]{book}
+%
+% 16-Sep-86, original version by Susan King and Oren Patashnik.
+% 13-Oct-87 changes:
+%	Fixed bug in last line by adding the {} that disappeard when
+%		the \hbox{} was removed from the pre-APALIKE definition;
+%	added club and widow penalties;
+%	patched the \newblock LaTeX bug from `-.07em' to simply `.07em';
+%	and made this work for document styles that don't define `chapter'.
+%
+%
+
+% `; ' goes between cites, and there's no \hbox around individual cites
+%
+\def\@citex[#1]#2{\if@filesw\immediate\write\@auxout{\string\citation{#2}}\fi
+  \def\@citea{}\@cite{\@for\@citeb:=#2\do
+    {\@citea\def\@citea{; }\@ifundefined
+       {b@\@citeb}{{\bf ?}\@warning
+       {Citation `\@citeb' on page \thepage \space undefined}}%
+{\csname b@\@citeb\endcsname}}}{#1}}
+

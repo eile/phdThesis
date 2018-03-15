@@ -1,0 +1,253 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Thesis formatting style
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%--------------------------------------------------------------------------------
+% Packages
+%--------------------------------------------------------------------------------
+\usepackage{times}
+
+\usepackage{color}				% Allow colored text
+\usepackage{graphicx}			% Allow graphics
+
+\usepackage{titlesec}
+\usepackage{fancyhdr}			% Custom headers
+\usepackage{enumerate}			% Custom enum
+\usepackage{cite}				% otherwise citations are not set nicely
+
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{subfigure}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{CV}
+
+
+%--------------------------------------------------------------------------------
+% Define colors
+%--------------------------------------------------------------------------------
+\definecolor{RED}{RGB}{255,0,0}
+\definecolor{GREEN}{RGB}{0,255,0}
+\definecolor{BLUE}{RGB}{0,0,255}
+\definecolor{GRAY}{RGB}{128,128,128}
+\definecolor{BLACK}{RGB}{0,0,0}
+
+
+%--------------------------------------------------------------------------------
+% Useful Commands
+%--------------------------------------------------------------------------------
+\newcommand{\RENATO}[1]{\textbf{\color{RED}{RENATO: #1}}}
+\newcommand{\FATIH}[1]{\textbf{\color{GREEN}{FATIH: #1}}}
+
+\newcommand{\itemtitle}[1]{\addtolength{\parskip}{3mm}{\noindent\bf {#1}} \addtolength{\parskip}{-3mm}}
+
+% Define degree command
+\newcommand{\degree}{\ensuremath{^\circ}}
+
+
+%--------------------------------------------------------------------------------
+% Book layout
+%--------------------------------------------------------------------------------
+\input{letterspacing.tex} % define the spacing between letters -> used for the word chapter
+\usepackage[nottoc]{tocbibind} % used to include bibliography in the table of contents
+
+% PDF bookmarks
+\usepackage[bookmarks=true,bookmarksnumbered=true]{hyperref}
+
+\usepackage{xspace}
+
+\hyphenation{Leap-frog}
+
+
+% Manually set margins, so that the bigger space is on correct side
+\setlength\oddsidemargin{0.7in}
+\setlength\evensidemargin{0.14in}
+
+
+%--------------------------------------------------------------------------------
+% Headers and Footers
+%--------------------------------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+
+\renewcommand{\chaptermark}[1]{%
+\markboth{\MakeUppercase{\thechapter \space \ #1}}{}}
+
+\renewcommand{\sectionmark}[1]{\markright{\thesection \space\ #1}}
+
+\fancyhead[LE,RO]{\footnotesize\usefont{T1}{fvs}{n}{n}\selectfont\thepage}
+\fancyhead[RE]{\footnotesize \usefont{T1}{fvs}{n}{n}\selectfont{\leftmark}}
+\fancyhead[LO]{\footnotesize\usefont{T1}{fvs}{n}{n}\selectfont{\rightmark}}
+\headsep 1cm % abstand header - text
+
+% Chapters have to start on an odd page. So, if the chapter before ended on odd page, there is an empty page
+% inbetween, which still gets header and footer that looks bad. We redefine how LaTeX adds the empty page.
+\makeatletter
+\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else
+\hbox{}
+\thispagestyle{empty}
+\newpage
+\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+\makeatother
+
+
+%--------------------------------------------------------------------------------
+% Section titles
+%--------------------------------------------------------------------------------
+\usepackage{sectsty}
+\allsectionsfont{\large \usefont{T1}{fvs}{b}{n}\selectfont}
+\subsectionfont{\normalsize \usefont{T1}{fvs}{b}{n}\selectfont}
+\subsubsectionfont{\small \usefont{T1}{fvs}{b}{n}\selectfont}
+\paragraphfont{\small \usefont{T1}{fvs}{b}{n}\selectfont}
+
+
+%--------------------------------------------------------------------------------
+% Chapter titles
+%--------------------------------------------------------------------------------
+\definecolor{NUMCOLOR}{rgb}{0.22,0.37,0.56}
+
+\usepackage{multirow} % for tables with multiple rows
+
+% The first makeatletter is to define the chapter layout in the real "Chapter" chapters
+\makeatletter
+\def\@makechapterhead#1{%
+ % \vspace*{10\p@}%
+  %\hrule
+
+  \line(1,0){0}
+  \newline
+  {
+  	 %\begin{tabular}{|@{}l|r@{}@{}|}
+	 \begin{tabular}{@{}lr@{}@{}}
+	 %\hline
+	 \linethickness{ 4px }\color{NUMCOLOR}\line(1,0){245}
+	& \multirow{2}{*}{\fontsize{100}{62}\usefont{OT1}{ptm}{m}{n}\selectfont \color{NUMCOLOR} \thechapter}\\ % ptm
+	 & \\
+	% \Huge \bfseries \usefont{OT1}{phv}{m}{n}\selectfont \scshape\@chapapp \hspace{8.25cm} & \\
+	%\scshape \bfseries\Huge \@chapapp \hspace{8.25cm}
+	\scshape \LARGE \usefont{T1}{fvs}{sc}{n}\selectfont \letterspace to 2.5\naturalwidth{CHAPTER} \hspace{3cm}
+	& \\
+	%\hline
+	\end{tabular}
+
+\vskip 100\p@
+\raggedleft
+    \interlinepenalty\@M
+    \scshape \fontsize{24}{30} \usefont{T1}{fvs}{n}{n}\selectfont \scshape \MakeUppercase{#1}\par\nobreak
+      \vskip 80\p@%60
+  }
+  }
+
+
+% The second makeatletter is to define the chapter layout in the chapters like Abstract etc. (almost identical but without the word "chapter" and some ugly hacks which are necessary to align the titles)
+\makeatletter
+\def\@makeschapterhead#1{%
+ % \vspace*{10\p@}%
+  %\hrule
+
+  \line(1,0){0}
+  \newline
+  {
+  	 %\begin{tabular}{|@{}l|r@{}@{}|}
+	 \begin{tabular}{@{}lr@{}@{}}
+	 %\hline
+	 \linethickness{ 4px }\color{NUMCOLOR}\line(1,0){245}
+	& %\multirow{2}{*}{\fontsize{100}{62}\usefont{OT1}{ptm}{m}{n}\selectfont \color{NUMCOLOR} \thechapter}
+	\\ % ptm
+	 & \\
+	% **HACK** add vspace.
+	% otherwise these titles and the chapter titles are not at the same place
+	% because the word "chapter" is missing and latex rearranges everything, no clue why
+	% vspace value is manually tuned
+	\scshape \LARGE \usefont{T1}{fvs}{sc}{n}\selectfont \letterspace to 2.5\naturalwidth{} \hspace{3cm} \vspace{0.17cm}
+	& \\
+	%\hline
+	\end{tabular}
+
+\vskip 100\p@
+\raggedleft
+    \interlinepenalty\@M
+    \scshape \fontsize{24}{30} \usefont{T1}{fvs}{n}{n}\selectfont \scshape \MakeUppercase{#1}\par\nobreak
+      \vskip 80\p@
+  }
+  }
+
+
+%--------------------------------------------------------------------------------
+% Table of Contents font
+%--------------------------------------------------------------------------------
+\usepackage[titles]{styles/tocloft}
+\renewcommand{\cftchapfont}{\fontsize{11}{13}\usefont{T1}{fvs}{b}{n}\selectfont}
+
+
+%--------------------------------------------------------------------------------
+% Figure captions
+%--------------------------------------------------------------------------------
+\usepackage[font=small,format=plain,labelfont=bf,up,textfont=it,up]{caption}
+
+
+%--------------------------------------------------------------------------------
+% Notation list
+%--------------------------------------------------------------------------------
+\usepackage[intoc]{nomencl}
+\usepackage{ifthen}
+
+% Change title
+\renewcommand{\nomname}{Notations}
+\setlength{\nomlabelwidth}{.25\hsize}       %Aufteilung der Seite
+% Define subgroups
+\renewcommand{\nomgroup}[1]
+{
+	\ifthenelse{\equal{#1}{A}}
+	{\item[\fontsize{11}{13}\usefont{T1}{fvs}{b}{n}\selectfont{Acronyms}]}
+ 	{
+	\vspace{1cm} % Abstand zwischen den einzelnen Bl�cken
+
+	\ifthenelse{\equal{#1}{B}}
+	{\item[\fontsize{11}{13}\usefont{T1}{fvs}{b}{n}\selectfont{Operators and Functions}]}
+	{
+
+	\ifthenelse{\equal{#1}{C}}
+	{\item[\fontsize{11}{13}\usefont{T1}{fvs}{b}{n}\selectfont{Physics}]}
+	{
+
+	\ifthenelse{\equal{#1}{D}}
+	{\item[\fontsize{11}{13}\usefont{T1}{fvs}{b}{n}\selectfont{Fluid Particles}]}
+	{
+
+	\ifthenelse{\equal{#1}{E}}
+ 	{\item[\fontsize{11}{13}\usefont{T1}{fvs}{b}{n}\selectfont{Solid Particles}]}
+ 	{
+
+	\ifthenelse{\equal{#1}{F}}
+	{\item[\fontsize{11}{13}\usefont{T1}{fvs}{b}{n}\selectfont{Surface Points}]}
+	{
+		{}
+	}
+	}
+	}
+	}
+	}
+	}
+
+	\item[]\hspace*{-\leftmargin}%
+	\rule[2pt]{1\textwidth}{1pt}%
+}
+
+
+%--------------------------------------------------------------------------------
+% Other
+%--------------------------------------------------------------------------------
+% Decrease row spacings
+\setlength{\nomitemsep}{-\parsep}
+
+% Make nomenclature
+\makenomenclature
+
+% Image-Text spacing
+\floatsep30pt
+\textfloatsep 35pt
