@@ -360,7 +360,7 @@ are a target display platform for scalable 3D graphics applications.
 
 \subsection{Generic Parallel Rendering Framework}
 
-\subsection{New Parallel Rendering Modes}
+\subsection{Parallel Rendering Modes}
 
 \subsection{Load Balancing}
 
@@ -369,18 +369,51 @@ are a target display platform for scalable 3D graphics applications.
 
 \section{The Architecture of a Parallel Rendering Framework}
 
-entities, roles, and relationships
+A generic parallel rendering framework has to cover a wide range of use cases,
+target systems, and configurations. This requires on one hand a strong
+separation between the implementation of an application and its configuration,
+and on the other hand a careful design to allow the resulting program to scale
+up to hundreds of nodes, while providing a minimally invasive API for the
+developer. In this section we present the system architecture of the Equalizer
+parallel rendering framework, and motivate its design in contrast to related
+work.
+
+The motivation to use parallel rendering is either driven by the need to drive
+multiple displays or projectors from multiple GPUs and potentially multiple
+nodes, or by the need to increase rendering performance to be able to visualize
+more data or use a more demanding rendering algorithm for higher visual quality.
+Occasionally both needs coincide, for example for the analysis for large data
+sets on high fidelity visualization systems.
+
+Fundamentally, there are two approaches to enable applications to use multiple
+GPUs: transparent interception at the graphics API (typically OpenGL) or
+extending the application to support parallel rendering natively. The first
+approach has been extensively explored by Chromium and others, while the second
+is the foundation for this thesis. The architecture of Equalizer is founded on
+an in-depth requirements analysis of typical visualization applications,
+existing frameworks, and previous work on OpenGL Multipipe SDK.
+
+The task of parallelizing a visualization application boils down to configuring
+the application's rendering code differently for each resource, enabling this
+rendering code to access the correct data, and synchronizing execution. When
+multiple GPUs are used to accelerate the rendering of a single output, partial
+results need to be collected from all contributing resources and combined on the
+output.
+
+\subsection{Rendering Context}
 
 \subsection{Asynchronous Execution Model}
 
-\subsection{Decomposition}
+\subsection{Compounds}
 
 \subsection{Load Balancing}
 
 \subsection{Compositing}
 
+\subsection{Distribution Layer}
 
-\section{New Decomposition Modes}
+
+\section{New Parallel Rendering Modes}
 
 
 \section{Compositing Optimisations}
@@ -397,7 +430,7 @@ entities, roles, and relationships
 \subsection{Future Work}
 
 
-
+\if 0
 
 \section{Problem Statement}
 
@@ -669,6 +702,7 @@ setups. improved automatic load-balancing using region of interest.
 \item[M47-52: Dissertation:] Write and defend dissertation.
 \end{compactdesc}
 
+\fi
 
 \clearpage
 \bibliographystyle{alpha}
