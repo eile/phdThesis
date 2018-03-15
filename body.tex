@@ -279,8 +279,9 @@ are a target display platform for scalable 3D graphics applications.
 \section{Applications}
 
 
-\chapter{The Architecture of a Parallel Rendering Framework}
+\chapter{Parallel Rendering Framework Architecture}
 
+\section{Overview}
 A generic parallel rendering framework has to cover a wide range of use cases,
 target systems, and configurations. This requires on one hand a strong
 separation between the implementation of an application and its configuration,
@@ -307,20 +308,161 @@ existing frameworks, and previous work on OpenGL Multipipe SDK.
 
 The task of parallelizing a visualization application boils down to configuring
 the application's rendering code differently for each resource, enabling this
-rendering code to access the correct data, and synchronizing execution. When
-multiple GPUs are used to accelerate the rendering of a single output, partial
-results need to be collected from all contributing resources and combined on the
-output.
+rendering code to access the correct data, and synchronizing execution. For
+scalable rendering, when multiple GPUs are used to accelerate a single output,
+partial results need to be collected from all contributing resources and
+combined on the output. Equalizer has a strong seperation of the rendering code
+from its runtime configuration. The configuration is layed out in a hierarchical
+resource description and compound trees configuring the resources for parallel
+and scalable rendering. The configuration is a dynamic runtime structure, with a
+serialized configuration file format.
 
-\section{Rendering Context}
+In the following we will first describe the execution model and runtime
+configurability, followed by the how the generic configuration is used to model
+the desired visualization setup, and finally introduce specifics of scalable and
+distributed rendering.
 
 \section{Asynchronous Execution Model}
 
-\section{Compounds}
+The core execution model was pioneered by CAVELib \cite{DACNCCGHPSNS:97},
+refined by OpenGL Multipipe SDK for shared memory systems, and substantially
+extended by Equalizer for asynchronous and distributed execution. By analysing
+the typical architecture of a visualization application we observer an
+initialization phase, a main rendering loop, and an exit phase. Equalizer
+decomposes these steps for parallel executions.
 
-\section{Load Balancing}
+The main rendering loop typically consists of four phases: submitting the
+rendering commands to the graphics subsystem, displaying the renderered image,
+and retrieving events from the operating system, based on which the application
+state is updated and a new image is rendered. The configuration of the rendering
+is largely hard-coded, with a few configurables such as field of view or stereo
+separation. For parallel execution, we need to separate the rendering code from
+this main loop, and execute it in parallel with different rendering parameters,
+as shown in \fig{FIG_execution}. Similarly, the initialization and exit phase
+also needs to be decomposed to allow managing multiple, distributed resources.
+
+\begin{figure}[ht]\center
+  \includegraphics[width=.9\columnwidth]{images/executionFlow}
+  \caption{Simplified execution flow of a classical visualization application
+    and an Equalizer application.}
+  \label{FIG_execution}
+\end{figure}
+
+Without going into the details at this point, another critical design parameter
+are synchronization points. Most implementations use a per-frame barrier or
+similar synchronization to manages parallel execution. In larger installations,
+this is detrimental for scalability, as even slight load imbalances limit
+parallel speedup. The Equalizer execution model is fully asynchronuous, and only
+introduces synchronization points when strictly needed. The main synchronization
+points are: configured swap barriers between a set of output which have to
+display simultaneously, the availability of input frames for scalable rendering,
+and a task synchronization to prevent runaway of the main loop execution. By
+default, Equalizer keeps up to one frame of latency in execution, that is, some
+resource might render the next frame while others are still finishing the
+current. Nonetheless, resources which are ready will immediately display their
+result. The asynchronous execution architecture, coupled with a frame of
+latency, allows pipelining of many operations, such as the application event
+processing, task computation and load balancing, rendering, image readback,
+compression, network transmission, and compositing.
+
+
+\subsection{Programming Interface}
+
+Equalizer provides a framework to facilitate the development of distributed as
+well as non-distributed parallel rendering applications. The programming
+interface is based on a set of C++ classes, modeled closely to the resource
+hierarchy of a graphics rendering system. The application subclasses these
+objects and overrides C++ task methods, similar to C callbacks. These task
+methods will be called in parallel by the framework, depending on the current
+configuration. This parallel rendering interface is significantly different from
+Chromium \cite{HHNFAKK:02} and more similar to VRJuggler \cite{BJHMBC:01} or
+OpenGL Multipipe SDK \cite{BRE:05}.
+
+\subsection{Application}
+
+The main application thread in Equalizer drives the rendering, that is, it
+carries out the main rendering loop, but does not actually execute any
+rendering. Depending on the configuration, the application process often hosts
+one or more render client threads. When a configuration has no additional nodes
+besides the application node, all application code is executed in the same
+process, and no network data distribution has to be implemented. The main
+rendering loop is quite simple: The application requests a new frame to be
+rendered, synchronizes on the completion of a frame and processes events
+received from the render clients. Figure~\ref{FIG_execution} shows a simplified
+execution model of an Equalizer application.
+
+
+\subsection{Server}
+
+The Equalizer server manages the parallel rendering session. It is an
+asynchronous execution thread or process which receives requests from the
+application and serves these requests using the current configuration, launching
+and stopping rendering client processes on nodes, determining the rendering
+tasks for a frame, and synchronizing the completion of frames.
+
+\subsection{Render Client}
+
+During initialization of the server, the application provides a rendering
+client. The rendering client is often, especially for simple applications, the
+same executable as the application. However, in more sophisticated
+implementations the rendering client can be a smaller executable which only contains
+the application-specific rendering code. The server deploys this rendering
+client on all nodes specified in the configuration.
+
+In contrast to the application process, the rendering client does not need to
+have a main loop and is completely controlled by the Equalizer framework based
+on application commands. If a configuration also uses the application node for
+rendering then the rendering happens in different threads within the application
+process. A render client consists of the following threads: the node main
+thread, one network receive thread, and one thread for each graphics card (GPU)
+to execute rendering tasks.
+
+The Equalizer client library implements the main loop, which receives network
+events, processes them, and invokes the necessary task methods provided by the
+developer.
+
+Most importantly, the network data contains the rendering task
+parameters computed by the server. Based on this data, the client library sets
+up the rendering context and calls the application-provided task methods.
+Setting up the rendering context consists of using the correct rendering thread,
+making the drawable and graphics context current, as well as providing the task
+methods with the 2D viewport, frustum, view matrix and the data-range for
+sort-last rendering. The task methods clear the frame buffer as necessary,
+execute the OpenGL rendering commands as well as readback, and assemble partial
+frame results for scalable rendering. All tasks have default implementations so
+that only the application specific methods have to be implemented, which
+typically includes the {\tt frameDraw()} method. For example, the default
+callbacks for frame recomposition during scalable rendering implement tile-based
+assembly for sort-first and stereo decompositions, and $z$-buffer or compositing
+for sort-last rendering of polygonal data.
+% or back-to-front $\alpha$-blending for direct volume rendering.
+% eile: back-to-front is not implemented in Eq, since the order is
+% app-specific. It can be implement easily though, as demonstrated with eVolve.
+A detailed description of the API and all methods can be found in the programming
+guide \cite{Eilemann:07}.
+
+Event handling is implemented by listening asynchronously for events
+from all windows. Events are transformed from window-system specific
+events into generic window events, and dispatched to the correct
+window. The window either processes the event locally, or converts it
+into a config-event to be sent to the application node. The application
+node processes the config-events as part of its main rendering loop. A
+more detailed description of event handling can also be found in \cite {Eilemann:07}.
+
+In addition to executing the application code in the right context, the
+client library implements image compression and transmission, network
+swap barrier support and distributed object support.
+
+\subsubsection{Render Context}
+
+\section{Configuration}
+\subsection{Rendering Resources}
+\subsection{Display Resources}
+\subsection{Compounds}
 
 \section{Compositing}
+
+\section{Load Balancing}
 
 \section{Distribution Layer}
 
