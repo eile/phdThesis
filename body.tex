@@ -366,6 +366,18 @@ latency, allows pipelining of many operations, such as the application event
 processing, task computation and load balancing, rendering, image readback,
 compression, network transmission, and compositing.
 
+\fig{fSyncAsync} shows the execution of the rendering tasks of a 2-node
+sort-first compound without latency and with a latency of one frame. The
+asynchronous execution pipelines rendering operations and hides imbalances in
+the load distribution, resulting in an improved framerate. For example, we have
+observed a speedup of 15\% on a five-node rendering cluster when using a latency
+of one frame instead of no latency.
+
+\begin{figure}[ht!]\center
+  \includegraphics[width=\textwidth]{images/syncAsync}
+  {\caption{\label{fSyncAsync}Synchronous and Asynchronous Execution}}
+\end{figure}
+
 
 \subsection{Programming Interface}
 
@@ -481,9 +493,274 @@ processes them in the main loop and modifies its internal state accordingly.
 
 
 \section{Configuration}
+
+A configuration consists of the declaration of the rendering (hardware)
+resources, the physical and logical  description of the projection system, and
+the description on how the  aforementioned resources are used for parallel and
+scalable rendering.
+
+The rendering resources are represented in a hierarchical tree structure
+which corresponds to the physical and logical resources found in a 3D
+rendering environment: nodes (computers), pipes (graphics cards),
+windows, and channels.
+
+Physical layouts of display systems are configured using canvases with
+segments, which represent 2D rendering areas composed of multiple
+displays or projectors. Logical layouts are applied to canvases and
+define views on a canvas.
+
+Scalable resource usage is configured using a compound tree, which is a
+hierarchical representation of the rendering decomposition and
+recomposition across the resources.
+
 \subsection{Rendering Resources}
+
+The first part of the configuration is a hierarchical structure of
+nodes-pipes-win\-dows-channels describing the rendering resources. The developer
+will use instances of these classes to implement application logic and manage
+data.
+
+The \textsf{node} is the representation of a single computer in a cluster. One operating
+system process of the render client executable will be used for each node. Each
+configuration might also use an application node, in which case the application
+process is also used for rendering. All node-specific task methods are executed
+from the main thread.
+
+The \textsf{pipe} is the abstraction of a graphics card (GPU), and uses an
+operating system thread for rendering. All pipe, window and channel task methods
+are executed from the pipe thread. The pipe maintains the information about the
+GPU to be used by the windows for rendering.
+
+The \textsf{window} encapsulates a drawable and an OpenGL context. The drawable
+can be an on-screen window or an off-screen pbuffer or framebuffer object (FBO).
+Windows on the same pipe share their OpenGL rendering resources. They execute
+their rendering tasks sequentially on the pipe's execution thread.
+
+The \textsf{channel} is the abstraction of an OpenGL viewport within its parent
+window. It is the entity executing the actual rendering. The channel's viewport
+is overwritten when it is rendering for another channel during scalable
+rendering. Multiple channels in application windows may be used to view the
+model from different viewports. Sometimes, a single window is split across
+multiple projectors, e.g., by using an external splitter such as the Matrox
+TripleHead2Go.
+
+
 \subsection{Display Resources}
+
+Display resources are the second part of a configuration. They describe the
+physical display setup (canvases-segments), logical display (layouts-views) and
+head tracking of users within the visualization installation (observers).
+
+A \textsf{canvas} represents one physical projection surface, e.g., a PowerWall,
+a curved screen or an immersive installation. Canvases provide a convenient way
+to configure projection surfaces. A canvas uses layouts, which describe logical
+views. Typically, each desktop window uses one canvas, one segment, one layout
+and one view. One configuration might drive multiple canvases, for example an
+immersive installation and an operator station. Planar surfaces, e.g., a display
+wall, configure a frustum for the respective canvas. For non-planar surfaces,
+the frustum will be configured on each display segment.
+
+\begin{wrapfigure}{r}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/frusta.pdf}
+  {\caption{\label{fFrusta}Wall and Projection Parameters}}
+\end{wrapfigure}
+
+The frustum can be specified as a wall or projection description in the same
+reference system as used by the head-tracking matrix calculated by the
+application.  A wall is completely defined by the bottom-left, bottom-right and
+top-left coordinates relative to the origin.  A projection is defined by the
+position and head-pitch-roll orientation of the projector, as well as the
+horizontal and vertical field-of-view and distance of the projection wall.
+\fig{fFrusta} illustrates the wall and projection frustum parameters.
+
+A canvas consists of one or more segments. A planar canvas typically has a
+frustum description (see \sref{sFrustum}), which is inherited by the segments.
+Non-planar frusta are configured using the segment frusta. These frusta
+typically describe a physically correct display setup for Virtual Reality
+installations.
+
+A canvas has one or more layouts. One of the layouts is the active
+layout, that is, this set of views is currently used for rendering. It
+is possible to specify \textsf{OFF} as a layout, which deactivates the
+canvas. It is possible to use the same layout on different canvases.
+
+\begin{wrapfigure}{r}{.382\textwidth}
+  \includegraphics[width=.382\textwidth]{images/canvas.pdf}
+  {\caption{\label{fCanvas}A Canvas using four Segments}}
+\end{wrapfigure}
+
+A \textsf{segment} represents one output channel of the canvas, e.g., a
+projector or a display. A segment has an output channel, which references the
+channel to which the display device is connected. To synchronize the video
+output, a canvas swap barrier or a swap barrier on each segment synchronize the
+respective window buffer swaps.
+
+A segment covers a part of its parent canvas, which is configured using the
+segment viewport. The viewport is in normalized coordinates relative to the
+canvas. Segments might overlap (edge-blended projectors) or have gaps between
+each other (display walls, \fig{fCanvas}\footnote{Dataset courtesy of VolVis
+  distribution of SUNY Stony Brook, NY, USA.}). The viewport is used to
+configure the segment's default frustum from the canvas frustum description, and
+to place layout views correctly.
+
+A \textsf{layout} is the grouping of logical views. It is used by one or more
+canvases. For all given layout/canvas combinations, Equalizer creates
+destination channels when the configuration file is loaded. These destination
+channels are later referenced by compounds to configure scalable rendering.
+Layouts can be switched at runtime by the application. Switching a layout will
+activate different destination channels for rendering.
+
+
+\begin{wrapfigure}{r}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/layout.png}
+  {\caption{\label{fLayout}Layout with four Views}}
+\end{wrapfigure}
+
+A \textsf{view} is a logical view of the application data, in the sense used by
+the Model-View-Controller pattern. It can be a scene, viewing mode, viewing
+position, or any other representation of the application's data. A view has a
+fractional viewport relative to its layout. A layout is often fully covered by
+its views, but this is not a requirement. Each view can have a frustum
+description. The view's frustum overrides frusta specified at the canvas or
+segment level. This is typically used for non-physically correct rendering,
+e.g., to compare two models side-by-side on a canvas. If the view does not
+specify a frustum, it will use the sub-frustum resulting from the covered area
+on the canvas.
+
+A view might have an observer, in which case its frustum is tracked by this
+observer. \fig{fLayout} shows an example layout using four views on a single
+segment. \fig{fDisplay} shows a real-world setup of a single canvas with six
+segments using underlap, with a two-view layout activated. This configuration
+generates eight destination channels.
+
+\begin{figure}[ht!]\center
+  \includegraphics[width=.9\textwidth]{images/wallLayout.jpg}
+  {\label{fDisplay}\caption{Display Wall using a six-Segment Canvas with a two-View Layout}}
+\end{figure}
+
+An \textsf{observer} represents an actor looking at multiple views. It has a
+head matrix, defining its position and orientation within the world, an eye
+separation and focus distance parameters. Typically, a configuration has one
+observer. Configurations with multiple observers are used if multiple,
+head-tracked users are in the same configuration session, e.g., a non-tracked
+control host with two tracked head-mounted displays.
+
 \subsection{Compounds}
+
+Compound trees are used to describe how multiple rendering resources are
+combined to produce the desired output, especially how multiple GPUs are
+aggregated to increase the performance. They are the core contribution enabling
+a flexible resource configuration.
+
+\begin{description}
+\item [Root compound] Define an empty top-level compound when
+  synchronizing multiple destination views. Multiple destination views
+  are used for multi-display systems, e.g., a PowerWall or CAVE. All
+  windows used for one display surface should be swap-locked (see below)
+  to provide a seamless image. A single destination view is typically
+  used for providing scalability to a single workstation window.
+\item [Destination compound(s)] Define one compound for each destination
+  channel, either as a child of the empty group, or as a top-level compound. Set
+  the destination channel by using the canvas, segment, layout and view name or
+  index. The compound frustum will be calculated automatically based on the
+  segment or view frustum. Note that one segment may created multiple
+  view/segment channels, one for each view intersection of each layout used on
+  the canvas. Only the compounds belonging to the active layout of a canvas are
+  active at runtime.
+\item[Scalability] If desired, define scalability for each of your
+  destination compounds. Add one compound using a source channel for
+  each contributor to the rendering. The destination channel may also be
+  used as a source.
+  \begin{description}
+  \item[Decomposition] On each child compound, limit the rendering task of that
+    child by setting the \textsf{viewport}, \textsf{range}, \textsf{period} and
+    \textsf{phase}, \textsf{pixel}, \textsf{subpixel}, \textsf{eye} or
+    \textsf{zoom} as desired.
+  \item[Runtime Adjustments] A \textsf{load\_equalizer} may be used on
+    the destination compounds to set the \textsf{viewport} or
+    \textsf{range} of all children each frame, based on the current
+    load. A \textsf{view\_equalizer} may be used on the root compound to
+    assign resources to all destination compounds, which have to use
+    \textsf{load\_equalizer}s. A \textsf{framerate\_equalizer} should be
+    used to smoothen the framerate of DPlex compounds. A
+    \textsf{DFR\_equalizer} may be used to set the zoom of a compound to
+    achieve a constant framerate. One compound may have multiple
+    equalizers, e.g., a \textsf{load\_equalizer} and a
+    \textsf{DFR\_equalizer} for a 2D compound with a constant framerate.
+  \item[Recomposition] For each source compound, define an
+    \textsf{output\_frame} to read back the result. Use this output frame
+    as an \textsf{input\_frame} on the destination compound. The frames
+    are connected with each other by their name, which has to be unique
+    within the root compound tree. For parallel compositing, describe
+    your algorithm by defining multiple input and output frames across
+    all source compounds.
+  \end{description}
+\end{description}
+
+\subsubsection{Compound Channels}
+Each compound has a channel, which is used by the compound to execute the
+rendering tasks. One channel might be used by multiple compounds. Compounds are
+only active if their corresponding destination channel is active, that is, if
+the parent layout of the view which created the destination channel is active on
+at least one canvas.
+
+Unused channels, windows, pipes and nodes are not instantiated during
+initialization.  Switching an active layout may cause rendering resources to be
+stopped and started. The rendering tasks for the channels are computed by the
+server and send to the appropriate render client nodes at the beginning of each
+frame.
+
+\subsubsection{\label{sFrustum}Frustum}
+
+Compounds have a frustum description to define the physical layout of the
+display environment. The frustum specification is described in
+\sref{sCanvas}. The frustum description is inherited by the children, therefore
+the frustum is defined on the topmost compound, typically by the corresponding
+segment.
+
+\subsubsection{Compound Classification}
+The channels of the leaf compounds in the compound tree are designated
+as source channels. The topmost channel in the tree is the destination
+channel. One compound tree might have multiple destination channels,
+e.g., for a swap-synchronized immersive installation.
+
+All channels in a compound tree work for the destination channel. The
+destination channel defines the 2D pixel viewport rendered by all leaf
+compounds. The destination channel and pixel viewport cannot be
+overridden by child compounds.
+
+\subsubsection{Tasks}
+Compounds execute a number of tasks: clear, draw, assemble and readback. By
+default, a leaf compound executes all tasks and a non-leaf compound assemble and
+readback. A non-leaf compound will never execute the draw task.
+
+A compound can be configured to execute a specific set of tasks, for
+example to configure the multiple steps used by binary-swap compositing.
+
+\subsubsection{Decomposition - Attributes}
+Compounds have attributes which configure the decomposition of the destination
+channel's rendering, which is defined by the viewport, frustum and database. A
+\textsf{viewport} decomposes the destination channel and frustum in screen
+space. A \textsf{range} tells the application to render a part of its database,
+and an \textsf{eye} rendering pass can selectively render different stereo
+passes. A \textsf{pixel} parameter adjusts the frustum so that the source
+channel renders an even subset of the parent's pixels. A \textsf{subpixel}
+parameter tells the source channels to render different samples for one pixel to
+perform anti-aliasing or depth-of-field rendering. Setting one or multiple
+attributes causes the parent's view to be decomposed accordingly. Attributes are
+cumulative, that is, intermediate compound attributes affect and therefore
+decompose the rendering of all their children.
+
+\subsubsection{Recomposition - Frames}
+Compounds use output and input frames to configure the recomposition of
+the resulting pixel data from the source channels. An output frame
+connects to an input frame of the same name. The selected frame buffer
+data is transported from the output channel to the input channel. The
+assembly routine of the input channel will block on the availability of
+the output frame. This composition process is extensively described in
+\sref{sCompositing}. Frame names are only valid within the compound
+tree, that is, an output frame from one compound tree cannot be used as
+an input frame of another compound tree.
 
 \section{Compositing}
 
