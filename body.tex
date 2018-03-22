@@ -324,12 +324,13 @@ distributed rendering.
 
 \section{Asynchronous Execution Model}
 
-The core execution model was pioneered by CAVELib \cite{DACNCCGHPSNS:97},
-refined by OpenGL Multipipe SDK for shared memory systems, and substantially
-extended by Equalizer for asynchronous and distributed execution. By analysing
-the typical architecture of a visualization application we observer an
-initialization phase, a main rendering loop, and an exit phase. Equalizer
-decomposes these steps for parallel executions.
+The core execution model for parallel rendering was pioneered by CAVELib
+\cite{DACNCCGHPSNS:97}, refined by OpenGL Multipipe SDK for shared memory
+systems and scalable rendering, and substantially extended by Equalizer for
+asynchronous and distributed execution. By analysing the typical architecture of
+a visualization application we observe an initialization phase, a main rendering
+loop, and an exit phase. Equalizer decomposes these steps for parallel
+execution.
 
 The main rendering loop typically consists of four phases: submitting the
 rendering commands to the graphics subsystem, displaying the renderered image,
@@ -378,6 +379,18 @@ configuration. This parallel rendering interface is significantly different from
 Chromium \cite{HHNFAKK:02} and more similar to VRJuggler \cite{BJHMBC:01} or
 OpenGL Multipipe SDK \cite{BRE:05}.
 
+\begin{wrapfigure}{r}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/processes}
+  {\caption{\label{fProcessing}Parallel Rendering Entities}}
+\end{wrapfigure}
+
+To separate the responsibilities in a parallel rendering application, different
+entities are resonsible for different aspects of the runtime system: the
+application process to drive a rendering session, the server process or thread
+to control the parallel rendering configuration, render clients to execute the
+rendering tasks, and an administrative API to reconfigure the rendering session
+at runtime.
+
 \subsection{Application}
 
 The main application thread in Equalizer drives the rendering, that is, it
@@ -398,62 +411,74 @@ The Equalizer server manages the parallel rendering session. It is an
 asynchronous execution thread or process which receives requests from the
 application and serves these requests using the current configuration, launching
 and stopping rendering client processes on nodes, determining the rendering
-tasks for a frame, and synchronizing the completion of frames.
+tasks for a frame, and synchronizing the completion of tasks.
 
 \subsection{Render Client}
 
-During initialization of the server, the application provides a rendering
-client. The rendering client is often, especially for simple applications, the
-same executable as the application. However, in more sophisticated
-implementations the rendering client can be a smaller executable which only contains
-the application-specific rendering code. The server deploys this rendering
-client on all nodes specified in the configuration.
+During initialization of the server, the application provides a rendering client
+executable. The rendering client is often, especially for simple applications,
+the same executable as the application. However, in more sophisticated
+implementations the rendering client can be a smaller executable which only
+contains the application-specific rendering code. The server deploys this
+rendering client on all nodes specified in the configuration.
 
-In contrast to the application process, the rendering client does not need to
-have a main loop and is completely controlled by the Equalizer framework based
-on application commands. If a configuration also uses the application node for
-rendering then the rendering happens in different threads within the application
-process. A render client consists of the following threads: the node main
-thread, one network receive thread, and one thread for each graphics card (GPU)
-to execute rendering tasks.
+In contrast to the application process, the rendering client does not have a
+main loop and is completely controlled by the Equalizer framework based on
+application's commands. A render client consists of the following threads: the
+node main thread, one network receive thread, and one thread for each graphics
+card (GPU) to execute rendering tasks. If a configuration also uses the
+application node for rendering, then the application process uses one or more
+render threads, consistent with render client processes.
 
 The Equalizer client library implements the main loop, which receives network
 events, processes them, and invokes the necessary task methods provided by the
 developer.
 
-Most importantly, the network data contains the rendering task
-parameters computed by the server. Based on this data, the client library sets
-up the rendering context and calls the application-provided task methods.
-Setting up the rendering context consists of using the correct rendering thread,
-making the drawable and graphics context current, as well as providing the task
-methods with the 2D viewport, frustum, view matrix and the data-range for
-sort-last rendering. The task methods clear the frame buffer as necessary,
-execute the OpenGL rendering commands as well as readback, and assemble partial
-frame results for scalable rendering. All tasks have default implementations so
-that only the application specific methods have to be implemented, which
-typically includes the {\tt frameDraw()} method. For example, the default
+The task methods clear the frame buffer as necessary, execute the OpenGL
+rendering commands as well as readback, and assemble partial frame results for
+scalable rendering. All tasks have default implementations so that only the
+application specific methods have to be implemented, which at least involves the
+{\tt frameDraw()} method executing a rendering task. For example, the default
 callbacks for frame recomposition during scalable rendering implement tile-based
-assembly for sort-first and stereo decompositions, and $z$-buffer or compositing
-for sort-last rendering of polygonal data.
-% or back-to-front $\alpha$-blending for direct volume rendering.
-% eile: back-to-front is not implemented in Eq, since the order is
-% app-specific. It can be implement easily though, as demonstrated with eVolve.
-A detailed description of the API and all methods can be found in the programming
-guide \cite{Eilemann:07}.
-
-Event handling is implemented by listening asynchronously for events
-from all windows. Events are transformed from window-system specific
-events into generic window events, and dispatched to the correct
-window. The window either processes the event locally, or converts it
-into a config-event to be sent to the application node. The application
-node processes the config-events as part of its main rendering loop. A
-more detailed description of event handling can also be found in \cite {Eilemann:07}.
-
-In addition to executing the application code in the right context, the
-client library implements image compression and transmission, network
-swap barrier support and distributed object support.
+assembly for sort-first and stereo decompositions, and $z$-buffer compositing
+for sort-last rendering.
 
 \subsubsection{Render Context}
+
+The render context is the core entity abstracting the application-specific
+rendering algorithm from the system-specific configuration. It specifies:
+
+\begin{compactdesc}
+\item[Buffer] OpenGL-style read and draw buffer as well as color mask.
+  These parameters are influenced by the current eye pass, eye
+  separation and anaglyphic stereo settings.
+\item[Viewport] Two-dimensional pixel viewport restricting the
+  rendering area. For correct operations, both
+  \textsf{glViewport} and \textsf{glScissor} have to be used. The pixel
+  viewport is influenced by the destination viewport
+  definition and viewports set for sort-first/2D decompositions.
+\item[Frustum] Frustum parameters as defined by
+  \textsf{glFrustum}. Typically the frustum used to set up the OpenGL projection
+  matrix. The frustum is influenced by the destination's view
+  definition, sort-first decomposition, tracking head matrix and the current eye pass.
+\item[Head Transformation] A transformation matrix positioning the frustum. For
+  planar views this is an identity matrix and is used in immersive rendering.
+  It is normally used to set up the `view' part of the modelview matrix, before
+  static light sources are defined.
+\item[Range] A one-dimensional range with the interval [0..1]. This parameter is
+  optional and should be used by the application to render only the appropriate
+  subset of its data for sort-last rendering.
+\end{compactdesc}
+
+\subsubsection{Event Handling}
+
+Event handling routes events from the source (the window in the rendering
+thread) gradually to the the application main thread for consumption. At each
+step, events can be observed, transformed or dropped. Events are received from
+the operating system in the rendering thread, transformed there into a generic
+representation, and sent over the network to the application. The application
+processes them in the main loop and modifies its internal state accordingly.
+
 
 \section{Configuration}
 \subsection{Rendering Resources}
@@ -467,13 +492,13 @@ swap barrier support and distributed object support.
 \section{Distribution Layer}
 
 
-\chapter{New Parallel Rendering Modes}
+\chapter{Parallel Rendering Modes}
 
 
 \chapter{Compositing Optimisations}
 
 
-\chapter{New Load Balancing Algorithms}
+\chapter{Load Balancing Algorithms}
 
 
 \chapter{Data Distribution and Synchronization}
