@@ -23,14 +23,14 @@ scanning systems, as well as from data collections and numerical simulations in
 a number of science and technology domains.
 
 \begin{figure}[ht]\label{FIG_teaser}
-\includegraphics[height=5cm]{images/slices}\hfil%
-\includegraphics[height=5cm]{images/cave2}\\%
-\includegraphics[height=5.27cm]{images/cave}\hfil%
-\includegraphics[height=5.27cm]{images/tide}%
-\caption{Large Data Visualization: Large data visualization of a
-      brain simulation, molecular visualization in the Cave$^2$, exploration of EM
-      stack reconstructions in a Cave, collaborative data analysis on a tiled
-      display wall.}
+ \includegraphics[height=5cm]{images/slices}\hfil%
+ \includegraphics[height=5cm]{images/cave2}\\%
+ \includegraphics[height=5.27cm]{images/cave}\hfil%
+ \includegraphics[height=5.27cm]{images/tide}%
+ \caption{Large Data Visualization: Large data visualization of a
+  brain simulation, molecular visualization in the Cave$^2$, exploration of EM
+  stack reconstructions in a Cave, collaborative data analysis on a tiled
+  display wall.}
 \end{figure}
 
 Display technology has made significant progress in the last decade.
@@ -89,8 +89,8 @@ implementation due to the large amount of fragments processed and transferred in
 the sorting stage.
 
 \begin{figure}[ht]\center
-\includegraphics[width=0.7\textwidth]{images/all_sorts}%
-\caption{Sort-last, sort-middle and sort-first parallel rendering\label{fSorts}}
+ \includegraphics[width=0.7\textwidth]{images/all_sorts}%
+ \caption{Sort-last, sort-middle and sort-first parallel rendering\label{fSorts}}
 \end{figure}
 
 
@@ -157,9 +157,9 @@ transparent interception and distribution of the OpenGL command stream and into
 the parallization of the application rendering code (\fig{fChromium}).
 
 \begin{figure}[ht]
-\includegraphics[height=4cm]{images/Chromium}\hfil%
-\includegraphics[height=4cm]{images/MPK}%
-\caption{Transparent OpenGL interception and parallelization of the rendering code\label{fChromium}}
+ \includegraphics[height=4cm]{images/Chromium}\hfil%
+ \includegraphics[height=4cm]{images/MPK}%
+ \caption{Transparent OpenGL interception and parallelization of the rendering code\label{fChromium}}
 \end{figure}
 
 
@@ -240,7 +240,7 @@ requires the application developer to address the complexities of a distributed
 application, when mutable application state needs to be synchronized across
 processes. For realistic applications, writing parallel applications remains the
 only viable approach for scalable parallel rendering, as shown by the success of
-{Paraview}, {Visit} and {Equalizer}-based applications.
+ {Paraview}, {Visit} and {Equalizer}-based applications.
 
 OpenGL Multipipe SDK (MPK) \cite{BRE:05} implemented an effective parallel
 rendering API for a shared memory multi-CPU/GPU system. It is similar to IRIS
@@ -254,14 +254,14 @@ compositing processes.
 
 Software for driving and interacting with tiled display walls has received
 significant attention, including {Sage}~\cite{Sage} and
-{Sage~2}~\cite{Sage2} in particular. {Sage} was built entirely
+ {Sage~2}~\cite{Sage2} in particular. {Sage} was built entirely
 around the concept of a shared framebuffer where all content windows are
 separate applications using pixel streaming but is no longer actively supported.
 {Sage 2} is a complete, browser-centric reimplementation where each
 application is a web application distributed across browser instances.
 {DisplayCluster}~\cite{DisplayCluster}, and its continuation
-{Tide}~\cite{tide}, also implement the shared framebuffer concept of
-{Sage}, but provide a few native content applications integrated into the
+ {Tide}~\cite{tide}, also implement the shared framebuffer concept of
+ {Sage}, but provide a few native content applications integrated into the
 display servers. These solutions implement a scalable display environment and
 are a target display platform for scalable 3D graphics applications.
 
@@ -343,10 +343,10 @@ as shown in \fig{FIG_execution}. Similarly, the initialization and exit phase
 also needs to be decomposed to allow managing multiple, distributed resources.
 
 \begin{figure}[ht]\center
-  \includegraphics[width=.9\columnwidth]{images/executionFlow}
-  \caption{Simplified execution flow of a classical visualization application
-    and an Equalizer application.}
-  \label{FIG_execution}
+ \includegraphics[width=.9\columnwidth]{images/executionFlow}
+ \caption{Simplified execution flow of a classical visualization application
+  and an Equalizer application.}
+ \label{FIG_execution}
 \end{figure}
 
 Without going into the details at this point, another critical design parameter
@@ -374,8 +374,8 @@ observed a speedup of 15\% on a five-node rendering cluster when using a latency
 of one frame instead of no latency.
 
 \begin{figure}[ht!]\center
-  \includegraphics[width=\textwidth]{images/syncAsync}
-  {\caption{\label{fSyncAsync}Synchronous and Asynchronous Execution}}
+ \includegraphics[width=\textwidth]{images/syncAsync}
+ {\caption{\label{fSyncAsync}Synchronous and Asynchronous Execution}}
 \end{figure}
 
 
@@ -392,8 +392,8 @@ Chromium \cite{HHNFAKK:02} and more similar to VRJuggler \cite{BJHMBC:01} or
 OpenGL Multipipe SDK \cite{BRE:05}.
 
 \begin{wrapfigure}{r}{.618\textwidth}
-  \includegraphics[width=.618\textwidth]{images/processes}
-  {\caption{\label{fProcessing}Parallel Rendering Entities}}
+ \includegraphics[width=.618\textwidth]{images/processes}
+ {\caption{\label{fProcessing}Parallel Rendering Entities}}
 \end{wrapfigure}
 
 To separate the responsibilities in a parallel rendering application, different
@@ -450,7 +450,7 @@ The task methods clear the frame buffer as necessary, execute the OpenGL
 rendering commands as well as readback, and assemble partial frame results for
 scalable rendering. All tasks have default implementations so that only the
 application specific methods have to be implemented, which at least involves the
-{\tt frameDraw()} method executing a rendering task. For example, the default
+ {\tt frameDraw()} method executing a rendering task. For example, the default
 callbacks for frame recomposition during scalable rendering implement tile-based
 assembly for sort-first and stereo decompositions, and $z$-buffer compositing
 for sort-last rendering.
@@ -461,25 +461,25 @@ The render context is the core entity abstracting the application-specific
 rendering algorithm from the system-specific configuration. It specifies:
 
 \begin{compactdesc}
-\item[Buffer] OpenGL-style read and draw buffer as well as color mask.
-  These parameters are influenced by the current eye pass, eye
-  separation and anaglyphic stereo settings.
-\item[Viewport] Two-dimensional pixel viewport restricting the
-  rendering area. For correct operations, both
-  \textsf{glViewport} and \textsf{glScissor} have to be used. The pixel
-  viewport is influenced by the destination viewport
-  definition and viewports set for sort-first/2D decompositions.
-\item[Frustum] Frustum parameters as defined by
-  \textsf{glFrustum}. Typically the frustum used to set up the OpenGL projection
-  matrix. The frustum is influenced by the destination's view
-  definition, sort-first decomposition, tracking head matrix and the current eye pass.
-\item[Head Transformation] A transformation matrix positioning the frustum. For
-  planar views this is an identity matrix and is used in immersive rendering.
-  It is normally used to set up the `view' part of the modelview matrix, before
-  static light sources are defined.
-\item[Range] A one-dimensional range with the interval [0..1]. This parameter is
-  optional and should be used by the application to render only the appropriate
-  subset of its data for sort-last rendering.
+ \item[Buffer] OpenGL-style read and draw buffer as well as color mask.
+ These parameters are influenced by the current eye pass, eye
+ separation and anaglyphic stereo settings.
+ \item[Viewport] Two-dimensional pixel viewport restricting the
+ rendering area. For correct operations, both
+ \textsf{glViewport} and \textsf{glScissor} have to be used. The pixel
+ viewport is influenced by the destination viewport
+ definition and viewports set for sort-first/2D decompositions.
+ \item[Frustum] Frustum parameters as defined by
+ \textsf{glFrustum}. Typically the frustum used to set up the OpenGL projection
+ matrix. The frustum is influenced by the destination's view
+ definition, sort-first decomposition, tracking head matrix and the current eye pass.
+ \item[Head Transformation] A transformation matrix positioning the frustum. For
+ planar views this is an identity matrix and is used in immersive rendering.
+ It is normally used to set up the `view' part of the modelview matrix, before
+ static light sources are defined.
+ \item[Range] A one-dimensional range with the interval [0..1]. This parameter is
+ optional and should be used by the application to render only the appropriate
+ subset of its data for sort-last rendering.
 \end{compactdesc}
 
 \subsubsection{Event Handling}
@@ -561,8 +561,8 @@ wall, configure a frustum for the respective canvas. For non-planar surfaces,
 the frustum will be configured on each display segment.
 
 \begin{wrapfigure}{r}{.618\textwidth}
-  \includegraphics[width=.618\textwidth]{images/frusta.pdf}
-  {\caption{\label{fFrusta}Wall and Projection Parameters}}
+ \includegraphics[width=.618\textwidth]{images/frusta.pdf}
+ {\caption{\label{fFrusta}Wall and Projection Parameters}}
 \end{wrapfigure}
 
 The frustum can be specified as a wall or projection description in the same
@@ -585,8 +585,8 @@ is possible to specify \textsf{OFF} as a layout, which deactivates the
 canvas. It is possible to use the same layout on different canvases.
 
 \begin{wrapfigure}{r}{.382\textwidth}
-  \includegraphics[width=.382\textwidth]{images/canvas.pdf}
-  {\caption{\label{fCanvas}A Canvas using four Segments}}
+ \includegraphics[width=.382\textwidth]{images/canvas.pdf}
+ {\caption{\label{fCanvas}A Canvas using four Segments}}
 \end{wrapfigure}
 
 A \textsf{segment} represents one output channel of the canvas, e.g., a
@@ -599,7 +599,7 @@ A segment covers a part of its parent canvas, which is configured using the
 segment viewport. The viewport is in normalized coordinates relative to the
 canvas. Segments might overlap (edge-blended projectors) or have gaps between
 each other (display walls, \fig{fCanvas}\footnote{Dataset courtesy of VolVis
-  distribution of SUNY Stony Brook, NY, USA.}). The viewport is used to
+ distribution of SUNY Stony Brook, NY, USA.}). The viewport is used to
 configure the segment's default frustum from the canvas frustum description, and
 to place layout views correctly.
 
@@ -610,10 +610,9 @@ channels are later referenced by compounds to configure scalable rendering.
 Layouts can be switched at runtime by the application. Switching a layout will
 activate different destination channels for rendering.
 
-
 \begin{wrapfigure}{r}{.618\textwidth}
-  \includegraphics[width=.618\textwidth]{images/layout.png}
-  {\caption{\label{fLayout}Layout with four Views}}
+ \includegraphics[width=.618\textwidth]{images/layout.png}
+ {\caption{\label{fLayout}Layout with four Views}}
 \end{wrapfigure}
 
 A \textsf{view} is a logical view of the application data, in the sense used by
@@ -634,8 +633,8 @@ segments using underlap, with a two-view layout activated. This configuration
 generates eight destination channels.
 
 \begin{figure}[ht!]\center
-  \includegraphics[width=.9\textwidth]{images/wallLayout.jpg}
-  {\label{fDisplay}\caption{Display Wall using a six-Segment Canvas with a two-View Layout}}
+ \includegraphics[width=.9\textwidth]{images/wallLayout.jpg}
+ {\caption{\label{fDisplay}Display Wall using a six-Segment Canvas with a two-View Layout}}
 \end{figure}
 
 An \textsf{observer} represents an actor looking at multiple views. It has a
@@ -649,122 +648,222 @@ control host with two tracked head-mounted displays.
 
 Compound trees are used to describe how multiple rendering resources are
 combined to produce the desired output, especially how multiple GPUs are
-aggregated to increase the performance. They are the core contribution enabling
-a flexible resource configuration.
+aggregated to increase rendering performance. They are the core contribution
+enabling a flexible resource configuration.
 
-\begin{description}
-\item [Root compound] Define an empty top-level compound when
-  synchronizing multiple destination views. Multiple destination views
-  are used for multi-display systems, e.g., a PowerWall or CAVE. All
-  windows used for one display surface should be swap-locked (see below)
-  to provide a seamless image. A single destination view is typically
-  used for providing scalability to a single workstation window.
-\item [Destination compound(s)] Define one compound for each destination
-  channel, either as a child of the empty group, or as a top-level compound. Set
-  the destination channel by using the canvas, segment, layout and view name or
-  index. The compound frustum will be calculated automatically based on the
-  segment or view frustum. Note that one segment may created multiple
-  view/segment channels, one for each view intersection of each layout used on
-  the canvas. Only the compounds belonging to the active layout of a canvas are
-  active at runtime.
-\item[Scalability] If desired, define scalability for each of your
-  destination compounds. Add one compound using a source channel for
-  each contributor to the rendering. The destination channel may also be
-  used as a source.
-  \begin{description}
-  \item[Decomposition] On each child compound, limit the rendering task of that
-    child by setting the \textsf{viewport}, \textsf{range}, \textsf{period} and
-    \textsf{phase}, \textsf{pixel}, \textsf{subpixel}, \textsf{eye} or
-    \textsf{zoom} as desired.
-  \item[Runtime Adjustments] A \textsf{load\_equalizer} may be used on
-    the destination compounds to set the \textsf{viewport} or
-    \textsf{range} of all children each frame, based on the current
-    load. A \textsf{view\_equalizer} may be used on the root compound to
-    assign resources to all destination compounds, which have to use
-    \textsf{load\_equalizer}s. A \textsf{framerate\_equalizer} should be
-    used to smoothen the framerate of DPlex compounds. A
-    \textsf{DFR\_equalizer} may be used to set the zoom of a compound to
-    achieve a constant framerate. One compound may have multiple
-    equalizers, e.g., a \textsf{load\_equalizer} and a
-    \textsf{DFR\_equalizer} for a 2D compound with a constant framerate.
-  \item[Recomposition] For each source compound, define an
-    \textsf{output\_frame} to read back the result. Use this output frame
-    as an \textsf{input\_frame} on the destination compound. The frames
-    are connected with each other by their name, which has to be unique
-    within the root compound tree. For parallel compositing, describe
-    your algorithm by defining multiple input and output frames across
-    all source compounds.
-  \end{description}
-\end{description}
+Compounds are a data structure to describe the parallel execution of rendering
+tasks in the form of a tree.  Each compound corresponds to some rendering tasks
+(clear, draw, assemble, readback) and references a  channel from the resource
+description which executes the tasks in the given order. A compound may provide
+output frames from the readback task to others, and can request input
+frames from others for its own assembly task, and output frames are linked to
+input frames by name.
 
-\subsubsection{Compound Channels}
-Each compound has a channel, which is used by the compound to execute the
-rendering tasks. One channel might be used by multiple compounds. Compounds are
-only active if their corresponding destination channel is active, that is, if
-the parent layout of the view which created the destination channel is active on
-at least one canvas.
+Compound trees are a logical description of the rendering pipeline, and only
+reference the actual physical resources through their channels. This allows
+mapping a compound tree to different physical configurations by simply replacing
+the channel IDs. For example, one can test the functionality of a sort-last
+configuration by using channels of different windows on one local workstation
+before deploying it to multiple physical GPUs.
 
-Unused channels, windows, pipes and nodes are not instantiated during
-initialization.  Switching an active layout may cause rendering resources to be
-stopped and started. The rendering tasks for the channels are computed by the
-server and send to the appropriate render client nodes at the beginning of each
-frame.
+A simple leaf compound description for rendering a part of the data set, given
+by the data {\em range}, into a particular region of the {\em viewport} is given
+in \fig{FIG_leaf_compound}. The data range is a logical mapping of the data set
+onto the unit interval and is left to the application to interpret
+appropriately. Hence  the range [0 $\frac{1}{2}$] indicates that the first half
+of the data set should be rendered, for example the first $\frac{n}{2}$
+triangles of a polygonal mesh with $n$ faces. The viewport is indicated by the
+parameters [x y width height] as fraction of the parent's viewport, and in the
+example the data is thus rendered into the left half of the viewport. The
+resulting framebuffer data -- including per-pixel color and depth -- of the
+rendering executed on this channel is read back and made available to other
+compounds by the name left\_half.
 
-\subsubsection{\label{sFrustum}Frustum}
+\begin{figure}[ht]\center
+ {\begin{tabbing} \ \ \ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \= \kill
+   \> {\bf compound} \{						\\
+   \>\> {\bf channel} "draw"					\\
+   \>\> buffer  [ COLOR DEPTH ]				\\
+   \>\> range [0 $\frac{1}{2}$]				\\
+   \>\> viewport [ 0 0 $\frac{1}{2}$ 1 ]                 \\
+   \>\> outputframe \{name "left\_half" \}	\\
+   \> \}
+  \end{tabbing}}
+ \vspace{-2mm}
+ \caption{Compound executing rendering of a part of the data set into a given region of the viewport.\label{FIG_leaf_compound}}
+\end{figure}
 
-Compounds have a frustum description to define the physical layout of the
-display environment. The frustum specification is described in
-\sref{sCanvas}. The frustum description is inherited by the children, therefore
-the frustum is defined on the topmost compound, typically by the corresponding
-segment.
+A non-leaf compound performing some image assembly and compositing task is
+indicated in \fig{FIG_inner_compound}. Framebuffer data is read from two other
+compounds which supposedly execute rendering for part\_a and part\_b of the data
+set in parallel. The compound itself executes for example $z$-depth visibility
+compositing of the two input images on its channel and returns the resulting
+color framebuffer.
 
-\subsubsection{Compound Classification}
-The channels of the leaf compounds in the compound tree are designated
-as source channels. The topmost channel in the tree is the destination
-channel. One compound tree might have multiple destination channels,
-e.g., for a swap-synchronized immersive installation.
+\begin{figure}[ht]\center
+ {\begin{tabbing} \ \ \ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \= \kill
+   \> {\bf compound} \{						\\
+   \>\> {\bf channel} "display"				\\
+   \>\> inputframe \{ name "part\_a" \}			\\
+   \>\> inputframe \{ name "part\_b" \}			\\
+   \>\> outputframe \{ buffer [ COLOR ] \}	\\
+   \> \}
+  \end{tabbing}}
+ \vspace{-2mm}
+ \caption{Compound performing image compositing.\label{FIG_inner_compound}}
+\end{figure}
 
-All channels in a compound tree work for the destination channel. The
-destination channel defines the 2D pixel viewport rendered by all leaf
-compounds. The destination channel and pixel viewport cannot be
-overridden by child compounds.
+Leaf compounds execute all tasks by default, but the focus is often on the draw
+task with a default assemble and standard readback task used to pass the
+resulting image data on to other compounds for further compositing. Hence while
+leaf compounds execute the rendering in parallel, non-leaf compounds often
+correspond to, but are not restricted to the (parallel) image compositing and
+assembly part. The readback or assemble tasks are only active if output or input
+frames have been specified, respectively. Otherwise the rendered image frame is
+left in-place for further processing in a parent compound sharing the same
+channel.
 
-\subsubsection{Tasks}
-Compounds execute a number of tasks: clear, draw, assemble and readback. By
-default, a leaf compound executes all tasks and a non-leaf compound assemble and
-readback. A non-leaf compound will never execute the draw task.
+Note that non-leaf nodes in the compound tree structure traverse their children
+first before performing their default assemble and readback tasks. Furthermore,
+compounds only define the logical task decomposition structure, while its
+execution is actually performed on the referenced channels. Therefore, since
+compounds can share channels, as often done between a parent and one of its
+child compounds, rendered image data can sometimes be left in place, avoiding
+readback and transfer to another node.
 
-A compound can be configured to execute a specific set of tasks, for
-example to configure the multiple steps used by binary-swap compositing.
+All attributes as well as the channel are inherited from the parent compound if
+not specified otherwise. The {\em viewport}, {\em data range} and {\em eye}
+attributes are used to describe the decomposition of the parent's 2D viewport,
+database range and eye passes, respectively.
 
-\subsubsection{Decomposition - Attributes}
-Compounds have attributes which configure the decomposition of the destination
-channel's rendering, which is defined by the viewport, frustum and database. A
-\textsf{viewport} decomposes the destination channel and frustum in screen
-space. A \textsf{range} tells the application to render a part of its database,
-and an \textsf{eye} rendering pass can selectively render different stereo
-passes. A \textsf{pixel} parameter adjusts the frustum so that the source
-channel renders an even subset of the parent's pixels. A \textsf{subpixel}
-parameter tells the source channels to render different samples for one pixel to
-perform anti-aliasing or depth-of-field rendering. Setting one or multiple
-attributes causes the parent's view to be decomposed accordingly. Attributes are
-cumulative, that is, intermediate compound attributes affect and therefore
-decompose the rendering of all their children.
+A more formal classification of compound entities is:
 
-\subsubsection{Recomposition - Frames}
-Compounds use output and input frames to configure the recomposition of
-the resulting pixel data from the source channels. An output frame
-connects to an input frame of the same name. The selected frame buffer
-data is transported from the output channel to the input channel. The
-assembly routine of the input channel will block on the availability of
-the output frame. This composition process is extensively described in
-\sref{sCompositing}. Frame names are only valid within the compound
-tree, that is, an output frame from one compound tree cannot be used as
-an input frame of another compound tree.
+\begin{compactdesc}
+ \item [Root compound] is the top-level compound of a compound tree. It might
+ also be a destination compound, or can be empty (not referencing a channel)
+ when synchronizing multiple destination channels.
+ \item [Destination compound(s)] are the top-most compound referencing a
+ destination channel. This destination channel determines the rendering context
+ for the whole subtree, that is, compounds and their channels lower in the
+ hierarchy contribute to the rendering of the destination channel be executing
+ part of the destination render context and providing output frames which will
+ eventually be composited onto the destination channel.
+ \item [Source compounds] are the leaf nodes in a compound tree. They typically
+ use a different channel from the destination channel and configure scalability
+ by overriding render context parameters. This decomposes the rendering of the
+ destination channel. By adding output and input frames, the partial results are
+ collected and composited:
+ \begin{compactdesc}
+  \item[Decomposition] On each child compound the rendering task of that
+  child can be limited by setting the \textsf{viewport}, \textsf{range},
+  \textsf{period} an  \textsf{phase}, \textsf{pixel}, \textsf{subpixel},
+  \textsf{eye} or \textsf{zoom} as desired.
+  \item[Compositing] Source compounds define an \textsf{output\_frame} to read
+  back the result. This output frame is used as an \textsf{input\_frame} on the
+  destination compound receiving the pixels. The frames are connected with each
+  other by their name, which has to be unique within the root compound tree. For
+  parallel compositing, the algorithm is described by defining multiple input
+  and output frames across all source compounds.
+ \end{compactdesc}
+ \item[Intermediate compounds] may be used to simplify the task decompostion or
+ to configure parallel compositing.
+\end{compactdesc}
 
 \section{Compositing}
 
+In contrast to most other parallel rendering frameworks, Equalizer decouples the
+compositing algorithm from the task decomposition. This is a critical component
+in the architecture, allowing a flexible configuration, often in many unforeseen
+ways. The compound tree with its task decomposition, input and output frames, is
+a specialized description ``programming'' scalable rendering across parallel
+resources.
+
+Compositing if configured using output frames connected to input frames,
+compound tasks and eye passes, as well as frame parameters. In its simplest
+form, a sort-first source compound provides and output frame, which is routed to
+an input frame using the same name on the destination compound. The source
+viewport decomposes the task, and the output frame collects this partial result
+from the source channel and composites it using the correct offset onto the
+destination channel.
+
+Frame parameters allow the customization of the pixel handling. They include the
+transferred buffers (color, depth), partial channel viewport, and pixel zooming
+(upscale and downscale). An output frame may be connected to multiple input
+frames. These parameters are used in conjunction with compound tasks for
+parallel compositing, and advanced features such as monitoring and dynamic frame
+resolution introduced later.
+
+\fig{fDirectSend} shows the pixel flow of direct send composting for a three-way
+sort-last decomposition, where the destination channel also contributes to the
+rendering. In the first step, each channel exchanges two color+depth tiles with
+its neighbors, and then $z$-composites its own tile. This yields one complete
+tile on each channel, of which two color tiles are then assembled on the
+destination channel.
+
+\begin{figure}[ht]
+ \includegraphics[width=.57\textwidth]{images/directSend}
+ \includegraphics[width=.42\textwidth]{images/directSendCompound}
+ {\caption{\label{fDirectSend}Direct Send Compositing}}
+\end{figure}
+
+The corresponding compound tree is shown schematically on the right of
+\fig{fDirectSend}. Each of the three channels has a child compound to execute
+the rendering and read back to incomplete tiles for sort-last compositing. These
+three leaf compounds represent the first step in the left-hand diagram. One
+level up, each channel receives two tiles and assembles them onto its partially
+rendered result, creating a complete tile. For the two source-only channels, a
+final color-only output image is connected to the destination channel. The
+arrows illustrate the pixel flow for one of the tiles.
+
+For most rendering applications even a relatively complex setup such as this
+example requires very little programmer involvement. The abstractions provided
+by the resource description, render context and compounds enable Equalizer to
+reconfigure the application almost transparently. For polygonal rendering, it
+suffices that the application honors the \textsf{range} parameter of the render
+context to decompose its rendering. All other tasks, in particular the parallel
+compositing and pixel transfers, are fully handled by Equalizer. Applications
+which require ordered compositing, for example volume rendering, overwrite the
+assemble callback to reorder the input frames correctly.
+
+The abstraction through frames is flexible, but still allows many architectural
+optimizations:
+\begin{compactdesc}
+\item[Unordered Compositing:] Unless overwritten by the application, Equalizer
+will composite all input frames in the order they become available, not in the
+order they are configured. In the example from \fig{fDirectSend}, the
+destination channel will assemble its four input frames one by one as the output
+frame is received. Due to the asynchronous execution and resulting pipelining of
+operations, this availability changes each frame depending on the runtime of
+other tasks.
+\item[Asynchronous Compression, GPU and Network Transfers:] Compressing,
+transmitting and receiving frames between nodes is handled by threads
+independent from the render thread. GPU transfers are handled by asynchronous
+PBO transfers. Pipelining all these operations with the actual rendering
+significantly minimizes the compositing overhead.
+\item[On-GPU Transfers:] Occasionally, the source and destination channel are on
+the same GPU. Using textures as pixel buffers allows minimal overhead for the
+output to input frame transfer.
+\end{compactdesc}
+
 \section{Load Balancing}
+
+Compounds in itself only provide a static configuration of the parallel
+rendering setup. \textsf{Equalizers} are algorithms which hook into a compound
+and modify parameters of their respective subtree at runtime to dynamically
+optimize the resource usage, by each tuning one aspect of the decomposition. Due
+to their nature, they are transparent to application developers, but might have
+application-accessible parameters to tune their behavior. Resource equalization
+is the critical component for scalable parallel rendering, and therefore the
+eponym for the \textsf{Equalizer} project name.
+
+Compounds are a static snapshot of a configuration, and equalizers provide
+dynamic configuration on top. This separation of responsibilities is an
+important architectural component of our parallel rendering framework. Load
+balancing is one use case for equalizers, where the algorithm analysis runtime
+statistics to change the task decomposition each frame to equalize rendering
+times between all resources.
+
+
 
 \section{Distribution Layer}
 
@@ -788,274 +887,274 @@ an input frame of another compound tree.
 
 \if 0
 
-\chapter{Problem Statement}
+ \chapter{Problem Statement}
 
-Visualization of large amounts of data has been always been encumbered by
-sufficient system software. Compared to other domains, such as HPC simulations,
-large data visualization has received relatively little attention in both
-research and development. Consequently, there is a large amount of data which
-has not been explored sufficiently. In particular in scientific visualization,
-where data is often spatial and temporal, even simple visualizations can extract
-new information and provide a valuable tool to domain scientists for discovery.
+ Visualization of large amounts of data has been always been encumbered by
+ sufficient system software. Compared to other domains, such as HPC simulations,
+ large data visualization has received relatively little attention in both
+ research and development. Consequently, there is a large amount of data which
+ has not been explored sufficiently. In particular in scientific visualization,
+ where data is often spatial and temporal, even simple visualizations can extract
+ new information and provide a valuable tool to domain scientists for discovery.
 
-The central theme of the proposed research is therefore: {\bf How can we improve
-the capabilities of existing visualization algorithms for rendering large
-amounts of data?} This generic problem can be researched more concretely along
-the following research questions:
-\begin{compactenum}
-\item How can we improve the rendering performance of visualization applications to enable users to explore more data?
-    \begin{compactenum}
-    \item What new algorithms will decrease the time needed to composite rendering results, in particular for sort-last rendering?
-    \item How can we improve load-balancing for sort-first rendering, in particular for large display systems?
-    \end{compactenum}
-\item How can we reduce end-to-end system latency for better user experience?
-    \begin{compactenum}
-    \item In a generic parallel rendering framework, how can we schedule the different rendering stages to minimize the latency for the user?
-    \item How can we architect the parallel rendering framework to minimize synchronization between threads?
-    \end{compactenum}
-\item How can we maximize the impact of this research on large data scientists?
-\end{compactenum}
+ The central theme of the proposed research is therefore: {\bf How can we improve
+ the capabilities of existing visualization algorithms for rendering large
+ amounts of data?} This generic problem can be researched more concretely along
+ the following research questions:
+ \begin{compactenum}
+  \item How can we improve the rendering performance of visualization applications to enable users to explore more data?
+  \begin{compactenum}
+   \item What new algorithms will decrease the time needed to composite rendering results, in particular for sort-last rendering?
+   \item How can we improve load-balancing for sort-first rendering, in particular for large display systems?
+  \end{compactenum}
+  \item How can we reduce end-to-end system latency for better user experience?
+  \begin{compactenum}
+   \item In a generic parallel rendering framework, how can we schedule the different rendering stages to minimize the latency for the user?
+   \item How can we architect the parallel rendering framework to minimize synchronization between threads?
+  \end{compactenum}
+  \item How can we maximize the impact of this research on large data scientists?
+ \end{compactenum}
 
-The obvious solution to the problem is to utilize more compute resources to
-parallelize and scale the rendering algorithm. The goal can either be to
-increase strong scaling (render a given data set faster) or weak scaling (render
-a larger data set at roughly the same speed). To efficiently use more resources,
-we need to research increasing the parallelism of existing algorithms, and to
-reduce the bottleneck in the image compositing stage.
+ The obvious solution to the problem is to utilize more compute resources to
+ parallelize and scale the rendering algorithm. The goal can either be to
+ increase strong scaling (render a given data set faster) or weak scaling (render
+ a larger data set at roughly the same speed). To efficiently use more resources,
+ we need to research increasing the parallelism of existing algorithms, and to
+ reduce the bottleneck in the image compositing stage.
 
-An important collateral problem is the overall latency of the rendering system,
-that is, the time between a user input and its resulting output frame. While
-this is lower-bounded by the framerate of the rendering, oftentimes algorithmic
-or implementation choices increase the total system latency. Often this is a
-side effect of improving the rendering performance, but it also decreases the
-usability of the application for interactive usage. One typical example is
-pipelining of operations in the rendering pipeline.
+ An important collateral problem is the overall latency of the rendering system,
+ that is, the time between a user input and its resulting output frame. While
+ this is lower-bounded by the framerate of the rendering, oftentimes algorithmic
+ or implementation choices increase the total system latency. Often this is a
+ side effect of improving the rendering performance, but it also decreases the
+ usability of the application for interactive usage. One typical example is
+ pipelining of operations in the rendering pipeline.
 
-Visualizing large amounts of data often goes hand in hand with the usage of
-high-resolution displays. Since large amounts of data tends to have a lot of
-detail, high-resolution desktop screens (4K or 8K resolution), as well as
-high-resolution display walls, help tremenduously in recognising and
-understanding details of the data. The high resolution however aggravetes all
-the aforementioned problems: The increased pixel count reduces rendering
-performance, requires better compositing algorithms, and increases the latency
-due to longer transfer times during compositing and display. Since pixel count
-increases quadratically with display size, this problem will become more
-important as display resolution increases.
+ Visualizing large amounts of data often goes hand in hand with the usage of
+ high-resolution displays. Since large amounts of data tends to have a lot of
+ detail, high-resolution desktop screens (4K or 8K resolution), as well as
+ high-resolution display walls, help tremenduously in recognising and
+ understanding details of the data. The high resolution however aggravetes all
+ the aforementioned problems: The increased pixel count reduces rendering
+ performance, requires better compositing algorithms, and increases the latency
+ due to longer transfer times during compositing and display. Since pixel count
+ increases quadratically with display size, this problem will become more
+ important as display resolution increases.
 
-\chapter{Proposed Solution} % 2-6
+ \chapter{Proposed Solution} % 2-6
 
-Parallel rendering has received a lot of attention in the last couple of
-decades, yet libraries and frameworks to develop parallel rendering applications
-are scarcely available. Consequently, there are only a few applications which
-can utilize parallelism for rendering, let alone do so efficiently at scale.
-This research proposes to address these shortcomings by developing {\bf reusable
-software components} to make parallel rendering programs easier to develop, by
-generalizing existing research into reusable software implementations.
+ Parallel rendering has received a lot of attention in the last couple of
+ decades, yet libraries and frameworks to develop parallel rendering applications
+ are scarcely available. Consequently, there are only a few applications which
+ can utilize parallelism for rendering, let alone do so efficiently at scale.
+ This research proposes to address these shortcomings by developing {\bf reusable
+   software components} to make parallel rendering programs easier to develop, by
+ generalizing existing research into reusable software implementations.
 
-Based on these foundations, we propose to research new algorithms to improve
-rendering performance. In particular we see potential in improving the
-scalability through better {\bf load balancing}, {\bf image compositing}
-algorithms, and {\bf holistic optimization} of the whole rendering pipeline
-under control of our framework. Orthogonally to this algorithmic research, we
-propose to research {\bf data processing and data access} strategies for
-parallel rendering applications. This is particularly important, yet
-underdeveloped, in the context of the visual analysis for HPC simulation
-results.
+ Based on these foundations, we propose to research new algorithms to improve
+ rendering performance. In particular we see potential in improving the
+ scalability through better {\bf load balancing}, {\bf image compositing}
+ algorithms, and {\bf holistic optimization} of the whole rendering pipeline
+ under control of our framework. Orthogonally to this algorithmic research, we
+ propose to research {\bf data processing and data access} strategies for
+ parallel rendering applications. This is particularly important, yet
+ underdeveloped, in the context of the visual analysis for HPC simulation
+ results.
 
-Previous parallel rendering approaches typically failed in one of the following
-system requirements:
-%
-\begin{compactenum}
-\item generic application support, instead of domain-specific solution
-\item scalable abstraction of the graphics layer
-\item exploit existing code infrastructure, such as proprietary scene graphs, molecular data structures, level-of-detail and geometry databases
-\end{compactenum}
+ Previous parallel rendering approaches typically failed in one of the following
+ system requirements:
+ %
+ \begin{compactenum}
+  \item generic application support, instead of domain-specific solution
+  \item scalable abstraction of the graphics layer
+  \item exploit existing code infrastructure, such as proprietary scene graphs, molecular data structures, level-of-detail and geometry databases
+ \end{compactenum}
 
-To date, generic and scalable parallel rendering frameworks that can be adopted
-to a wide range of scientific visualization domains are not yet readily
-available. Furthermore, flexible configurability to arbitrary cluster and
-multi-display configurations has also not been addressed in the past, but is of
-immense practical importance to scientists depending on high-performance
-interactive visualization as a scientific tool. We propose a novel flexible
-framework for parallel rendering that supports scalable performance,
-configuration flexibility, is minimally invasive with respect to adapting
-existing visualization applications, and is applicable to virtually any
-scientific visualization application domain.
+ To date, generic and scalable parallel rendering frameworks that can be adopted
+ to a wide range of scientific visualization domains are not yet readily
+ available. Furthermore, flexible configurability to arbitrary cluster and
+ multi-display configurations has also not been addressed in the past, but is of
+ immense practical importance to scientists depending on high-performance
+ interactive visualization as a scientific tool. We propose a novel flexible
+ framework for parallel rendering that supports scalable performance,
+ configuration flexibility, is minimally invasive with respect to adapting
+ existing visualization applications, and is applicable to virtually any
+ scientific visualization application domain.
 
-To that end, this work aims to significantly advance the system design and
-implementation of flexible, distributed and cluster-parallel rendering
-frameworks as well as algorithms and system design for large data processing in
-the context of interactive visualization. The core of this proposal is the
-Equalizer project, a foundation for scalable, multi-GPU visualization software
-in all application domains. The main contributions of such a parallel rendering
-system are:
-%
-\begin{compactenum}
-\item novel concept for flexible runtime configuration of graphics system resources
-\item easy specification of parallel task decomposition and image compositing algorithms
-\item automatic decomposition and distributed execution of rendering tasks according to the configuration
-\item support for polygonal and volume rendering for opaque and transparent geometries
-\item fully decentralized software architecture providing network swap barrier synchronization and data distribution functionality
-\item support for low-latency distributed frame synchronization and image compositing
-\item minimally invasive programming model
-\end{compactenum}
+ To that end, this work aims to significantly advance the system design and
+ implementation of flexible, distributed and cluster-parallel rendering
+ frameworks as well as algorithms and system design for large data processing in
+ the context of interactive visualization. The core of this proposal is the
+ Equalizer project, a foundation for scalable, multi-GPU visualization software
+ in all application domains. The main contributions of such a parallel rendering
+ system are:
+ %
+ \begin{compactenum}
+  \item novel concept for flexible runtime configuration of graphics system resources
+  \item easy specification of parallel task decomposition and image compositing algorithms
+  \item automatic decomposition and distributed execution of rendering tasks according to the configuration
+  \item support for polygonal and volume rendering for opaque and transparent geometries
+  \item fully decentralized software architecture providing network swap barrier synchronization and data distribution functionality
+  \item support for low-latency distributed frame synchronization and image compositing
+  \item minimally invasive programming model
+ \end{compactenum}
 
-The broader impact of this work revolves around the development and improvement
-of a generic, flexible and scalable parallel rendering infrastructure applicable
-to a large number of application domains. The expected improvements of the
-proposed activities in distributed parallel parallel rendering will be
-integrated into open source software libraries and as such will be available to
-the general public and especially to developers of high-performance
-visualization and interactive rendering applications. This approach will
-maximize the impact of this research on large data scientists (research question
-4).
+ The broader impact of this work revolves around the development and improvement
+ of a generic, flexible and scalable parallel rendering infrastructure applicable
+ to a large number of application domains. The expected improvements of the
+ proposed activities in distributed parallel parallel rendering will be
+ integrated into open source software libraries and as such will be available to
+ the general public and especially to developers of high-performance
+ visualization and interactive rendering applications. This approach will
+ maximize the impact of this research on large data scientists (research question
+ 4).
 
-A strong focus during the development is to architect the framework for
-scalability to address research questions 1 and 2. Based on my previous work and
-the study of existing implementations, scalability in parallel rendering today
-is mostly limited by excessive synchronization between execution threads,
-imbalance in the task decomposition, and compositing performance. Equalizer only
-has the following necessary synchronization points:
-%
-\begin{compactenum}
-\item Swap synchronization between output channels to the same display system
-\item Finalization of rendering frames given a configurable latency for all render threads
-\item Availability of image data for compositing between the source and destination threads
-\end{compactenum}
-%
-This architecture has proven to provide good scalability by inherently allowing
-the pipelining of data synchronization, rendering and compositing tasks
-(research question 1), while simultaneously minimizing the time to display
-results by letting render threads execute as early as possible (research
-question 2). Furthermore, this will provide better scalability for the more
-specific research questions 1(a) and 1(b).
+ A strong focus during the development is to architect the framework for
+ scalability to address research questions 1 and 2. Based on my previous work and
+ the study of existing implementations, scalability in parallel rendering today
+ is mostly limited by excessive synchronization between execution threads,
+ imbalance in the task decomposition, and compositing performance. Equalizer only
+ has the following necessary synchronization points:
+ %
+ \begin{compactenum}
+  \item Swap synchronization between output channels to the same display system
+  \item Finalization of rendering frames given a configurable latency for all render threads
+  \item Availability of image data for compositing between the source and destination threads
+ \end{compactenum}
+ %
+ This architecture has proven to provide good scalability by inherently allowing
+ the pipelining of data synchronization, rendering and compositing tasks
+ (research question 1), while simultaneously minimizing the time to display
+ results by letting render threads execute as early as possible (research
+ question 2). Furthermore, this will provide better scalability for the more
+ specific research questions 1(a) and 1(b).
 
-The following publications are planned or already published to address the corresponding research question:
-\begin{compactenum}
-    \item
-    \begin{compactenum}
-        \item In \cite{EP:07, MEP:10, EBAHMP:12} we presented different algorithms to optimize the compositing step for sort-last rendering and optimisations for modern multi-GPU NUMA nodes.
-        \item In \cite{EEP:11, SPEP:16} we presented novel load-balancing algorithms for sort-first rendering.
-    \end{compactenum}
-    \item Our first system paper \cite{EMP:09} introduces the architecture of a parallel rendering framework with minimal synchronization and optimized task scheduling, including an in-depth experimental analysis. \cite{EBAHMP:12} introduced further scheduling optimizations.
-    \item Our foundation systems paper \cite{EMP:09} and applications work \cite{HBBES:13} provide evidence on the sustainability of our approach. We submitted a follow-on systems paper to ACM Transactions on Visualization and Graphics \cite{ESP:18}. This paper also contains background on applications and integrations of Equalizer in other software packages.
-\end{compactenum}
+ The following publications are planned or already published to address the corresponding research question:
+ \begin{compactenum}
+  \item
+  \begin{compactenum}
+   \item In \cite{EP:07, MEP:10, EBAHMP:12} we presented different algorithms to optimize the compositing step for sort-last rendering and optimisations for modern multi-GPU NUMA nodes.
+   \item In \cite{EEP:11, SPEP:16} we presented novel load-balancing algorithms for sort-first rendering.
+  \end{compactenum}
+  \item Our first system paper \cite{EMP:09} introduces the architecture of a parallel rendering framework with minimal synchronization and optimized task scheduling, including an in-depth experimental analysis. \cite{EBAHMP:12} introduced further scheduling optimizations.
+  \item Our foundation systems paper \cite{EMP:09} and applications work \cite{HBBES:13} provide evidence on the sustainability of our approach. We submitted a follow-on systems paper to ACM Transactions on Visualization and Graphics \cite{ESP:18}. This paper also contains background on applications and integrations of Equalizer in other software packages.
+ \end{compactenum}
 
-Based on this generic parallel rendering framework, we propose to research
-concrete algorithms and applications. We propose an engineering-driven approach
-which will analyse existing algorithms, improve them incrementally by focusing
-on one aspect of a large data application, and then compare our new research
-against existing work. Since our research questions are largely performance
-related, this comparison will be in most cases performed through benchmarking.
-In particular, we see potential in:
-%
-\begin{compactdesc}
-\item [Load-balancing for rendering resources:] While basic algorithms have been
-proposed for reactive and proactive load-balancing of simple rendering tasks,
-research is still needed for improving the resource utilisation for large-scale
-parallelization, as well as for rendering in more complex multi-display
-environments such as tiled display walls and immersive installations. The
-results of this research is directly measurable through application benchmarking
-of representative data sets. We consider this research goal achieved if we
-proposed and implemented new algorithms which can consistently deliver better
-performance over existing work, addressing research question 1(b).
-\item [Compositing of the rendering results:] Previous research has focused on
-the scalability for very large scale HPC runs in the order of hundreds of
-thousands of cores, which are oftentimes not interactive by nature. We propose
-to improve image compositing performance for interactive applications on
-medium-sized (up to hundreds of GPUs) visualization clusters through analysing
-and optimising image compositing algorithms. As with load-balancing, this area
-of research can be considered achieved if benchmarks show consistent improvement
-over state of the art algorithms, addressing research question 1(a).
-\item [Applications for parallel rendering:] While a few parallel rendering
-applications exist, developing them is still a significant undertaking. We
-propose to extend existing rendering applications and algorithms for scientific
-visualization for parallel rendering. Not only will this create new results and
-capabilites for large data visualization, it also improves the general
-applicability and ease of use of our generic parallel rendering components. We
-consider this goal achieved if our framework is used in multiple visualization
-applications. A side effect of this goal is addressing research question 4.
-\item [Data management for visualization of HPC data:] We see a substantial
-potential in combining big data management strategies from the cloud computing
-domain to processing and visualising HPC simulation data. Paradoxically, storage
-systems for HPC are often optimised for large, sequential access, which is
-predominant during write, but not typical for analysis and visualization which
-use more, but smaller scattered read accesses. This is an exploratory research
-goal, where we hope to demonstrate the usefulness of cloud computing storage
-systems for HPC storage and linked large data visualizations. We consider this
-goal reached if we evaluated multiple approaches to data storage against their
-traditional parallel filesystem implementation, and can make recommendations for
-future research. The evaluation will again be benchmark-based, by measuring the
-time to solution for typical data access patterns.
-\end{compactdesc}
+ Based on this generic parallel rendering framework, we propose to research
+ concrete algorithms and applications. We propose an engineering-driven approach
+ which will analyse existing algorithms, improve them incrementally by focusing
+ on one aspect of a large data application, and then compare our new research
+ against existing work. Since our research questions are largely performance
+ related, this comparison will be in most cases performed through benchmarking.
+ In particular, we see potential in:
+ %
+ \begin{compactdesc}
+  \item [Load-balancing for rendering resources:] While basic algorithms have been
+  proposed for reactive and proactive load-balancing of simple rendering tasks,
+  research is still needed for improving the resource utilisation for large-scale
+  parallelization, as well as for rendering in more complex multi-display
+  environments such as tiled display walls and immersive installations. The
+  results of this research is directly measurable through application benchmarking
+  of representative data sets. We consider this research goal achieved if we
+  proposed and implemented new algorithms which can consistently deliver better
+  performance over existing work, addressing research question 1(b).
+  \item [Compositing of the rendering results:] Previous research has focused on
+  the scalability for very large scale HPC runs in the order of hundreds of
+  thousands of cores, which are oftentimes not interactive by nature. We propose
+  to improve image compositing performance for interactive applications on
+  medium-sized (up to hundreds of GPUs) visualization clusters through analysing
+  and optimising image compositing algorithms. As with load-balancing, this area
+  of research can be considered achieved if benchmarks show consistent improvement
+  over state of the art algorithms, addressing research question 1(a).
+  \item [Applications for parallel rendering:] While a few parallel rendering
+  applications exist, developing them is still a significant undertaking. We
+  propose to extend existing rendering applications and algorithms for scientific
+  visualization for parallel rendering. Not only will this create new results and
+  capabilites for large data visualization, it also improves the general
+  applicability and ease of use of our generic parallel rendering components. We
+  consider this goal achieved if our framework is used in multiple visualization
+  applications. A side effect of this goal is addressing research question 4.
+  \item [Data management for visualization of HPC data:] We see a substantial
+  potential in combining big data management strategies from the cloud computing
+  domain to processing and visualising HPC simulation data. Paradoxically, storage
+  systems for HPC are often optimised for large, sequential access, which is
+  predominant during write, but not typical for analysis and visualization which
+  use more, but smaller scattered read accesses. This is an exploratory research
+  goal, where we hope to demonstrate the usefulness of cloud computing storage
+  systems for HPC storage and linked large data visualizations. We consider this
+  goal reached if we evaluated multiple approaches to data storage against their
+  traditional parallel filesystem implementation, and can make recommendations for
+  future research. The evaluation will again be benchmark-based, by measuring the
+  time to solution for typical data access patterns.
+ \end{compactdesc}
 
-This research will have a sustainable impact on how we use large-scale
-visualization systems as their commoditization makes them affordable to many
-more organizations. This is due to the research approach of using an
-incremental, engineering-driven and data-validated strategy, open source
-implementation of most software artefacts, the development of high-quality
-foundations, as well as the collaboration with both research and industry
-partners during the research.
+ This research will have a sustainable impact on how we use large-scale
+ visualization systems as their commoditization makes them affordable to many
+ more organizations. This is due to the research approach of using an
+ incremental, engineering-driven and data-validated strategy, open source
+ implementation of most software artefacts, the development of high-quality
+ foundations, as well as the collaboration with both research and industry
+ partners during the research.
 
-The proposed research will have a direct, significant impact on accelerating the
-simulation-based research performed in the Blue Brain Project. On one hand, the
-data distribution capabilities will allow faster development of scalable,
-neuroscience-specific visualization applications for the BBP. This is of
-particular importance as we foresee the need to visualize different modalities
-at different brain scales as the simulations grow in complexity and data size in
-the future.
+ The proposed research will have a direct, significant impact on accelerating the
+ simulation-based research performed in the Blue Brain Project. On one hand, the
+ data distribution capabilities will allow faster development of scalable,
+ neuroscience-specific visualization applications for the BBP. This is of
+ particular importance as we foresee the need to visualize different modalities
+ at different brain scales as the simulations grow in complexity and data size in
+ the future.
 
-\chapter{Research Plan\label{sPlan}}
+ \chapter{Research Plan\label{sPlan}}
 
-The proposed research is heavily based on prior software engineering work in the
-domain, and will leverage a strong parallel rendering system to enable novel
-research within a non-trivial software stack. Consequently, a large portion of
-the plan is the development of the parallel rendering framework, where the
-timeline has been reverse-engineered from the work performed leading to this
-proposal.
+ The proposed research is heavily based on prior software engineering work in the
+ domain, and will leverage a strong parallel rendering system to enable novel
+ research within a non-trivial software stack. Consequently, a large portion of
+ the plan is the development of the parallel rendering framework, where the
+ timeline has been reverse-engineered from the work performed leading to this
+ proposal.
 
-The integration of these frameworks into applications is not part of this
-research schedule, since it is a non-research activity. These developments have
-been and will be funded by other means. This work is nevertheless an important
-part of this project, as it validates the general applicability of this research
-in academia and industry.
-\clearpage
-The research is structured as follows:
-%
-\begin{compactdesc}
-\item[M1-3: System Architecture:] Outline the general system architecture,
-configuration structure and entities, class hierarchy and API. Research
-third-party technologies to be used in the implementation.
-\item[M4-10: Distributed Execution Layer:] First iteration of the implementation
-of the distributed execution layer allowing dynamic configurations and
-communication patterns.
-\item[M10-16: Multi-Display Parallel Rendering Framework:] Based on the
-distributed execution layer, develop a first parallel rendering framework
-capable of driving multi-display environments for monoscopic rendering,
-including the automatic launch of the rendering processes from the main
-application.
-\item[M17: Stereoscopic Rendering:] Implement stereoscopic rendering using
-configurable interocular distance.
-\item[M18: Immersive Rendering:] Head-tracking API and configuration entities,
-calculation of corresponding off-axis frusta.
-\item[M19: Scalable Rendering Architecture:] Design configuration and class
-hierarchy for scalable rendering modes, including task decomposition and
-parallel compositing algorithms.
-\item[M20-24: Basic Scalable Rendering:] Implement basic decompositions (2D, DB,
-Eye) and corresponding parallel compositing algorithms (2D, direct-send,
-binary-swap).
-\item[M25-30: Advanced Scalable Rendering:] Implement advanced compounds (Pixel,
-DPlex) and compositing optimizations (realtime image compression, region of
-interest, etc.).
-\item[M30-32: First Publication:] Benchmarking and systems paper.
-\item[M33-36: Load Balancing:] Implement load-balancing for multi-display
-setups. improved automatic load-balancing using region of interest.
-\item[M37-38: Second Publication:] Benchmarking and load-balancing paper.
-\item[M39-42: Compositing Research:] Research compositing optimizations.
-\item[M43-44: Third Publication:] Benchmarking and compositing paper.
-\item[PhD Proposal]
-\item[M45-46: Fourth Publication:] Benchmarking and updated systems paper.
-\item[M47-52: Dissertation:] Write and defend dissertation.
-\end{compactdesc}
+ The integration of these frameworks into applications is not part of this
+ research schedule, since it is a non-research activity. These developments have
+ been and will be funded by other means. This work is nevertheless an important
+ part of this project, as it validates the general applicability of this research
+ in academia and industry.
+ \clearpage
+ The research is structured as follows:
+ %
+ \begin{compactdesc}
+  \item[M1-3: System Architecture:] Outline the general system architecture,
+  configuration structure and entities, class hierarchy and API. Research
+  third-party technologies to be used in the implementation.
+  \item[M4-10: Distributed Execution Layer:] First iteration of the implementation
+  of the distributed execution layer allowing dynamic configurations and
+  communication patterns.
+  \item[M10-16: Multi-Display Parallel Rendering Framework:] Based on the
+  distributed execution layer, develop a first parallel rendering framework
+  capable of driving multi-display environments for monoscopic rendering,
+  including the automatic launch of the rendering processes from the main
+  application.
+  \item[M17: Stereoscopic Rendering:] Implement stereoscopic rendering using
+  configurable interocular distance.
+  \item[M18: Immersive Rendering:] Head-tracking API and configuration entities,
+  calculation of corresponding off-axis frusta.
+  \item[M19: Scalable Rendering Architecture:] Design configuration and class
+  hierarchy for scalable rendering modes, including task decomposition and
+  parallel compositing algorithms.
+  \item[M20-24: Basic Scalable Rendering:] Implement basic decompositions (2D, DB,
+  Eye) and corresponding parallel compositing algorithms (2D, direct-send,
+  binary-swap).
+  \item[M25-30: Advanced Scalable Rendering:] Implement advanced compounds (Pixel,
+  DPlex) and compositing optimizations (realtime image compression, region of
+  interest, etc.).
+  \item[M30-32: First Publication:] Benchmarking and systems paper.
+  \item[M33-36: Load Balancing:] Implement load-balancing for multi-display
+  setups. improved automatic load-balancing using region of interest.
+  \item[M37-38: Second Publication:] Benchmarking and load-balancing paper.
+  \item[M39-42: Compositing Research:] Research compositing optimizations.
+  \item[M43-44: Third Publication:] Benchmarking and compositing paper.
+  \item[PhD Proposal]
+  \item[M45-46: Fourth Publication:] Benchmarking and updated systems paper.
+  \item[M47-52: Dissertation:] Write and defend dissertation.
+ \end{compactdesc}
 
 \fi
