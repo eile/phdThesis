@@ -863,9 +863,57 @@ balancing is one use case for equalizers, where the algorithm analysis runtime
 statistics to change the task decomposition each frame to equalize rendering
 times between all resources.
 
+\section{Distributed Execution Layer}
 
+An important part of writing a parallel rendering application is the
+communication layer between the individual processes. \textsf{Equalizer} relies
+on the \textsf{Collage} network library for its internal operation.
+\textsf{Collage} provides networking functionality of different abstraction
+layers, gradually providing higher level functionality for the programmer. The
+main primitives in \textsf{Collage} and their relations are shown in
+\fig{fNetObject} and provide:
 
-\section{Distribution Layer}
+\begin{compactdesc}
+\item[Connection] A stream-oriented point-to-point communication
+  line. Connections
+  transmit raw data reliably between two endpoints for unicast connections, and
+  between a set of endpoints for multicast connections. For unicast,
+  process-local pipes, TCP and Infiniband RDMA are implemented. For multicast,
+  a reliable, UDP-based protocol is discussed in \sref{sec:RSP}.
+\item[DataI/OStream] Abstracts the marshalling of C++ classes from or to
+  a set of connections by implementing output stream operators. Uses buffering
+  to aggregate data for network transmission. Performs byte swapping during
+  input if the endianness differs between the remote and local node.
+\item[Node and LocalNode] The abstraction of a process in the cluster. Nodes
+  communicate with each other using connections. A LocalNode listens on various
+  connections and processes requests for a given process. Received data is
+  wrapped in ICommands and dispatched to command handler methods. A Node is a
+  proxy for a remote LocalNode.
+\item[Object] Provides object-oriented, versioned data distribution of C++
+  objects between nodes. Objects are registered or mapped on a Local\-Node.
+\end{compactdesc}
+
+\begin{figure}[ht]\center
+  \includegraphics[width=\columnwidth]{images/netObject}
+  \caption{\label{fNetObject}Communication between two \textsf{Collage} objects}
+\end{figure}
+
+\textsf{Collage} implements a few generic distributed objects which are used by
+\textsf{Equalizer} and other applications. A barrier is a distributed barrier
+primitive used for software swap synchronization. Its implementation follows a
+simple master-slave approach, which has shown to by sufficient for this use
+case. Queues are distributed, single producer, multiple consumer FIFO queues. To
+hide network latencies, consumers prefetch items into a local queue. Queues are
+used for tile and chunk compounds (\sref{sec:tile}).
+
+An object map facilitates distribution and synchronization of a collection of
+distributed objects. Master versions can be registered on a central node, e.g.,
+the application node in \textsf{Equalizer}. Consumers, e.g., \textsf{Equalizer}
+render clients, can selectively map the objects they are interested in.
+Committing the object map will commit all registered objects and sync their new
+version to the slaves. Syncing the map on the slaves will synchronize all mapped
+instances to the new version recorded in the object map. This effective design
+allows data distribution with minimal application logic.
 
 
 \chapter{Parallel Rendering Modes}
@@ -879,6 +927,183 @@ times between all resources.
 
 \chapter{Data Distribution and Synchronization}
 
+
+%------------------------------------------------------------------------------
+\section{Distributed, Versioned Objects}
+
+Adapting an existing application for parallel rendering requires the
+synchronization of application data across the processes in the parallel
+rendering setup. Existing parallel rendering frameworks address this often
+poorly, at best they rely on MPI to distribute data. Real-world, interactive
+visualization applications are typically written in C++ and have complex data
+models and class hierarchies to represent their application state. As outlined
+in \cite{EMP:09}, the parallel rendering code in an \textsf{Equalizer}
+application only needs access to the data needed for rendering, as all
+application logic is centralized in the application main thread. We have
+encountered two main approaches to address this distribution: Using a shared
+filesystem for static data, or using data distribution for static and dynamic
+data. Distributed objects are not required to build \textsf{Equalizer}
+applications. While most developers choose to use this abstraction for
+convenience, we have seen applications using other means for data distribution,
+e.g., MPI.
+
+Distributed objects in \textsf{Collage} provide powerful, object-oriented data
+distribution for C++ objects. They facilitate the implementation of data
+distribution in a cluster environment. Distributed objects are created by
+subclassing from \textsf{co::Serializable} or \textsf{co::Object}. The
+application programmer implements serialization and deserialization. Distributed
+objects can be static (immutable) or dynamic. Objects have a universally unique
+identifier (UUID) as cluster-wide address. A master-slave model is used to
+establish mapping and data synchronization across processes. Typically, the
+application main loop registers a master instance and communicates the UUID to
+the render clients, which map their instance to the given identifier. The
+following object types are available:
+
+\begin{compactdesc}
+\item[Static] The object is not versioned nor buffered. The instance data is
+  serialized whenever a new slave instance is mapped. No additional data is
+  stored.
+\item[Instance] The object is versioned and buffered. The instance and delta
+  data are identical; that is, only instance data is serialized. Previous
+  instance data is saved to be able to map old versions.
+\item[Delta] The object is versioned and buffered. The delta data is typically
+  smaller than the instance data. The delta data is transmitted to slave
+  instances for synchronization. Previous instance and delta data is saved to be
+  able to map and sync old versions.
+\item[Unbuffered] The object is versioned and unbuffered. No data is stored, and
+  no previous versions can be mapped.
+\end{compactdesc}
+
+Serialization is facilitated using output or input streams, which abstract the
+data transmission and are used like a \textsf{std::stream}. The data streams
+implement efficient buffering and compression, and automatically select the best
+connection for data transport. Custom data type serializers can be implemented
+by providing the appropriate serialization functions. No pointers should be
+directly transmitted through the data streams. For pointers, the corresponding
+object is typically a distributed object as well, and its UUID and version are
+transmitted in place of a pointer.
+
+Dynamic objects are versioned, and on \textsf{commit} the delta data from the
+previous version is sent, if available using multicast, to all mapped slave
+instances. The data is queued on the remote node, and is applied when the
+application calls \textsf{sync} to synchronize the object to a new version. The
+\textsf{sync} method might block if a version has not yet been committed or is
+still in transmission. All versioned objects have the following characteristics:
+
+\begin{compactitem}
+\item The master instance of the object generates new versions for all
+  slaves. These versions are continuous. It is possible to commit on slave
+  instances, but special care has to be taken to handle possible
+  conflicts.
+\item Slave instance versions can only be advanced; that is, \textsf{sync(
+  version)} with a version smaller than the current version will fail.
+\item Newly mapped slave instances are mapped to the oldest available
+  version by default, or to the version specified when calling
+  \textsf{mapObject}.
+\end{compactitem}
+
+\label{sec:Serializable}The \textsf{Collage} Serializable implements one
+convenient usage pattern for object data distribution. The
+\textsf{co::Serializable} data distribution is based on the concept of dirty
+bits, allowing inheritance with data distribution. Dirty bits form a 64-bit mask
+which marks the parts of the object to be distributed during the next commit.
+For serialization, the application developer implements \textsf{serialize} or
+\textsf{deserialize}, which are called with the bit mask specifying which data
+has to be transmitted or received. During a commit or sync, the current dirty
+bits are given, whereas during object mapping all dirty bits are passed to the
+serialization methods.
+
+Blocking commits allow to limit the number of outstanding, queued versions on
+the slave nodes. A token-based protocol will block the commit on the master
+instance if too many unsynchronized versions exist.
+
+\subsubsection{Optimizations}
+
+The API presented in the previous section provides sufficient abstraction to
+implement various optimizations for faster mapping and synchronization of data:
+compression, chunking, caching, preloading and multicast. The results section
+evaluates some of these optimizations.
+
+The most obvious one is compression. Recently, many new compression algorithms
+have been developed which exploit modern CPU architectures and deliver
+compression rates well above one gigabyte per second. \textsf{Collage} uses the
+Pression library~\cite{pression}, which provides a unified interface for a
+number of compression libraries, such as FastLZ~\cite{jesperfast},
+Snappy~\cite{snappy} and ZStandard~\cite{zstd}. It also contains a custom,
+virtually zero-cost RLE compressor. Pression parallelizes the compression and
+decompression using data decomposition. This compression is generic, and
+implemented transparently for the application. Applications can also use
+data-specific compression.
+
+The data streaming interface implements chunking, which pipelines the
+serialization code with the network transmission. After a configurable number of
+bytes has been serialized to the internal buffer, it is transmitted and
+serialization continues. This is used both for the initial mapping data and for
+commit data.
+
+Caching retains instance data of objects in a client-side cache, and reuses this
+data to accelerate mapping of objects. The instance cache is either filled by
+``snooping'' on multicast transmissions or by an explicit preloading when the
+master objects are registered. The preloading sends instance data of recently
+registered master objects to all connected nodes, while the corresponding node
+is idle. These nodes simply enter the received data to their cache. Preloading
+uses multicast when available.
+
+Due to the master-slave model of data distribution, multicast is used to
+optimize the transmission time of data. If the contributing nodes share a
+multicast session, and more than one slave instance is mapped, \textsf{Collage}
+automatically uses the multicast connection to send the new version information.
+
+%------------------------------------------------------------------------------
+\subsection{Reliable Stream Protocol}\label{sec:RSP}
+
+RSP is an implementation of a reliable multicast protocol over unreliable UDP
+transport. RSP behaves similarly to TCP; it provides full reliability and
+ordering of the data, and slow receivers will eventually throttle the sender
+through a sliding window algorithm. This behavior is needed to guarantee
+delivery of data in all situations. Pragmatic generic multicast (PGM~\cite{pgm})
+provides full ordering, but slow clients will disconnect from the multicast
+session instead of throttling the send rate.
+
+RSP combines various established algorithms~\cite{adamson2004negative,
+  Gau:2002:MFC:506824.506832} for multicast in an open source implementation
+capable of delivering wire speed transmission rates on high-speed LAN
+interfaces. In the following we will outline the RSP protocol and implementation
+as well as motivate the design decisions. Any defaults given below are for
+Linux or OS X, the Windows UDP stack requires different default values which can
+be found in the implementation.
+
+Our RSP implementation uses a separate protocol thread for each RSP group, which
+handles all reads and writes on the multicast socket. It implements the protocol
+handling and communicates with the application threads through thread-safe
+queues. The queues contain datagrams of the application byte stream, prefixed by
+a header of at most eight bytes. Each connection has a configurable number of
+buffers (1024 by default) of a configurable MTU (1470 bytes default), which are
+either free or in transmission.
+
+Handling a smooth packet flow is critical for performance. RSP uses active flow
+control to advance the byte stream buffered by the implementation. Each incoming
+connection actively acknowledges every $n$ (17 by default) packets fully
+received. The incoming connections offset this acknowledgment by their
+connection identifier to avoid bursts of acks. Any missed datagram is actively
+nack'ed as soon as detected. Write connections continuously retransmit packets
+for nack datagrams, and advance their window upon reception of all acks from the
+group. The writer will explicitly request an ack or nack when it runs out of
+empty buffers or finishes its write queue. Nack datagrams may contain multiple
+ranges of missed datagrams, which is motivated by the observation that UDP
+implementations often drop multiple contiguous packets.
+
+Congestion control is necessary to optimize bandwidth usage. While TCP uses the
+well-known additive increase, multiplicative decrease algorithm, we have chosen
+a more aggressive congestion control algorithm of additive increase and additive
+decrease. This has proven experimentally to be more optimal: UDP is often
+rate-limited by switches; that is, packets are discarded regularly and not
+exceptionally. Only slowly backing of the current send rate helps to stay close
+to this limit. Furthermore, our RSP traffic is limited to the local subnet,
+making cooperation between multiple data stream less of an issue. Send rate
+limiting uses a bucket algorithm, where over time the bucket fills with send
+credits, from which sends are substracted. If there are no available credits,
+the sender sleeps until sufficient credits are available.
 
 \chapter{Conclusion}
 
