@@ -918,6 +918,177 @@ allows data distribution with minimal application logic.
 
 \chapter{Parallel Rendering Modes}
 
+Parallel Rendering Research has put a lot of focus on two of the three
+architectures classified by \cite{Molnar92}: sort-first and sort-last rendering.
+Sort-middle rendering is still largely confined to hardware implemenations due
+to its high communication cost of distributing fragments to processing units.
+
+In this chapter, we present a wide set of new parallelization schemes which
+break out of this standard classification. For each mode, we present its
+algorithm and implementation, potential impact on the application code, as well
+as its strengths and weaknesses. Due to the flexible architecture of our
+parallel rendering system, these modes are largely usable with any Equalizer
+application and can be combined with all other modes.
+
+Most of these rendering modes are similar to sort-first rendering, in that they
+decompose the final view spatially or temporally. Stereo compounds decompose per
+eye pass, DPlex compounds temporally, pixel and subpixel compounds use equal
+spatial decompositions. Finally, tile and chunk compounds implement implicit
+load-balancing for sort-first and sort-last rendering using queuing of work
+items.
+
+\section{Stereo}
+
+Stereo, or eye decomposition, can be seen as a variant of sort-first rendering.
+Two GPUs get assigned each one of the eye passes during stereo rendering. For
+passive stereo, there is no compositing step needed, whereas for active and
+anaglyphic stereo one frame buffer has to be copied to the destination channel.
+Due to the strong similarity between both eye passes, this mode provides close
+to perfect load balance. \fig{fStereo} shows an anaglyphic stereo compound.
+
+\begin{wrapfigure}{r}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{images/Stereo}
+ {\caption{\label{fStereo}Anaglyphic Stereo Compound}}
+\end{wrapfigure}
+
+While many implementations provide passive or active stereo rendering and
+sometimes decomposition using two GPUs, our implementation within the flexible
+compound structure allows to fully exploit stereo decomposition, since
+stereoscopic and monoscopic rendering is no special case in the architecture,
+but rather a configuration of the rendering resources. Among other things, this
+allows extending a two-way stereo decomposition using further resources and any
+other scalable rendering mode. One can also easily set up an application with
+mixed rendering, e.g., to render a monoscopic view on a control workstation
+while rendering stereoscopic on a larger immersive installation.
+
+
+\section{Time-Multiplex}
+
+\begin{wrapfigure}{r}{.382\textwidth}
+ \includegraphics[width=.382\textwidth]{images/DPlex}
+ {\caption{\label{fDPlex}Time-Multiplex Compound}}
+\end{wrapfigure}
+Time-multiplexing (\fig{fDPlex}), also called AFR or DPlex, was first
+implemented in \cite{BRE:05} for shared memory machines. It is however a better
+fit for distributed memory systems, since the separate memory space makes
+concurrent rendering of different frames much easier to implement. While it
+increases the framerate linearly, it does not decrease the latency between user
+input and the corresponding output. Consequently, this decomposition mode is
+mostly useful for non-interactive movie generation. It is transparent to
+\textsf{Equalizer} applications, but does require the configuration latency to
+be equal or greater than the number of source channels.
+
+\section{Pixel}
+
+\begin{wrapfigure}{r}{.382\textwidth}
+ \includegraphics[width=.382\textwidth]{images/Pixel}
+ {\caption{\label{fPixel}Pixel Compound}}
+\end{wrapfigure}
+Pixel compounds (\fig{fPixel}) decompose the destination channel by
+interleaving rows or columns in image space. They are a variant of sort-first
+rendering which works well for fill-limited applications which are not
+geometry bound, for example direct volume rendering. Source channels cannot
+reduce geometry load through view frustum culling, since each source channel has
+almost the same frustum. However, the fragment load on all source channels is
+reduced linearly and well load-balanced due to the interleaved distribution of
+pixels. This functionality is transparent to \textsf{Equalizer} applications,
+and the default compositing uses the stencil buffer to blit pixels onto the
+destination channel.
+
+\section{Subpixel}
+
+\begin{wrapfigure}{r}{.382\textwidth}
+ \includegraphics[width=.382\textwidth]{images/Subpixel}
+ {\caption{\label{fSubpixel}Subpixel Compound}}
+\end{wrapfigure}
+
+Subpixel compounds (\fig{fSubpixel}) are similar to pixel compounds, but they
+decompose the work for a single pixel, for example with Monte-Carlo ray tracing,
+FSAA or depth of field rendering. The default compositing algorithm uses
+accumulation and averaging of all computed fragments for a pixel. Like Pixel
+compoungds, this mode is naturally load-balanced on the fragment processing
+stage but cannot scale geometry processing. This feature is not fully
+transparent to the application, since it decomposes rendering algorithms which
+render multiple samples per pixel. Applications needs to adapt their rendering
+code, for example to jitter or tilt the frustum based on the subpixel executed
+in the current rendering pass.
+
+\clearpage
+\section{Tiles and Chunks}
+
+\begin{wrapfigure}{r}{.382\textwidth}
+ \includegraphics[width=.382\textwidth]{images/tile}
+ {\caption{\label{fTiles}Tile Compound}}
+\end{wrapfigure}
+
+Tile (\fig{fTiles}) and chunk decompositions are a variant of sort-first and
+sort-last rendering, respectively. They decompose the scene into a predefined
+set of fixed-size image tiles or database ranges. These tasks, or work packages,
+are queued and processed by all source channels by polling a server-central
+queue. Prefetching ensures that the task communication overlaps with rendering.
+As shown in~\cite{SPEP:16}, these modes can provide better performance due to
+being implicitly load-balanced, as long as there is an insignificant overhead
+for the render task setup. This mode is transparent to \textsf{Equalizer}
+applications. We have used a tile compound to scale an interactive ray tracing
+application to hundreds of rendering nodes.
+
+\section{Mixed Mode Compounds}
+
+A major contribution of our parallel rendering system is the flexible system
+architecture. While many applications and frameworks implement a subset of the
+features mentioned above, all of them hardcode the algorithms to a certain
+degree, predeterming the number of possible configurations. In Equalizer, both
+the decomposition and the recomposition of the rendering task are derived
+through a number of orthogonal parameters, which are easily combined to
+configure common scalable renderig modes. For advanced usage, they can also be
+configured for many other use cases. We have seen many interesting and
+unforeseen configurations, for example:
+
+\begin{compactitem}
+
+\item Reusing the \textsf{period} parameter used to configure number of frames
+in a DPlex compound, an underpowered control workstation for a large tiled
+display wall was configured to render only every other frame using a period of
+two. Due to the standard latency of one frame, this meant that the display wall
+rendering became the bottleneck, but could render at a substantially higher
+framerate than before.
+
+\item Rerouting one of the eye passes of a head-mounted display to a large
+display using an output and input frame, external users could observe the
+interaction and view of the person using the HMD. The same can be achieved by
+mirroring the video signal by other means, but this was not available on the
+given setup.
+
+\item Using combined stereo and sort-first decomposition on the central tiles of
+a tiled display wall. Oftentimes the central tiles of a tiled display wall
+receive a higher rendering load then the outer tiles. In this particular
+configuration, each tile was driven by a dual-GPU node using active stereo
+compounds, and the middle segments where given an additional machine setting up
+a two-way sort-first decomposition under each node of the two-way stereo
+compound.
+
+\end{compactitem}
+
+\section{Stereo-Selective Compounds}
+
+Each compound sub-tree can restrict the eye passes it renders from the default
+left, right, cyclop passes. Depending on the active stereo mode (stereo or
+mono), restricted compound trees may be skipped or activated. This is used on
+one hand to configure stereo compounds, but may also be used to configure
+different decompositions depending on the stereo mode. \fig{fStereoSwitch} shows
+a simple example: A dual-GPU setup is used with eye-parallel rendering during
+stereo rendering, and a standard sort-first parallel rendering during monoscopic
+rendering. Note that the rendering mode is runtime-configurable, that is, the
+application can switch the view from monoscopic to stereoscopic rendering at any
+time, activating and deactivating the configured compounds and attached
+resources. It is also possible to configure a different set of resources (nodes
+and GPUs) per stereo mode, triggering the launch and exit of render client
+processes during the stereo switch.
+
+\begin{figure}[ht]\center
+ \includegraphics[width=\columnwidth]{images/stereoSwitch}
+ {\caption{\label{fStereoSwitch}Stereo-Selective Compound}}
+\end{figure}
 
 \chapter{Compositing Optimisations}
 
