@@ -965,16 +965,22 @@ while rendering stereoscopic on a larger immersive installation.
 \section{Time-Multiplex}
 
 \begin{wrapfigure}{r}{.382\textwidth}
- \includegraphics[width=.382\textwidth]{images/DPlex}
- {\caption{\label{fDPlex}Time-Multiplex Compound}}
-\end{wrapfigure}
+\includegraphics[width=.382\textwidth]{images/DPlex}
+{\caption{\label{fDPlex}Time-Multiplex Compound}} \end{wrapfigure}
 Time-multiplexing (\fig{fDPlex}), also called AFR or DPlex, was first
 implemented in \cite{BRE:05} for shared memory machines. It is however a better
 fit for distributed memory systems, since the separate memory space makes
 concurrent rendering of different frames much easier to implement. While it
-increases the framerate linearly, it does not decrease the latency between user
-input and the corresponding output. Consequently, this decomposition mode is
-mostly useful for non-interactive movie generation. It is transparent to
+increases the framerate almost linearly, it does not decrease the latency
+between user input and the corresponding output. Consequently, this
+decomposition mode is mostly useful for non-interactive movie generation.
+
+DPlex is very well load-balanced, since most applications observe a strong
+frame-to-frame coherence with respect to the rendering load. This decomposition
+mode has the pecularity that small imbalances tend to accumulate such that the
+concurrent frames all finish simultaneously. To provide a smooth framerate, if
+so desired, a \textsf{framerate equalizer} can be installed on the destination
+compound. \sref{sFramerateEq} covers this functionality. It is transparent to
 \textsf{Equalizer} applications, but does require the configuration latency to
 be equal or greater than the number of source channels.
 
@@ -1013,7 +1019,6 @@ render multiple samples per pixel. Applications needs to adapt their rendering
 code, for example to jitter or tilt the frustum based on the subpixel executed
 in the current rendering pass.
 
-\clearpage
 \section{Tiles and Chunks}
 
 \begin{wrapfigure}{r}{.382\textwidth}
@@ -1091,6 +1096,63 @@ processes during the stereo switch.
 \end{figure}
 
 \chapter{Compositing Optimisations}
+
+\section{Region of Interest}
+
+During scalable rendering using any decomposition most of the time pixel data
+has to be copied from the source channel framebuffer to either the
+destinationation channel framebuffer, or to an intermediate channel during
+parallel compositing. The distributed image compositing cost is directly
+dependent on how much data has to be sent over the network, which in turn is
+related to how much screen space is actively covered. Depending on the data set
+and viewpoint, only a subset of the framebuffer shows pixeles generated from the
+data. In particular for sort-last rendering, every node potentially renders into
+the entire frame buffer. With an increasing number of nodes the set of affected
+pixels typically decreases, leaving blank areas that can be omitted for
+transmission and compositing.
+
+Equalizer provides an API for the programmer to provide the region of interest,
+i.e., the screen-space 2D bounding box enclosing the data rendered by a single
+resource. We have extended the core parallel rendering framework to use an
+application-provided ROI to optimize the \textsf{load\_equalizer}(\sref{sLoadEq}
+as well as the image compositing. The compositing code uses the ROI to minimize
+image readback size, and consequently network transmission. The ROI is an output
+frame parameter, and is transmitted to all input frames together with the pixel
+data. On the input frame, the compositing code respects this parameter to place
+the pixel data on the right position. The application can easily compute a good
+ROI estimation by computing the screen-space projection of the model's bounding
+sphere or bounding box.
+
+In \cite{MEP:10}, this application-provided ROI was extended with an algorithm
+which automatically computes the ROI by analyzing the framebuffer to maximize
+the amount of blank framebuffer omitted during compositing.
+
+In \cite{EBAHMP:12} we show that using ROI can quadruple the rendering
+performance for the costly compositing step in sort-last rendering. This is
+especially the case when the application rendering code selects a spatially
+compact subset during sort-lsat decomposition. For sort-first rendering, ROI
+allows the algorithm to scale to a higher number of resources before
+synchronization and compositing overhead eats up any potential speedup due to
+the task decomposition.
+
+\section{Asynchronous Compositing}
+
+Asynchronous compositing is pipelining the rendering with compositing operations, by
+executing the image readback, network transfer and image assembly from threads
+running in parallel to the rendering threads. In \cite{EBAHMP:12}, we provide
+the details of the implementation and experimental data showing an improvement
+of the rendering performance of over 25\% for large node counts.
+
+\section{Download and Compression Plugins}
+
+Compression for the compositing step is critical for performance. This not only
+applies to the well-researched network transfer step, but also for the transfer
+between GPU and CPU. \textsf{Equalizer} supports a variety of compression
+algorithms, from very fast run-length encoding (RLE) and YUV subsampling on the GPU to JPEG
+compression. These algorithms are implemented as runtime-loaded plugins,
+allowing easy extension and customization to application-specific compression.
+In \cite{MEP:10}, we show this to be a critical step for interactive performance
+at scale.
 
 
 \chapter{Load Balancing Algorithms}
