@@ -1137,11 +1137,53 @@ the task decomposition.
 
 \section{Asynchronous Compositing}
 
-Asynchronous compositing is pipelining the rendering with compositing operations, by
-executing the image readback, network transfer and image assembly from threads
-running in parallel to the rendering threads. In \cite{EBAHMP:12}, we provide
-the details of the implementation and experimental data showing an improvement
-of the rendering performance of over 25\% for large node counts.
+Compositing in a distributed parallel rendering system is decomposed into
+readback of the produced pixel data (1), optional compression of this pixel data
+(2), transmission to the destination node consisting of send (3) and receive
+(4), optional decompression (5) and composition consisting of upload (6) and
+assembly (7) in the destination framebuffer.
+
+In a naive implementation, operations 1 to 3 are executed serially on one
+processor, and 4 to 7 on another. In our parallel rendering system, operations 2
+to 5 are executed asynchronously to the rendering and operations 1, 6 and 7.
+Furthermore, we use a latency of one frame which means that two rendering frames
+are always in execution, allowing the pipelining of these operations, as shown
+in \fig{fSyncRB}. We have implemented asynchronous readback using OpenGL pixel
+buffer objects, further increasing the parallelism by pipelining the rendering
+and pixel transfers, as shown in \fig{fAsyncRB}.
+
+\begin{figure}[ht]\center
+  \subfigure[]{
+    \includegraphics[scale=0.6]{images/syncReadback}
+    \label{fSyncRB}
+  }\\
+  \subfigure[]{
+    \includegraphics[scale=0.6]{images/asyncReadback}
+    \label{fAsyncRB}
+  }
+  \caption{Synchronous readback and upload (a) readback as well as
+    asynchronous readback and upload (b) for two overlapping frames.}
+\end{figure}
+
+In the asynchronous case, the rendering thread performs only
+application-specific rendering operations, since the overhead of starting an
+asynchronous readback becomes negligible. Equalizer uses a plugin system to
+implement GPU-CPU transfer modules which are runtime loadable. We extended this
+plugin API to allow the creation of asynchronous transfer plugins, and
+implemented such a plugin using OpenGL pixel buffer objects (PBO). At runtime,
+one rendering thread and one download thread is used for each GPU, as well as
+one transmit thread per process. The download threads are created lazy, when
+needed.
+
+Asynchronous compositing is, together with ROI, one of the most influential
+optimizations for scalable rendering. We have shown in \cite{EBAHMP:12} that
+when being mostly rendering bound, pipelining the readback with the rendering
+yields a performance again of about 10\%. At higher framerates, when the
+rendering time of a single resource decreases, asynchronous readback has even a
+higher impact, of over 25\% for large node counts.
+
+
+
 
 \section{Download and Compression Plugins}
 
