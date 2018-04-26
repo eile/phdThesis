@@ -1272,6 +1272,178 @@ compression for interactive parallel rendering.
 
 \chapter{Load Balancing}
 
+{\em Equalizers} are an addition to compound trees. They modify parameters of
+their respective compound subtree at runtime to dynamically optimize the
+resource usage, by each tuning one aspect of the decomposition or recomposition.
+Due to their nature, they are transparent to application developers, but might
+have application-accessible parameters to tune their behavior. Resource
+equalization is the critical component for scalable parallel rendering, and
+therefore the eponym for the \textsf{Equalizer} project name.
+
+In this section we present various {\em equalizer} implementations: two
+variants for load balancing for sort-first and sort-last rendering, work
+packages for sort-last and sort-first rendering, cross-segment load-balancing
+for multi-display installations, constant frame rate rendering using dynamic
+frame resolution, and monitoring of large-scale visualization systems.
+
+\section{Sort-First and Sort-Last Load Balancing}
+
+Sort-first (\fig{floadeq}) and sort-last load balancing are the most obvious
+optimizations for these parallel rendering modes. Our load equalizers are fully
+transparent for application developers; that is, they use a reactive approach
+based on past rendering times. This requires a reasonable frame-to-frame
+coherence for good results, which is the case with most rendering applications.
+Equalizer implements two different algorithms, a \textsf{load\_equalizer} and a
+\textsf{tree\_equalizer}, which have shown to each have their advantage
+depending on the type of rendering load.
+
+\begin{wrapfigure}{r}{.382\textwidth}
+  \includegraphics[width=.382\textwidth]{images/loadeq}
+  \caption{\label{floadeq}Load-Balancing}
+\end{wrapfigure}
+
+The \textsf{load\_equalizer} builds a model of the rendering load in screen
+space or data space. It stores a 2D (for sort-first) or 1D (for sort-last) grid
+of the load, mapping the load of each channel. The load is stored in normalized
+2D/1D coordinates using $\frac{time}{area}$ as the load, the contributing source
+channels are organized in a binary kD-tree, and then the algorithm balances the
+two branches of each level by equalizing the integral over the cost area map on
+each side. This algorithm is similar to \cite{ACCC:04}, which uses a dual-level
+tree, first decomposed into horizontal tiles and then each horizontal tile into
+vertical sub-tiles. Our binary split tree provides more compact tiles.
+
+\begin{wrapfigure}{l}{.382\textwidth}
+  \includegraphics[width=.382\textwidth]{images/roi}
+  \caption{Load distribution areas with (top) and without (bottom) using the ROI
+    of the right-hand sort-first parallel rendering.}
+  \label{fROI}
+\end{wrapfigure}
+
+The load-balancer has to operate on the assumption that the load is uniform
+within one load grid tile. This leads naturally to estimation errors, since in
+reality the load is not uniformly distributed, e.g., it tends to increase
+towards the center of the screen in \fig{fROI}. We reuse the region of interest
+(ROI) of each source channel to automatically refine the load grid as shown
+\fig{fROI}. In cases where the rendered data projects only to a limited screen
+area, this ROI refinement provides the load-balancer with a more accurate load
+indicator leading to a better load prediction.
+
+The \textsf{tree\_equalizer} uses the same binary kD-tree structure as the
+\textsf{load\_equalizer} for recursive load balancing. It computes the
+accumulated render time of all children for each nodee of the tree, and uses
+this to allocate an equal render time to each subtree. It makes no assumption of
+the load distribution in 2D or 1D space, it only tries to correct the imbalance
+in render time.
+
+Both equalizers implement tuneable parameters allowing application developers to
+optimize the load balancing based on the characteristics of their rendering
+algorithm:
+
+\begin{compactdesc}
+\item[Split Mode] configures the tile layout: horizontal or vertical stripes,
+and 2D, a binary tree split alternating the split axis on each level, resulting
+in compact 2D tiles.
+\item[Damping] reduces frame-to-frame oscillations. The equal load distribution
+within the region of interest assumed by the load balancers is in reality not
+equal, causing the load balancing to overshoot. Damping is a normalized scalar
+defining how much of the computed delta from the previous position is applied to
+the new split.
+\item[Resistance] eliminates small deltas in the load balancing step. This might
+help the application to cache visibility computations since the frustum does not
+change each frame.
+\item[Boundaries] define the modulo factor in pixels onto which a load split may
+fall. Some rendering algorithms produce artefacts related to the OpenGL raster
+position, e.g., screen door transparency, which can be eliminated by aligning
+the boundary to the pixel repetition. Furthermore, some rendering algorithms are
+sensitive to cache alignments, which can again be exploited by chosing the
+corresponding boundary.
+\end{compactdesc}
+
+In \cite{ESP:18} we have shown that the simpler \textsf{tree\_equalizer}
+outperforms the load-grid-driven \textsf{load\_equalizer} in most cases, except
+for sort-first volume rendering where the load in the region of interest is
+relatively uniform. This counterintuitive result seems to again confirm that
+simple algorithms often outperform theoretically better, but more complex
+implementations. The decoupling of the load balancing algorithm from the rest of
+the system enabled by the compound architecture opens the possibility for more
+research in this area.
+
+
+\section{Dynamic Work Packages}
+
+The package equalizers implement client-affinity models for tile and chunk
+compounds (\sref{sec:tile}). A \textsf{tile\_equalizer} or
+\textsf{chunk\_equalizer} creates the packages and changes the assignment of them
+to individual nodes, based on an affinity model specified in the equalizer.
+In~\cite{SPEP:16}, we explore this approach in detail.
+
+
+ On the other
+hand, the \textsf{tile\_equalizer} often outperforms \textsf{tree\_equalizer}.
+This suggests that the underlying implicit load balancing can be superior to the
+explicit methods of \textsf{load\_equalizer} and \textsf{tree\_equalizer} in
+high load situations, where the additional overhead of tile generation and
+distribution is more justified. The relatively simple nature of our benchmark
+application's rendering algorithms is also favoring work packages, since they
+have a near-zero static overhead per rendering pass.
+
+
+\subsubsection{Cross-Segment Load Balancing}
+
+\begin{wrapfigure}{r}{.382\textwidth}
+  \includegraphics[width=.382\textwidth]{images/vieweq}
+  \caption{\label{fvieweq}Cross-Segment Load-Balancing}
+\end{wrapfigure}
+Cross-segment load balancing (\fig{fvieweq}) addresses the optimal resource
+allocation of $n$ rendering resources to $m$ output channels (with $n\geq m$). A
+view equalizer works in conjunction with load equalizers balancing the
+individual output channels. It monitors the usage of shared source channels
+across outputs and activates them to balance the rendering time of all outputs.
+In \cite{EEP:11}, we provide a detailed description and evaluation of our
+algorithm.
+
+\subsubsection{Dynamic Frame Resolution}
+
+\begin{wrapfigure}{r}{.382\textwidth}
+  \includegraphics[width=.382\textwidth]{images/dfr}
+  \caption{\label{fdfr}Dynamic Frame Resolution}
+\end{wrapfigure}
+The DFR equalizer (\fig{fdfr}) provides a functionality similar to dynamic
+video resizing \cite{MBDM:97}, that is, it maintains a constant framerate by
+adapting the rendering resolution of a fill-limited application. In
+\textsf{Equalizer}, this works by rendering into a source channel (typically on
+a FBO) separate to the destination channel, and then scaling the rendering
+during the transfer (typically through an on-GPU texture) to the destination
+channel. The DFR equalizer monitors the rendering performance and accordingly
+adapts the resolution of the source channel and zoom factor for the source to
+destination transfer. If the performance and source channel resolutions allow,
+this will not only subsample, but also supersample the destination channel to
+reduce aliasing artefacts.
+
+\subsubsection{Frame Rate Equalizer}\label{sec:framerateEq}
+
+The framerate equalizer smoothens the output frame rate of a destination channel
+by instructing the corresponding window to delay its buffer swap to a minimum
+time between swaps. This is regularly used for time-multiplexed decompositions,
+where source channels tend to drift and finish their rendering unevenly
+distributed over time. This equalizer is however fully independent of DPlex
+compounds, and may be used to smoothen irregular application rendering
+algorithms.
+
+\subsubsection{Monitoring}
+
+\begin{wrapfigure}{r}{.382\textwidth}
+  \includegraphics[width=.382\textwidth]{images/monitoreq}
+  \caption{\label{fmonitor}Monitoring}
+\end{wrapfigure}
+The monitor equalizer (\fig{fmonitor}, \fig{fLayout}) allows to reuse the
+rendering on another channel, typically for monitoring a larger setup on a
+control workstation. Output frames on the display channels are connected to
+input frames on a single monitoring channel. The monitor equalizer changes the
+scaling factor and offset between the output and input, so that the monitor
+channel has the same, but typically downscaled view, as the originating
+segments.
+
 
 \chapter{Data Distribution and Synchronization}
 
