@@ -1161,7 +1161,7 @@ and pixel transfers, as shown in \fig{fAsyncRB}.
     \includegraphics[scale=0.6]{images/asyncReadback}
     \label{fAsyncRB}
   }
-  \caption{Synchronous readback and upload (a) readback as well as
+  \caption{Synchronous readback and upload (a) as well as
     asynchronous readback and upload (b) for two overlapping frames.}
 \end{figure}
 
@@ -1183,13 +1183,75 @@ rendering time of a single resource decreases, asynchronous readback has even a
 higher impact, of over 25\% for large node counts.
 
 
+\section{Compression for Image Compositing}
+
+The image compositing stages in distributed rendering for gathering and
+combining partial rendering results into a final display frame are fundamentally
+limited by the GPU-to-node and node-to-node image throughput. Therefore,
+efficient image coding, compression and transmission must be considered to
+minimize that bottleneck.
+
+Basic run-length encoding (RLE) has been used as a fast standard to improve
+network throughput for interactive image transmission. However, it only gives
+sufficient results in specific rendering contexts and fails to provide a general
+improvement as shown in \cite{MEP:10}. RLE only works to compact large empty or
+uniform color areas but is often useless for non-trivial full frame color
+results. We developed two enhancements to improve this, per-component RLE
+compression and {\em swizzling} of color bits.
+
+Equalizer also implements more complex compression algorithms such as
+\textsf{libjpeg-turbo}, which are however of little practical use on modern
+interconnects. Their compression overhead is often to high to be amortized by
+the decreased network transmission time on modern 10 GBit/s or faster
+interconnects.
+
+\cite{MEP:10} implemented GPU-based YUV subsampling before the image download,
+which has negligible overhead, reasonable compression artefacts, and a good
+compression ratio.
+
+\subsection{Enhanced RLE Compression}
+
+Our first RLE method used a fast 64-bit version that compares two pixels
+at the same time (8-bit per channel RGBA format). While this method is very fast
+it shows poor compression results in most practical settings since it can only compress adjacent pixels of the same color.
+
+\begin{wrapfigure}{r}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/RLE}
+  \caption{Comparison of 64-bit and per-component RLE.}
+  \label{fRLE}
+\end{wrapfigure}
+
+The first improvement is to treat each color components separately by producing
+up to four RLE-compressed output streams as illustrated in Figure~\ref{fRLE}.
+While the basic RLE compression yields an up to 10\% compression rate in
+practical scenarios, per-component RLE improves this to up to 25\% since
+individual color components change less often than full pixels (based on results
+from \cite{MEP:10}).
 
 
-\section{Download and Compression Plugins}
+A second improvement is {\em bit-swizzling} of color values before per-component
+compression. The swizzling step is a data pre-conditioner, which reorders and
+interleaves the per-component bits as shown in Figure~\ref{fSwizzle}. Now the
+per-component RLE compression separately compresses the higher, medium and lower
+order bits in separate streams, thus achieving stronger compression for smoothly
+changing color values since high-order bits tend to change less often.
 
-Compression for the compositing step is critical for performance. This not only
-applies to the well-researched network transfer step, but also for the transfer
-between GPU and CPU. \textsf{Equalizer} supports a variety of compression
+\begin{figure}[h!t]
+  \centering
+  \includegraphics[scale=0.18]{images/swizzle}
+  \caption{Swizzling scheme for reordering bits of 32-bit RGBA values.}
+  \label{fSwizzle}
+\end{figure}
+
+Swizzling improves the compression rate to up to 40\% for the same scenario as
+above. Since the preconditioning step only requires bit shift and mask
+operations, it is entirely executed in registers and has no measurable
+impact on performance, since the whole algorithm is memory bound on modern CPUs.
+
+
+
+\subsection{GPU Transfer and CPU Compression Plugins}
+ \textsf{Equalizer} supports a variety of compression
 algorithms, from very fast run-length encoding (RLE) and YUV subsampling on the GPU to JPEG
 compression. These algorithms are implemented as runtime-loaded plugins,
 allowing easy extension and customization to application-specific compression.
