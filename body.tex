@@ -1238,7 +1238,7 @@ changing color values since high-order bits tend to change less often.
 
 \begin{figure}[h!t]
   \centering
-  \includegraphics[scale=0.18]{images/swizzle}
+  \includegraphics[width=\textwidth]{images/swizzle}
   \caption{Swizzling scheme for reordering bits of 32-bit RGBA values.}
   \label{fSwizzle}
 \end{figure}
@@ -1249,17 +1249,28 @@ operations, it is entirely executed in registers and has no measurable
 impact on performance, since the whole algorithm is memory bound on modern CPUs.
 
 
-
 \subsection{GPU Transfer and CPU Compression Plugins}
- \textsf{Equalizer} supports a variety of compression
-algorithms, from very fast run-length encoding (RLE) and YUV subsampling on the GPU to JPEG
-compression. These algorithms are implemented as runtime-loaded plugins,
-allowing easy extension and customization to application-specific compression.
-In \cite{MEP:10}, we show this to be a critical step for interactive performance
-at scale.
+
+Equalizer uses runtime-loadable plugins to transfer pixel data from and to the
+GPU, as well as plugins to compress and decompress pixel data for network
+compression. This separation allows different code paths for multi-GPU machines
+where no CPU-based compression is used, and for distributed execution where data
+is compressed before transfer.
+
+The GPU transfer might also apply compression. This is typically done on the GPU
+to reduce the amount of memory transferred. One example is YUV subsampling,
+where a shader implements chroma subsampling. Furthermore, a GPU transfer plugin
+might implement asynchronous downloads, where the download is started from the
+render thread an finished in a separate download thread as shown in
+\fig{fAsyncRB}. CPU compression plugins are always executed from asynchronous
+threads concurrently to the rendering threads.
+
+The implementation of these steps in plugins provides a clean separation and
+interface for users and researchers interested in experimenting with image
+compression for interactive parallel rendering.
 
 
-\chapter{Load Balancing Algorithms}
+\chapter{Load Balancing}
 
 
 \chapter{Data Distribution and Synchronization}
