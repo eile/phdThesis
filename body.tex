@@ -1533,27 +1533,43 @@ GPUs used for driving the display segments themselves, as well as any additional
 source GPUs for rendering. It combines multi-display parallel rendering with
 scalable rendering for optimal performance. \cite{EEP:11} provides experimental
 results for a six-monitor tiled display wall with up to 12 source GPUs, where
-CSLB can more then double the framerate over a static resource assignment.
+CSLB can more then double the framerate over a static resource assignment. A
+strength of this algorithm lies in its flexibility. On one hand, it can perform
+dynamic resource assignment not only for a planar display system as some
+approaches which built a single virtual framebuffer for all output displays, but
+also for curved displays and CAVE installations. On the other hand, it allows a
+flexible assignment of potential contributing GPUs to each output channel
+individually, that is, each output may have a different, potentially
+overlapping, set of GPUs which may contribute to its rendering. \cite{EEP:11}
+shows in its experiments that there is a sweet spot of the number of resources
+per channel.
 
-\subsubsection{Dynamic Frame Resolution}
+\section{Dynamic Frame Resolution}
+
+The DFR equalizer (\fig{fdfr}) provides a functionality similar to dynamic
+video resizing \cite{MBDM:97}, that is, it maintains a constant framerate by
+adapting the rendering resolution of a fill-limited application. While the aforementioned uses a now-obsolete hardware implementation, our implementation is purely in software.
 
 \begin{wrapfigure}{r}{.382\textwidth}
   \includegraphics[width=.382\textwidth]{images/dfr}
   \caption{\label{fdfr}Dynamic Frame Resolution}
 \end{wrapfigure}
-The DFR equalizer (\fig{fdfr}) provides a functionality similar to dynamic
-video resizing \cite{MBDM:97}, that is, it maintains a constant framerate by
-adapting the rendering resolution of a fill-limited application. In
-\textsf{Equalizer}, this works by rendering into a source channel (typically on
-a FBO) separate to the destination channel, and then scaling the rendering
-during the transfer (typically through an on-GPU texture) to the destination
-channel. The DFR equalizer monitors the rendering performance and accordingly
-adapts the resolution of the source channel and zoom factor for the source to
-destination transfer. If the performance and source channel resolutions allow,
-this will not only subsample, but also supersample the destination channel to
-reduce aliasing artefacts.
+Dynamic frame resolution (DFR) works by rendering into a source channel
+(typically on a FBO) separate to the destination channel, and then scaling the
+rendering during the transfer (typically through an on-GPU texture) to the
+destination channel. The DFR equalizer monitors the rendering performance and
+accordingly adapts the resolution of the source channel and the zoom factor for
+the source to destination transfer. If the performance and source channel
+resolutions allow, this will not only subsample, but also supersample the
+destination channel to reduce aliasing artefacts.
 
-\subsubsection{Frame Rate Equalizer}\label{sec:framerateEq}
+As with all other features, it can be combined with other scalability features,
+e.g., sort-first rendering. It is also notable that it does not need any
+additional code in the core compound logic, it simply exploits existing
+functionality such as texture-based compositing frames and frame zoom with
+dynamic per-frame adjustments.
+
+\section{Frame Rate Equalizer}\label{sec:framerateEq}
 
 The framerate equalizer smoothens the output frame rate of a destination channel
 by instructing the corresponding window to delay its buffer swap to a minimum
@@ -1561,10 +1577,11 @@ time between swaps. This is regularly used for time-multiplexed decompositions,
 where source channels tend to drift and finish their rendering unevenly
 distributed over time. This equalizer is however fully independent of DPlex
 compounds, and may be used to smoothen irregular application rendering
-algorithms.
+algorithms. Due to the artificial sleep time before swap, it may incur a small
+performance penalty, but it greatly improves the perceived rendering quality for
+users in DPlex compounds.
 
-\subsubsection{Monitoring}
-
+\section{Monitoring}
 \begin{wrapfigure}{r}{.382\textwidth}
   \includegraphics[width=.382\textwidth]{images/monitoreq}
   \caption{\label{fmonitor}Monitoring}
@@ -1575,7 +1592,8 @@ control workstation. Output frames on the display channels are connected to
 input frames on a single monitoring channel. The monitor equalizer changes the
 scaling factor and offset between the output and input, so that the monitor
 channel has the same, but typically downscaled view, as the originating
-segments.
+segments. While this is not strictly a scalable rendering feature, it optimizes
+resource usage by not needlessly rendering the same view multiple times.
 
 
 \chapter{Data Distribution and Synchronization}
