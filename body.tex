@@ -1599,7 +1599,200 @@ resource usage by not needlessly rendering the same view multiple times.
 \chapter{Data Distribution and Synchronization}
 
 
-%------------------------------------------------------------------------------
+Most research in parallel rendering ignores the problem of managing applications
+state in a distributed rendering setup. For research core scalability algorithms
+this problem is trivially to solve, whereas in real-world applications it often
+is one of the major challenges for using a distributed rendering cluster.
+
+For this reason, we have spend a significant effort in researching, designing
+and implementing a distributed execution layer which is used by Equalizer and
+applications built on Equalizer. This {\em Collage} network library is an
+independent open source project. In the following sections we highlight core
+features and show how they are different from other distribution mechanisms,
+e.g., the MPI library.
+
+\section{Requirements}
+
+The Collage network library was conceived with the requirements of a dynamic
+parallel rendering system in mind. Some of the features implemented by Collage
+came about later, and are often layered on top of the basic primitives. The core
+requirements were:
+
+\begin{compactdesc}
+
+\item[Peer-to-peer network:] While the execution model of an Equalizer
+application follows a master-slave approach, and Equalizer internally uses a
+client-server model, the core transport layer should be agnostic to these
+higher-level abstractions. In Collage, each communicating process is equal to
+all others, and no traffic prioritization or communication pattern is enforced
+by a node type. This has proven particularly useful during the implementation of
+parallel compositing algorithms, where the compositing nodes form an ad-hoc
+peer-to-peer network.
+
+\item[Dynamic connection management:] As a consequence of the peer-to-peer
+network, all nodes in a cluster are equivalent. Due to the heterogenous nature
+of a parallel rendering application we felt the need to furthermore have no
+constraints on the management of connections between nodes. Nodes are identified
+and addressed by an universally unique identifier. The network layer lazily
+establishes a connection to any given node, by querying its known neighbors or a
+zeroconf network for connection parameters. Connections may be established
+concurrently by both sides of a node pair (e.g. during parallel compositing),
+which required the implementation of a robust handshake protocol during
+connection establishment. For larger cluster installations, a fully connected
+peer-to-peer network would be suboptimal, for example on Windows operating
+systems there is a latency penalty once more than 64 connections are needed due
+to some low-level implementation details.
+
+\item[Transport layer abstraction:] The actual network protocol is abstracted
+internally by an API requiring byte-oriented stream semantics. While this choice
+of abstraction makes it harder for RDMA-based protocols to deliver full
+performance, it has proven useful in supporting a large set of transports, from
+standard Ethernet sockets, SDP for InfiniBand, native Verbs for Infiniband, UDT
+to even a fully-featured multicast-over-UDP implementation. In particular the
+ease of integration for multicast transport is strong evidence for the
+usefulness of this abstraction.
+
+\item[Convenient to use for existing applications:] The history and code
+structure of visualization applications is often very different from distributed
+applications such as simulation codes. They have been developed for years for
+desktop systems, often are single-threaded and have data models and object
+hierarchies built for their domain-specific problems and algorithms. The network
+library needs to provide primitives which match this reality as closely as
+possible by providing a modern, object-oriented C++ API for data distribution.
+
+\end{compactdesc}
+
+
+\section{Architecture}
+
+Our Collage network library provides a peer-to-peer communication
+infrastructure, offering different abstraction layers which gradually provide
+higher level functionality to the programmer. Collage is used by Equalizer to
+communicate between the application node, the server and the render clients.
+\fig{fCollageUML} provides an overview of the major Collage classes and their
+relationship. The main classes, in ascending abstraction level, are:
+
+\begin{compactdesc}
+
+\item[Connection:] A stream-oriented point-to-point communication line. Different
+implementations of a connection exists. The connections transmit a raw byte
+stream reliably between two endpoints for unicast connections, and between a set
+of endpoints for multicast connections.
+
+\item[DataOStream:] Abstracts the output of C++ data types onto a set of
+  connections by implementing output stream operators. Uses buffering to
+  aggregate data for network transmission.
+\item[OCommand:] Extends DataOStream to implement the protocol between Collage
+  nodes by adding node and command type routing information to the stream.
+\item[DataIStream:] Decodes a buffer of received data into C++ objects and PODs
+  by implementing input stream operators. Performs endian swapping if the
+  endianness differs between the originating and local node.
+\item[ICommand:] The other side of OCommand, extending DataIStream.
+\item[Node and LocalNode:] The abstraction of a process in the cluster. Nodes
+  communicate with each other using connections. A LocalNode listens on various
+  connections and processes requests for a given process. Received data is
+  wrapped in ICommands and dispatched to command handler methods. A Node is a
+  proxy for communicating with a remote LocalNode.
+\item[Object:] Provides object-oriented, versioned data distribution of C++
+  objects between nodes within a session. Objects are registered or mapped on a
+  Local\-Node.
+\end{compactdesc}
+
+\begin{figure}[h!t]\center
+  \includegraphics[width=\textwidth]{images/collageUML}
+  {\caption{\label{fCollageUML}UML class diagram of the major Collage classes}}
+\end{figure}
+
+\subsection{Connection}
+
+A connection is the basic primitive used for communication between processes in
+Collage. It provides a stream-oriented communication between two endpoints. A
+connection is either closed, connected or listening. A closed connection cannot
+be used for communications. A connected connection can be used to read or write
+data to the communication peer. A listening connection can accept connection
+requests.
+
+A \textsf{ConnectionSet} is used to manage multiple connections. The typical use
+case is to have one or more listening connections for the local process, and a
+number of connected connections for communicating with other processes.
+The connection set is used to select one connection which requires some action.
+This can be a connection request on a listening connection, pending data on a
+connected connection or the notification of a disconnect.
+
+The connection and connection set can be used by applications to implement other
+network-related functionality, e.g., to communicate with a sound server on a
+different machine. A \textsf{LocalNode} has a connection set and uses this to
+manage connections with other nodes.
+
+
+\subsection{Command Handling}
+
+Nodes and objects communicate using commands derived from data streams. The
+basic command dispatch is implemented in the \textsf{Dispatcher} class, from
+which \textsf{Node} and \textsf{Object} are sub-classed.
+
+The dispatcher allows the registration of a commands with a dispatch queue and
+an invocation method. Each command has a type and command identifier, which is
+used to identify the receiver, registered queue and method. The dispatch pushes
+the packet to the registered queue. When the commands are dequeued by the
+processing thread the registered command method is invoked.
+
+This dispatch and invocation functionality is used within Equalizer to dispatch
+commands from the receiver thread to the appropriate node or pipe thread, and
+then to invoke the command when it is processed by these threads. This
+dispatching provides object-oriented semantics, since C++ instances can register
+themselves on the dispatcher, and get automatically invoked in the correct
+thread when an appropriate command arrives.
+
+\subsection{Nodes}
+
+The \textsf{Node} is the abstraction of one process in the peer-to-peer network.
+Each node has a universally unique identifier. This identifier is used to
+address nodes, e.g., to query connection information to connect to the node.
+Nodes use connections to communicate with each other by sending
+\textsf{OCommand}s.
+
+The \textsf{LocalNode} is the specialization of the node for the given process.
+It encapsulates the communication logic for connecting remote nodes, as well as
+object registration and mapping. Local nodes are set up in the listening state
+during initialization.
+
+A remote \textsf{Node} can either be connected explicitly by the application or
+due to a connection from a remote node. The explicit connection can be done by
+programmatically creating a node, adding the necessary
+\textsf{ConnectionDescription}s and connecting it to the local node. It may also
+be done by connecting the remote node to the local node by using its
+\textsf{NodeID}. This will cause Collage to query connection information for
+this node from the already-connected nodes and zeroconf, instantiating the node
+and connecting it. Both operations may fail.
+
+\subsubsection{\label{sZeroconf}Zeroconf Discovery}
+
+Each \textsf{LocalNode} provides a \textsf{Zeroconf} communicator, which allows
+node and resource discovery. The service "\_collage.\_tcp" is used to announce
+the presence of a listening \textsf{LocalNode} using the ZeroConf protocol to
+the network. The node identifier and all listening connection descriptions are
+announced, which is used to connect unknown nodes by using the node identifier
+alone.
+
+\subsubsection{Communication between Nodes}
+
+\fig{fNetNode} shows the communication between two nodes. Each
+\textsf{LocalNode} has a receiver thread, which uses a connection set to read
+and dispatch incoming data from the network, and a command thread used for
+higher-level functions such as object mapping. When the remote node sends a
+command, the listening node receives the command and dispatches it from the
+receiver thread. The dispatch will either invoke the bound function immediately,
+or enqueue the command into the given queue. The queue consumer, for example the
+main or command thread, will read the command of this queue and then invoke the
+bound function.
+
+\begin{figure}[h!t]\center
+  \includegraphics[width=\textwidth]{images/netNode.pdf}
+  {\caption{\label{fNetNode}Communication between two Nodes}}
+\end{figure}
+
+
 \section{Distributed, Versioned Objects}
 
 Adapting an existing application for parallel rendering requires the
@@ -1692,8 +1885,7 @@ instance if too many unsynchronized versions exist.
 
 The API presented in the previous section provides sufficient abstraction to
 implement various optimizations for faster mapping and synchronization of data:
-compression, chunking, caching, preloading and multicast. The results section
-evaluates some of these optimizations.
+compression, chunking, caching, preloading and multicast.
 
 The most obvious one is compression. Recently, many new compression algorithms
 have been developed which exploit modern CPU architectures and deliver
@@ -1702,9 +1894,9 @@ Pression library~\cite{pression}, which provides a unified interface for a
 number of compression libraries, such as FastLZ~\cite{jesperfast},
 Snappy~\cite{snappy} and ZStandard~\cite{zstd}. It also contains a custom,
 virtually zero-cost RLE compressor. Pression parallelizes the compression and
-decompression using data decomposition. This compression is generic, and
-implemented transparently for the application. Applications can also use
-data-specific compression.
+decompression using data decomposition. This compression is generic and
+lossless, implemented transparently for the application. Applications can also
+use data-specific compression.
 
 The data streaming interface implements chunking, which pipelines the
 serialization code with the network transmission. After a configurable number of
@@ -1724,6 +1916,10 @@ Due to the master-slave model of data distribution, multicast is used to
 optimize the transmission time of data. If the contributing nodes share a
 multicast session, and more than one slave instance is mapped, \textsf{Collage}
 automatically uses the multicast connection to send the new version information.
+
+In \cite{ESP:18} we provide an extensive analysis of data compression, buffering
+and multicast in practical scenarios, and show that they can provide substantial
+speedups for data distribution.
 
 %------------------------------------------------------------------------------
 \subsection{Reliable Stream Protocol}\label{sec:RSP}
