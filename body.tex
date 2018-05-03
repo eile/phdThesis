@@ -127,7 +127,7 @@ hardware solutions for sort-last parallel rendering have been developed. The
 proposed hardware architectures include Sepia \cite {MHS:99a,sepia}, Sepia~2
 \cite{LMSBHa:01,LMSBH:01}, Lightning~2 \cite{Stoll01}, Metabuffer
 \cite{Blanke00,Zhang01}, MPC Compositor \cite{Muraki01} and PixelFlow
-\cite{Molnar92, Eyles97}, of which only a few have reached the commercial
+\cite{Molnar92,Eyles97}, of which only a few have reached the commercial
 product stage (i.e. Sepia~2 and MPC Compositor). However, the inherent
 inflexibility and setup overhead have limited their distribution and application
 support. Moreover, with the recent advances in the speed of CPU-GPU interfaces,
@@ -922,7 +922,7 @@ allows data distribution with minimal application logic.
 
 Parallel Rendering Research has put a lot of focus on two of the three
 architectures classified by \cite{Molnar92}: sort-first and sort-last rendering.
-Sort-middle rendering is still largely confined to hardware implemenations due
+Sort-middle rendering is still largely confined to hardware implementations due
 to its high communication cost of distributing fragments to processing units.
 
 In this chapter, we present a wide set of new parallelization schemes which
@@ -1925,28 +1925,59 @@ speedups for data distribution.
 \subsection{Reliable Stream Protocol}\label{sec:RSP}
 
 RSP is an implementation of a reliable multicast protocol over unreliable UDP
-transport. RSP behaves similarly to TCP; it provides full reliability and
-ordering of the data, and slow receivers will eventually throttle the sender
-through a sliding window algorithm. This behavior is needed to guarantee
-delivery of data in all situations. Pragmatic generic multicast (PGM~\cite{pgm})
-provides full ordering, but slow clients will disconnect from the multicast
-session instead of throttling the send rate.
+multicast transport. RSP behaves similarly to TCP; in contrast to the underlying
+UDP transport, it is not message-oriented but implements byte stream semantics.
+RSP provides full reliability and ordering of the data, and slow receivers will
+eventually throttle the sender through a sliding window algorithm. This behavior
+is needed to guarantee delivery of data in all situations. Pragmatic generic
+multicast (PGM~\cite{pgm}) provides full ordering, but slow clients will
+disconnect from the multicast session instead of throttling the send rate. Since
+we use multicast for distributing application data to all rendering clients we
+want semantics similar to TCP, that is, waiting for a client to read data is
+preferable over loosing this client.
 
-RSP combines various established algorithms~\cite{adamson2004negative,
-  Gau:2002:MFC:506824.506832} for multicast in an open source implementation
+RSP combines various established multicast
+algorithms~\cite{adamson2004negative,Gau:2002} in an open source implementation
 capable of delivering wire speed transmission rates on high-speed LAN
 interfaces. In the following we will outline the RSP protocol and implementation
-as well as motivate the design decisions. Any defaults given below are for
-Linux or OS X, the Windows UDP stack requires different default values which can
-be found in the implementation.
+as well as motivate the design decisions. Any defaults given below are for Linux
+or OS X, the Windows UDP stack requires different default values which can be
+found in the implementation.
 
 Our RSP implementation uses a separate protocol thread for each RSP group, which
-handles all reads and writes on the multicast socket. It implements the protocol
-handling and communicates with the application threads through thread-safe
-queues. The queues contain datagrams of the application byte stream, prefixed by
-a header of at most eight bytes. Each connection has a configurable number of
-buffers (1024 by default) of a configurable MTU (1470 bytes default), which are
-either free or in transmission.
+handles all reads and writes on the multicast UDP socket. It implements the
+protocol handling and communicates with the application threads through
+thread-safe queues. The queues contain datagrams filled with the application
+byte stream, prefixed by a header of at most eight bytes. Each connection has a
+configurable number of buffers (1024 by default) of a configurable MTU (1470
+bytes default), which are either free or in transmission. The header contains
+two bytes for the datagram type (connection handshake, data, acknowledgment,
+negative acknowledgment, acknowledgment request), and up two six bytes of
+datagram-specific information (e.g. for acknowledgment: two bytes read node
+identifier, two bytes write node identifier, two bytes sequence number).
+
+\fig{fRSP} shows the data flow through the RSP implementation. Each member of the multicast group opens a listening connection, which will send query datagrams to the multicast socket. For each found member, a receiving connection instance is created and, similar to a TCP socket, passed to the application upon \textsf{accept}. Each connection instance has a fixed number (1024 by default) of fixed-size (1470 by default) buffers, each used directly as an UDP datagram. The listening connection uses these buffers for writing data, and each receiving connection uses its buffers for received data. These buffers are continuously cycled through two sets of queues: a blocking, thread-safe queue used on the application side for reading and writing data, and a non-blocking, lock-free and thread-safe queue on the protocol thread for data management.
+
+\begin{figure}[h!t]\center
+  \includegraphics[width=\textwidth]{images/rspPackets.pdf}
+  {\caption{\label{fRSP}RSP data flow}}
+\end{figure}
+
+When writing data, the application thread pops empty buffers from its queue
+(blocking when the data cannot be written fast enough), fills in the
+\textsf{data} datagram headerm and copies the application data piece-wise into
+the datagram. The datagrams are then pushed onto the protocol thread buffer
+queue. The protocol thread writes the datagrams unto the UDP multicast socket,
+and reads and handles any incoming datagrams. On the receiver side, the protocol
+receives the data, and pushes them in order to the corresponding application
+thread queue. Out-of-order datagrams are stored aside and queued in order later,
+and a negative acknowledgments (nack) are immediately sent for missing
+datagrams. The writer will repeat nack'd datagrams, recycle fully acknowledged
+datagrams to the application queue, and ask for missing acknowledgments if
+needed. When reading data, the application pops full buffers from the
+corresponding connection's queue (blocking when no data is available), copies
+the data piece-wise out of datagram into the application buffer, and recycles
+the cleared buffers onto the protocol thread queue.
 
 Handling a smooth packet flow is critical for performance. RSP uses active flow
 control to advance the byte stream buffered by the implementation. Each incoming
@@ -1971,6 +2002,12 @@ making cooperation between multiple data stream less of an issue. Send rate
 limiting uses a bucket algorithm, where over time the bucket fills with send
 credits, from which sends are substracted. If there are no available credits,
 the sender sleeps until sufficient credits are available.
+
+In \cite{ESP:18} we provide experimental results, showing that our
+implementation can achieve above 90\% wire speed on 10~GBit/s Ethernet, shows
+good scalability with respect to the multicast group size, and is very effective
+for distributing structured and unstructured application data to a large number
+of rendering clients concurrently.
 
 \chapter{Conclusion}
 
