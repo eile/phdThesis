@@ -918,12 +918,18 @@ instances to the new version recorded in the object map. This effective design
 allows data distribution with minimal application logic.
 
 
-\chapter{Parallel Rendering Modes}
+\chapter{Scalable Rendering}
 
-Parallel Rendering Research has put a lot of focus on two of the three
+Scalable rendering is a subset of parallel rendering which aims to improve the
+framerate of a rendering task by decomposing it over multiple rendering
+resources. Parallel rendering includes other use cases, for example to use
+multiple GPUs to drive individual displays of a tiled display wall.
+
+Parallel rendering research has put a lot of focus on two of the three
 architectures classified by \cite{Molnar92}: sort-first and sort-last rendering.
 Sort-middle rendering is still largely confined to hardware implementations due
-to its high communication cost of distributing fragments to processing units.
+to its high communication cost of sorting and distributing fragments to
+processing units.
 
 In this chapter, we present a wide set of new parallelization schemes which
 break out of this standard classification. For each mode, we present its
@@ -936,17 +942,25 @@ Most of these rendering modes are similar to sort-first rendering, in that they
 decompose the final view spatially or temporally. Stereo compounds decompose per
 eye pass, DPlex compounds temporally, pixel and subpixel compounds use equal
 spatial decompositions. Finally, tile and chunk compounds implement implicit
-load-balancing for sort-first and sort-last rendering using queuing of work
+load-balancing for sort-first and sort-last rendering using queueing of work
 items.
+
+This wide set of decomposition modes for scalable rendering, embedded in our
+generalized compound structure, enables applications and researchers to
+decompose the rendering task in, as far as we know, any way possible for a
+rendering pipeline. To our knowledge no other implementation provides this
+breath and flexibility, and many of these algorithms appear for the first time
+in Equalizer.
 
 \section{Stereo}
 
-Stereo, or eye decomposition, can be seen as a variant of sort-first rendering.
+Stereo, or eye decomposition, is a specialized version of sort-first rendering.
 Two GPUs get assigned each one of the eye passes during stereo rendering. For
 passive stereo, there is no compositing step needed, whereas for active and
-anaglyphic stereo one frame buffer has to be copied to the destination channel.
-Due to the strong similarity between both eye passes, this mode provides close
-to perfect load balance. \fig{fStereo} shows an anaglyphic stereo compound.
+anaglyphic stereo the frame buffer for one eye pass has to be copied to the
+destination channel. Due to the strong similarity between both eye passes, this
+mode provides close to perfect load balance. \fig{fStereo} shows an anaglyphic
+stereo compound.
 
 \begin{wrapfigure}{r}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/Stereo}
@@ -954,28 +968,31 @@ to perfect load balance. \fig{fStereo} shows an anaglyphic stereo compound.
 \end{wrapfigure}
 
 While many implementations provide passive or active stereo rendering and
-sometimes decomposition using two GPUs, our implementation within the flexible
-compound structure allows to fully exploit stereo decomposition, since
-stereoscopic and monoscopic rendering is no special case in the architecture,
-but rather a configuration of the rendering resources. Among other things, this
-allows extending a two-way stereo decomposition using further resources and any
-other scalable rendering mode. One can also easily set up an application with
-mixed rendering, e.g., to render a monoscopic view on a control workstation
-while rendering stereoscopic on a larger immersive installation.
+sometimes decomposition using two GPUs, our implementation within our flexible
+compound structure allows to fully exploit stereo decomposition.  Stereoscopic
+and monoscopic rendering is no special case in the architecture, but rather a
+configuration of the rendering resources. Among other things, this allows
+extending a two-way stereo decomposition with further resources and any other
+scalable rendering mode. One can also easily set up an application with mixed
+rendering, e.g., to render a monoscopic view on a control workstation while
+rendering stereoscopic on a larger immersive installation.
 
 
 \section{Time-Multiplex}
 
-\begin{wrapfigure}{r}{.382\textwidth}
-\includegraphics[width=.382\textwidth]{images/DPlex}
-{\caption{\label{fDPlex}Time-Multiplex Compound}} \end{wrapfigure}
-Time-multiplexing (\fig{fDPlex}), also called AFR or DPlex, was first
-implemented in \cite{BRE:05} for shared memory machines. It is however a better
-fit for distributed memory systems, since the separate memory space makes
+Time-multiplexing distributes full frames over the available resources, such
+that each resource only renders a subset of the visible frames (\fig{fDPlex}).
+This mode is also called alternate frame rate or DPlex, was first implemented in
+\cite{BRE:05} for shared memory machines. The algorithm is however much better
+suited for distributed memory systems, since the separate memory space makes
 concurrent rendering of different frames much easier to implement. While it
 increases the framerate almost linearly, it does not decrease the latency
 between user input and the corresponding output. Consequently, this
 decomposition mode is mostly useful for non-interactive movie generation.
+
+\begin{wrapfigure}{r}{.382\textwidth}
+\includegraphics[width=.382\textwidth]{images/DPlex}
+{\caption{\label{fDPlex}Time-Multiplex Compound}} \end{wrapfigure}
 
 DPlex is very well load-balanced, since most applications observe a strong
 frame-to-frame coherence with respect to the rendering load. This decomposition
@@ -986,22 +1003,38 @@ compound. \sref{sFramerateEq} covers this functionality. It is transparent to
 \textsf{Equalizer} applications, but does require the configuration latency to
 be equal or greater than the number of source channels.
 
+DPlex rendering is not hard-coded into our framework, but configured by
+restricting the rendering task temporally on each source compound. This is
+achieved by setting a \textsf{period} and \textsf{phase} parameter, which
+configure the number of frames skipped and starting offset on the given source
+compound. A simple DPlex compound would have a destination compound with $n$
+source compounds, where each source has a period of $n$ and one phase from
+$0..n-1$. While this generalization may seem artificial, it opens up different
+use cases, for example giving a fast GPU a smaller period, thus giving it more
+work.
+
 \section{Pixel}
 
 \begin{wrapfigure}{r}{.382\textwidth}
  \includegraphics[width=.382\textwidth]{images/Pixel}
  {\caption{\label{fPixel}Pixel Compound}}
 \end{wrapfigure}
-Pixel compounds (\fig{fPixel}) decompose the destination channel by
-interleaving rows or columns in image space. They are a variant of sort-first
-rendering which works well for fill-limited applications which are not
-geometry bound, for example direct volume rendering. Source channels cannot
-reduce geometry load through view frustum culling, since each source channel has
-almost the same frustum. However, the fragment load on all source channels is
-reduced linearly and well load-balanced due to the interleaved distribution of
-pixels. This functionality is transparent to \textsf{Equalizer} applications,
-and the default compositing uses the stencil buffer to blit pixels onto the
-destination channel.
+
+Pixel compounds (\fig{fPixel}) decompose the destination channel by interleaving
+pixels in image space. They are a variant of sort-first rendering which works
+well for fill-limited applications which are not geometry bound, for example
+direct volume rendering. Source channels cannot reduce geometry load through
+view frustum culling, since each source channel has almost the same frustum.
+However, the fragment load on all source channels is reduced linearly and well
+load-balanced due to the interleaved distribution of pixels. This functionality
+is transparent to \textsf{Equalizer} applications, and the default compositing
+uses the stencil buffer to blit pixels onto the destination channel.
+
+Pixel compounds are configured by restricting each source compound with a pixel
+kernel. The kernel describes the size of the decomposition in 2D space, and the
+2D pixel offset within this region. This follows our design philosophy of
+enabling features by generalizing the underlying algorithm rather then
+hardcoding them.
 
 \section{Subpixel}
 
@@ -1569,7 +1602,7 @@ additional code in the core compound logic, it simply exploits existing
 functionality such as texture-based compositing frames and frame zoom with
 dynamic per-frame adjustments.
 
-\section{Frame Rate Equalizer}\label{sec:framerateEq}
+\section{Frame Rate Equalizer}\label{sFramerateEq}
 
 The framerate equalizer smoothens the output frame rate of a destination channel
 by instructing the corresponding window to delay its buffer swap to a minimum
