@@ -270,7 +270,9 @@ are a target display platform for scalable 3D graphics applications.
 
 \chapter{Contributions}
 
-Features, papers, individual contribution per paper.
+In this chapter we summarize the main contributions of this thesis. For each
+section, we list the relevant publications highlighting the contributions of the
+author.
 
 \section{Parallel Rendering Architecture}
 
@@ -331,20 +333,176 @@ reconfigure the underlying compound tree each frame.
 
 \end{compactdesc}
 
-\cite{EMP:09} and \cite{ESP:18} publish the architectural contributions for
-this thesis. Any algorithmic and architectural contributions in these
-publications are contributed by the author, while experimental results have
-significant contributions from the secondary authors.
+\cite{EMP:09} and \cite{ESP:18} publish the architectural foundations of
+parallel rendering frameworks. Any algorithmic and architectural contributions
+in these publications are contributed by the author, while experimental results
+have significant contributions from the secondary authors. \cite{BRE:05}
+provides in many ways the foundation for Equalizer, to which the author was a
+technical contributor for the implementation of a parallel rendering framework
+for shared memory systems.
 
 \section{Scalable Rendering}
 
+Based on the flexible system architecture we implemented new scalable rendering
+algorithms, introduced in \cite{EMP:09} and \cite{ESP:18}. A particular focus
+was given to reduce the cost of the costly compositing step for sort-last
+rendering.
+
+In \cite{EP:07}, we provide an analysis of parallel compositing algorithms in an
+early version of our parallel rendering framework, and show that direct send
+compositing has advantages on commodity visualization clusters. The
+implementation, algorithm and experimental analysis in this paper are
+contributed by the author.
+
+\cite{EBAHMP:12} introduces many algorithmic optimization for modern
+visualization clusters, ranging from asynchronous compositing, thread and memory
+placement on NUMA architectures, region of interest, and an analysis of
+real-world application performance. We show that careful system design and
+detailed optimizations are necessary to achieve scalability on larger
+visualization clusters. For this publication, the author contributed the
+algorithms, large parts of the implemenation, and some experimental analysis.
+
+\cite{MEP:10} introduced more sort-last compositing optimizations, most notably
+automatic region-of-interest detection and new compression algorithms. The
+author contributed the foundations for using region of interest for compositing,
+and the fast RLE compression with optimised data preconditioning.
 
 \section{Load Balancing}
 
+Optimal resource usage in larger visualization clusters relies on an even
+contribution of work over the available resources. This load balancing problem
+requires real-time algorithms based on imperfect knowledge of the system
+behavior. In our architecture, load-balancing acts by modifying compound tree
+parameters at runtime. For example, a sort-first load balancer adapts the
+sub-viewports assigned to each resource at runtime. These so-called
+\textsf{equalizers} are a component hooked into the compound tree, which makes
+their use and implementation independent of the rest of the framework.
+
+Sort-first load-balancing has been researched previously, while we also
+introduce sort-last load-balancing based on the same principles. In
+\cite{EMP:09} and \cite{ESP:18} we provide experimental results on the
+effectiveness of our implementations. In the latter publication, we compare two
+different reactive load-balancing algorithms and show that theoretically
+superior algorithms do not necessarily provide better performance in realistic
+scenarios.
+
+\cite{EEP:11} introduces a novel algorithm for load-balancing an arbitrary set
+of rendering resources for driving visualization installations with many output
+display, such as tiled display walls or multi-projector systems. The author
+contributed the algorithm and implementation for this publication.
+
+\cite{SPEP:16} provides an implementation and detailed analysis of central task
+queueing with work packages and different task affinity modes for sort-first and
+sort-last rendering. The author provided the   base queueing infrastructure for
+this publication.
+
+
 \section{Applications}
 
+A key performance measure for a good design of any framework is the usage in
+third-party applications. While the evaluation and architecture of applications
+build on Equalizer is outside of the scope of this thesis, we name a few
+examples here to illusterate the variety of use cases.
 
-\chapter{Parallel Rendering Framework Architecture}
+\subsection{Livre}
+
+Livre (Large-scale Interactive Volume Rendering Engine) is a GPU ray-casting
+based parallel 4D volume renderer, implementing state-of-the-art view-dependent
+level-of-detail rendering (LOD) and out-of-core data management~\cite{EHKRW:06}.
+Hierarchical and out-of-core LOD data management is supported by an implicit
+volume octree, accessed asynchronously by the renderer from a data source on a
+shared file system. Different data sources providing an octree conform access to
+RAW or compressed as well as to implicitly generated volume data (e.g. such as
+from event simulations or surface meshes) can be used.
+
+High-level state information, e.g., camera position and rendering settings, is
+shared in Livre through \textsf{Collage} objects between the parallel
+applications and rendering threads. Sort-first decomposition is efficiently
+supported through octree traversal and culling both for scalability as well as
+for driving large-scale tiled display walls.
+
+\subsection{RTT Deltagen}
+
+RTT Deltagen (now Dassault 3D Excite) is a commercial application for
+interactive, high quality rendering of CAD data. The RTT Scale module,
+delivering multi-GPU and distributed execution, is based on \textsf{Equalizer}
+and \textsf{Collage}, and has driven many of the aforementioned features.
+
+RTT Scale uses a master-slave execution mode, were a single Deltagen instance
+can go into ``Scale mode'' at any time by launching an \textsf{Equalizer}
+configuration. Consequently, the whole internal representation needed for
+rendering is based on a \textsf{Collage}-based data distribution. The rendering
+clients are separate, smaller applications which will map their scenes during
+startup. At runtime, any change performed in the main application is committed
+as a delta at the beginning of the next frame. Multicast is used to keep data
+distribution times during session launch reasonable for larger cluster sizes
+(tens to hundreds of nodes).
+
+RTT Scale is used for a wide variety of use cases. In virtual reality, the
+application is used for virtual prototyping and design reviews in front of
+high-resolution display walls and CAVEs, as well as for virtual prototyping of
+human-machine interactions using CAVEs and HMDs. For scalability, sort-first and
+tile compounds are used to achieve fast, high-quality rendering, primarily for
+interactive raytracing, both based on CPUs and GPUs. For CPU-based raytracing,
+often Linux-based rendering clients are used with a Windows-based application
+node.
+
+\subsection{RTNeuron}
+
+RTNeuron \cite{HBBES:13} is a scalable real-time rendering tool for the
+visualisation of neuronal simulations based on cable models. It is based on
+OpenSceneGraph for data management and Equalizer for parallel rendering, and
+focuses not only on fast rendering times, but also on fast loading times with no
+offline preprocessing. It provides level of detail (LOD) rendering, high quality
+anti-aliasing based on jittered frusta and accumulation during still views,
+interactive modification of the visual representation of neurons on a per-neuron
+basis (full neuron vs. soma only, branch pruning depending on the branch level,
+\dots). RTNeuron implements both sort-first and sort-last rendering with order
+independent transparency.
+
+\subsection{RASTeR}
+
+RASTeR~\cite{BGP:09} is an out-of-core and view-dependent real-time
+multiresolution terrain rendering approach using a patch-based restricted
+quadtree triangulation. For load-balanced parallel rendering~\cite{GMBP:10} it
+exploits fast hierarchical view-frustum culling of the level-of-detail (LOD)
+quadtree for sort-first decomposition, and uniform distribution of the visible
+LOD triangle patches for sort-last decomposition. The latter is enabled by a
+fast traversal of the patch-based restricted quadtree triangulation hierarchy
+which results in a list of selected LOD nodes, constituting a view-dependent cut
+or \emph{front of activated nodes} through the LOD hierarchy. Assigning and
+distributing equally sized segments of this active LOD front to the concurrent
+rendering threads results in a near-optimal sort-last decomposition for each
+frame.
+
+\subsection{Bino}
+
+Bino is a stereoscopic 3D video player capable of running on very large display
+systems. Originally written for the immersive semi-cylindrical projection
+system at the University of Siegen, it has been used in many installations
+thanks to its flexibility of configuration. Bino decodes the video on each
+Equalizer rendering process, and only synchronizes the time step globally,
+therefore providing a scalable solution to video playback.
+
+\subsection{Omegalib}
+
+Omegalib \cite{Omegalib} is a software framework built on top of Equalizer that
+facilitates application development for hybrid reality environments such as the
+Cave 2. Hybrid reality enviroments aim to create a seamless 2D/3D environment
+that supports both information-rich analysis (traditionally done on tiled
+display wall) as well as virtual reality simulation exploration (traditionally
+done in VR systems) at a resolution matching human visual acuity. Omegalib
+supports dynamic reconfigurability of the display environment, so that areas of
+the display can be interactively allocated to 2D or 3D workspaces as needed. It
+makes it possible to have multiple immersive applications running on a
+cluster-controlled display system, have different input sources dynamically
+routed to applications, and have rendering results optionally redirected to a
+distributed compositing manager. Omegalib supports pluggable front-ends, to
+simplify the integration of third-party libraries like OpenGL, OpenSceneGraph,
+and the Visualization Toolkit (VTK).
+
+
+\chapter{Parallel Rendering Architecture}
 
 \section{Overview}
 A generic parallel rendering framework has to cover a wide range of use cases,
@@ -1194,6 +1352,8 @@ processes during the stereo switch.
 \end{figure}
 
 \chapter{Compositing Optimisations}
+
+\section{Parallel Compositing}
 
 \section{Region of Interest}
 
