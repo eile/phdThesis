@@ -272,9 +272,68 @@ are a target display platform for scalable 3D graphics applications.
 
 Features, papers, individual contribution per paper.
 
-\section{Generic Parallel Rendering Framework}
+\section{Parallel Rendering Architecture}
 
-\section{Parallel Rendering Modes}
+A substantial part of this thesis is the description and implementation of an
+architecture for a parallel rendering framework, which advances the state of the
+art in many aspects:
+
+\begin{compactdesc}
+
+\item[Minimally invasive API:] The guiding principle when designing the API was
+to enable applications to retain all their rendering code and application logic.
+The programming interface is based on a set of C++ classes, modeled closely to
+the resource hierarchy of a graphics rendering system. The application
+subclasses these objects and overrides C++ task methods, similar to C callbacks.
+These task methods will be called in parallel by the framework, depending on the
+current configuration. The contract for the  implementation of the task methods
+does not assume any rendering library, algorithm or technology, thus
+facilitating the adaptation of existing applications for parallel rendering.
+This parallel rendering interface is significantly different from Chromium
+\cite{HHNFAKK:02} and more similar to VRJuggler \cite{BJHMBC:01} or MPK
+\cite{BRE:05}.
+
+
+\item[Runtime configuration:] The architecture of our parallel rendering
+framework makes a clear separation between rendering algorithm and the runtime
+configuration. It defines a contract between the framework and the application
+code which defines the rendering context, and uses this context to drive the
+application output depending on the runtime configuration. Application
+developers are unware of parallel rendering setups and make no assumptions on
+how the rendering code will be executed. This clear separation yields parallel
+rendering applications which can be deployed on a wide set of installations, and
+are often configured in ways unforeseen during their development.
+
+\item[Compound trees:] The introduction of compounds, and their underlying
+formalism, provide a formalization of a flexible task decomposition and result
+recompostion for parallel rendering. Compound trees allow for easy specification
+of complex parallel task decomposition strategies which are automatically
+implemented and executed by the Equalizer system. They generalize parallel
+rendering principles without hardcoding a specific parallel rendering algorithm,
+thus proposing an orthogonal parameter set for decomposing rendering tasks,
+assembling results, and adapting these parameters at runtime.
+
+\item[Display abstraction:] Large scale visualization setup cover a wide set of
+use cases from classical workstation setup to monoscopic tiled display walls,
+stereoscopic, edge-blended multi-projector walls to fully immersive
+installations such as CAVE systems. Consequently, applications running on these
+systems serve many different usage scenarios. Our novel canvas-layout
+abstraction provides a simple configuration of all these installations and
+empowers applications using these installations with 2D and 3D contextual
+information, runtime stereo configuration, and head tracking.
+
+\item[Modular architecture:] Our architecture uses layered abstractions which
+gradually provide higher level abstractions. On the low level, a network library
+for distributed abstractions provides the substrate for Equalizer and
+applications. Within each library, a clear separation of responsibilities allows
+to combine existing algorithms easily. For example, an advanced feature such as
+cross-segment load-balancing relies on per-segment load-balancers, and both
+reconfigure the underlying compound tree each frame.
+
+\end{compactdesc}
+
+
+\section{Scalable Rendering}
 
 \section{Load Balancing}
 
@@ -636,7 +695,7 @@ generates eight destination channels.
 
 \begin{figure}[ht!]\center
  \includegraphics[width=.9\textwidth]{images/wallLayout.jpg}
- {\caption{\label{fDisplay}Display Wall using a six-Segment Canvas with a two-View Layout}}
+ {\caption{\label{fDisplay}Tiled Display Wall using a six-segment canvas with a two-view layout}}
 \end{figure}
 
 An \textsf{observer} represents an actor looking at multiple views. It has a
