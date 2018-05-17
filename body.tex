@@ -265,7 +265,19 @@ application is a web application distributed across browser instances.
 display servers. These solutions implement a scalable display environment and
 are a target display platform for scalable 3D graphics applications.
 
-\section{Dissertation Structure}
+\section{Thesis Structure}
+
+The remainder of this thesis is structured as follows: In the next chapter, we
+give a summary of the contributions of this thesis, listing relevant
+publications and the contribution of the author to these publications.
+\cref{sArchitecture} introduces the architecture of a parallel rendering
+framework, the foundation for this thesis. \cref{sScalable} presents new
+algorithms for the task decomposition in parallel rendering. \cref{sCompositing}
+focuses on optimisations to reduce the cost of recombining the results of a
+parallel rendering decomposition. \cref{sLoadBalancing} describes better
+approaches to balance the task assignment to rendering resources. Before a
+conclusion in \cref{sConclusion}, \cref{sCollage} describes the design and
+architecture of a network library tailored for parallel rendering.
 
 
 \chapter{Contributions}
@@ -502,7 +514,7 @@ simplify the integration of third-party libraries like OpenGL, OpenSceneGraph,
 and the Visualization Toolkit (VTK).
 
 
-\chapter{Parallel Rendering Architecture}
+\chapter{Parallel Rendering Architecture}\label{sArchitecture}
 
 \section{Overview}
 A generic parallel rendering framework has to cover a wide range of use cases,
@@ -1139,7 +1151,7 @@ instances to the new version recorded in the object map. This effective design
 allows data distribution with minimal application logic.
 
 
-\chapter{Scalable Rendering}
+\chapter{Scalable Rendering}\label{sScalable}
 
 Scalable rendering is a subset of parallel rendering which aims to improve the
 framerate of a rendering task by decomposing it over multiple rendering
@@ -1351,7 +1363,7 @@ processes during the stereo switch.
  {\caption{\label{fStereoSwitch}Stereo-Selective Compound}}
 \end{figure}
 
-\chapter{Compositing Optimisations}
+\chapter{Compositing Optimisations}\label{sCompositing}
 
 \section{Parallel Compositing}
 
@@ -1528,7 +1540,7 @@ interface for users and researchers interested in experimenting with image
 compression for interactive parallel rendering.
 
 
-\chapter{Load Balancing}
+\chapter{Load Balancing}\label{sLoadBalancing}
 
 {\em Equalizers} are an addition to compound trees. They modify parameters of
 their respective compound subtree at runtime to dynamically optimize the
@@ -1852,7 +1864,7 @@ segments. While this is not strictly a scalable rendering feature, it optimizes
 resource usage by not needlessly rendering the same view multiple times.
 
 
-\chapter{Data Distribution and Synchronization}
+\chapter{Data Distribution and Synchronization}\label{sCollage}
 
 
 Most research in parallel rendering ignores the problem of managing applications
@@ -2265,7 +2277,7 @@ good scalability with respect to the multicast group size, and is very effective
 for distributing structured and unstructured application data to a large number
 of rendering clients concurrently.
 
-\chapter{Conclusion}
+\chapter{Conclusion}\label{sConclusion}
 
 \section{Future Work}
 
