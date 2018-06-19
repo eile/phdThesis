@@ -1358,14 +1358,89 @@ resources. It is also possible to configure a different set of resources (nodes
 and GPUs) per stereo mode, triggering the launch and exit of render client
 processes during the stereo switch.
 
-\begin{figure}[ht]\center
+\begin{figure}[h!t]\center
  \includegraphics[width=\columnwidth]{images/stereoSwitch}
  {\caption{\label{fStereoSwitch}Stereo-Selective Compound}}
 \end{figure}
 
-\chapter{Compositing Optimisations}\label{sCompositing}
+\chapter{Compositing}\label{sCompositing}
 
 \section{Parallel Compositing}
+
+During sort-last and subpixel decompositions, each rendering resource produces
+an output which needs to be combined with the result of other resources on a
+per-pixel level. This compositing step reduces the amount of output information,
+either through depth-sorting or blending the inputs. This loss of information in
+the compositing step can be exploited by distributing the work over multiple
+resources, commonly called parallel compositing.
+
+\begin{wrapfigure}{r}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{images/depth}
+ {\caption{\label{fDepth}Depth-sorted sort-last compositing}}
+\end{wrapfigure}
+
+For sort-last rendering, there are two approaches to combine the partial
+results: $z$-sorting using the depth buffer, and spatial rendering with
+back-to-front compositing.
+
+The first algorithm uses both the color and depth buffer, and assigns the final
+pixel to the color of the source with the front-most depth buffer values. It
+requires no spatial ordering of the data during rendering. It does not
+correctly composite pixels with transparent geometry. Due to the use of the
+depth buffer, it is also more expensive since more pixel data needs to be
+processed. It is often used for polygonal data, as shown in \fig{fDepth}.
+
+\begin{wrapfigure}{r}{.312\textwidth}
+ \includegraphics[width=.312\textwidth]{images/sorted}
+ {\caption{\label{fSorted}Back-to-front sort-last compositing}}
+\end{wrapfigure}
+
+Spatial compositing is often used for direct volume rendering, and requires the
+application to render convex regions of data on each source, and then depth-sort
+the partial images produced by each source. The partial images are composited in
+order, typically with alpha-blending. Since the sorting happens at the image
+level, rather then the fragment level as in the first algorithm, it can operate
+using only the color buffer, as shown in \fig{fSorted}.
+
+This algorithm produces correct transparency, unless multi-sampling is used
+during rendering. Multisampling incurs also a loss of information, where
+multiple samples are collapsed into a single pixel. Pixels where samples are
+generated from different geometries are problematic, since the averaging
+operations blends them with incomplete information during sort-last rendering. A
+correct algorithm would need to composite all fragments from all sources before
+collapsing them. Spatial compositing provides better performance, and scales
+nicer with other optimisations such as region of interest due to compact regions
+produced by the spatial sorting. In \cite{EBAHMP:12} we applied this algorithm
+to mesh-based rendering with transparency.
+
+Contrary to most other implementations, parallel compositing algorithms in
+Equalizer are not hardcoded, but rather expressed explicitly in the
+configuration. The transport of pixel data for compositing is expressed through
+connected output and input frames. Output and input frames are connected by
+name; they do not need to follow the compound hierarchy, and a single output
+frame may be consumed by multiple input frames. Output frame parameters
+configure a subset of the rendering (viewport and framebuffer attachments), and
+are read back after rendering and assembly.
+
+\begin{figure}[h!t]\center
+ \includegraphics[width=\columnwidth]{images/binarySwap}
+ {\caption{\label{fBS}Binary swap sort-last compositing}}
+\end{figure}
+
+Two commonly used parallel compositing algorithms are direct send and binary
+swap. Both distribute the compositing task equally over all available resources,
+and then collect the composited tiles on the destination channel. Direct send,
+shown in \fig{fDirectSend}, uses one operation on each resource to composite a
+single tile. Binary swap, shown in \fig{fBS}, exchanges pixels between pairs of
+nodes using a binary compositing tree.
+
+In \cite{EP:07} we have shown that for commodity clusters, direct-send
+compositing provides better performance over the binary swap algorithm commonly
+used on HPC systems. While it uses more messages in total, direct send has fewer
+synchronization points than binary swap. Furthemore, due to the early assembly
+optimization, direct send can handle imbalances between nodes better since a
+late channel has a smaller penalty for the overall execution time.
+
 
 \section{Region of Interest}
 
