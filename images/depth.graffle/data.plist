@@ -412,8 +412,8 @@
 			<integer>1054</integer>
 			<key>Points</key>
 			<array>
-				<string>{241.40957591756612, 243.12649273414326}</string>
-				<string>{339.6934116768989, 204.1161374008467}</string>
+				<string>{255.578552873012, 241.63160481364827}</string>
+				<string>{339.69614125857311, 206.04140943991456}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -621,7 +621,7 @@
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{127.55905437469482, 212.59842395782471}, {113.38579050817683, 106.42960704141751}}</string>
+			<string>{{141.7322826385498, 212.59842395782471}, {113.38579050817683, 106.42960704141751}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>ID</key>
@@ -646,7 +646,7 @@
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{14.173263866518027, 212.59842395782471}, {113.38579050817683, 106.42960704141751}}</string>
+			<string>{{28.346492130373008, 212.59842395782471}, {113.38579050817683, 106.42960704141751}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>ID</key>
@@ -799,7 +799,7 @@
 	<key>MasterSheets</key>
 	<array/>
 	<key>ModificationDate</key>
-	<string>2018-06-19 08:59:32 +0000</string>
+	<string>2018-06-19 15:34:11 +0000</string>
 	<key>Modifier</key>
 	<string>Stefan Eilemann</string>
 	<key>NotesVisible</key>
@@ -884,7 +884,7 @@
 		<key>FitInWindow</key>
 		<true/>
 		<key>Frame</key>
-		<string>{{297, 72}, {1490, 907}}</string>
+		<string>{{297, -0}, {1490, 1177}}</string>
 		<key>ShowInfo</key>
 		<true/>
 		<key>Sidebar</key>
@@ -894,9 +894,9 @@
 		<key>TopSlabHeight</key>
 		<real>33</real>
 		<key>VisibleRegion</key>
-		<string>{{-290.00000000000011, 0}, {1398.0689043209877, 1141.568359375}}</string>
+		<string>{{-115, 0}, {1047.4946705005786, 1141.568359375}}</string>
 		<key>Zoom</key>
-		<real>0.70955014944831585</real>
+		<real>0.9460668659310878</real>
 		<key>ZoomValues</key>
 		<array>
 			<array>
