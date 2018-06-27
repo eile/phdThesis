@@ -38,8 +38,10 @@ High-resolution screens and tiled display walls are now affordabe for most
 organizations and are getting deployed at an increasing rate. This increased
 resolution and display size helps with understanding the data, but with the
 quadratic increase in pixels to be rendered, it increases the pressure on
-rendering algorithms to deliver interactive framerates. Furthermore, for larger
-system it becomes necessary to develop parallel and distributed applications.
+rendering algorithms to deliver interactive framerates. Such large-scale
+visualization systems are often driven by multiple GPUs and workstations,
+making it natural, and most times necessary, to drive them using parallel and
+distributed applications.
 
 However, not only applications are becoming more and more data-driven, but also
 the technology used to tackle these kinds of problems is rapidly witnessing a
@@ -71,24 +73,54 @@ current and future challenges.
 
 \section{Interactive Visualization}
 
+Interactive visualization poses an unique set of challenges. Its goal is to
+present a believable alternate universe to the visual system of the user. This
+process turns interactive visualization into a powerful tool, since it utilizes
+the brains native capabilities to interpret and understand data. Virtual
+Reality takes this goal to the extreme, and when done right, makes the user
+forget that he interacts with a virtual world.
+
+To achieve this goal, visualization has the daunting task to transform large
+amount of data into colored pixels in a short amount of time. Believable
+visualization has to minimize the latency between user input and the resulting
+output, and to maximize the number of frames rendered per second. With
+increased immersion in the data, these parameter become more important --
+for Virtual Reality, a 60~Hz refresh rate and a latency below 50~ms is needed,
+whereas for non-immersive destop visualization 10~Hz and 200~ms are acceptable.
+
+In the context of parallel rendering, these constraints make building a
+parallel and distributed application harder compared to other distributed
+domains such as simulations and cloud computing. In particular, one has to be
+careful with synchronization and pipelining of operations to minimize latency.
+In addition, an interactive application has different requirements when it comes
+to resource allocation compared to other large-scale distributed computing
+domains.
+
 \section{Parallel Rendering}
+
+Parallel rendering utilizes multiple rendering units (GPUs), potentially on
+different computers, to generate images for one or more output displays. The
+goal is to increase the output resolution, rendering performance or rendering
+quality. Traditionally the focus has been on the first two goals, often in
+isolation to each other, e.g., algorithms and implementations for Cave systems
+tend to be orthogonal to scalable rendering for large data visualization.
 
 The main performance indicator for Large Data Interactive Rendering is the
 performance of the rendering algorithm, that is, the framerate with which the
 program produces new images. This framerate can be improved by either using
 faster or more hardware, or by better algorithms exploiting the existing
-hardware and data. This proposal primarily focuses on the first approach using
+hardware and data. This thesis primarily focuses on the first approach using
 parallel rendering to exploit the CPU and GPU parallelism available on a single
-system or a distributed cluster.  The early fundamental concepts have been laid
-down in \cite{MCEF:94} and \cite{Crockett:97}. A number of domain specific
-parallel rendering algorithms and special-purpose hardware solutions have been
-proposed in the past, however, only few generic parallel rendering frameworks
-have been developed (\fig{fSorts}). We will focus on sort-last and sort-first
-rendering, since sort-middle architectures are only feasible in a hardware
-implementation due to the large amount of fragments processed and transferred in
-the sorting stage.
+system or a distributed cluster. The early fundamental concepts have been laid
+down in \cite{MCEF:94} and \cite{Crockett:97} (\fig{fSorts}). A number of
+domain specific parallel rendering algorithms and special-purpose hardware
+solutions have been proposed in the past, however, only few generic parallel
+rendering frameworks have been developed. We will focus on sort-last and
+sort-first rendering, since sort-middle architectures are only feasible in a
+hardware implementation due to the large amount of fragments processed and
+transferred in the sorting stage.
 
-\begin{figure}[ht]\center
+\begin{figure}[h!t]\center
  \includegraphics[width=\textwidth]{images/all_sorts}%
  \caption{Sort-last, sort-middle and sort-first parallel rendering\label{fSorts}}
 \end{figure}
@@ -283,18 +315,18 @@ architecture of a network library tailored for parallel rendering.
 \chapter{Contributions}
 
 In this chapter we summarize the main contributions of this thesis. For each
-section, we list the relevant publications highlighting the contributions of the
+section, we list the relevant publications and specify the contributions of the
 author.
 
 \section{Parallel Rendering Architecture}
 
-A substantial part of this thesis is the description and implementation of an
-architecture for a parallel rendering framework, which advances the state of the
-art in many aspects:
+A major contribution of this thesis is the formalization and implementation of
+an architecture for a parallel rendering framework, which advances the state of
+the art in many aspects:
 
 \begin{compactdesc}
 
-\item[Minimally invasive API:] The guiding principle when designing the API was
+\item[Minimally invasive API:] The guiding principle for the API design was
 to enable applications to retain all their rendering code and application logic.
 The programming interface is based on a set of C++ classes, modeled closely to
 the resource hierarchy of a graphics rendering system. The application
@@ -318,17 +350,17 @@ rendering applications which can be deployed on a wide set of installations, and
 are often configured in ways unforeseen during their development.
 
 \item[Compound trees:] The introduction of compounds, and their underlying
-formalism, provide a formalization of a flexible task decomposition and result
-recompostion for parallel rendering. Compound trees allow for easy specification
+formalism, provides a formalization of a flexible task decomposition and result
+recomposition for parallel rendering. Compound trees allow for easy specification
 of complex parallel task decomposition strategies which are automatically
 implemented and executed by the Equalizer system. They generalize parallel
 rendering principles without hardcoding a specific parallel rendering algorithm,
 thus proposing an orthogonal parameter set for decomposing rendering tasks,
 assembling results, and adapting these parameters at runtime.
 
-\item[Display abstraction:] Large scale visualization setup cover a wide set of
-use cases from classical workstation setup to monoscopic tiled display walls,
-stereoscopic, edge-blended multi-projector walls to fully immersive
+\item[Display abstraction:] Large scale visualization systems cover a wide set
+of use cases from classical workstation setup to monoscopic tiled display
+walls, stereoscopic, edge-blended multi-projector walls to fully immersive
 installations such as CAVE systems. Consequently, applications running on these
 systems serve many different usage scenarios. Our novel canvas-layout
 abstraction provides a simple configuration of all these installations and
@@ -336,12 +368,12 @@ empowers applications using these installations with 2D and 3D contextual
 information, runtime stereo configuration, and head tracking.
 
 \item[Modular architecture:] Our architecture uses layered abstractions which
-gradually provide higher level abstractions. On the low level, a network library
-for distributed abstractions provides the substrate for Equalizer and
-applications. Within each library, a clear separation of responsibilities allows
-to combine existing algorithms easily. For example, an advanced feature such as
-cross-segment load-balancing relies on per-segment load-balancers, and both
-reconfigure the underlying compound tree each frame.
+gradually provide higher level abstractions. On the low level, a network
+library for distributed abstractions provides the substrate for Equalizer and
+applications. Within each library, a clear separation of responsibilities
+allows to combine existing algorithms easily. For example, an advanced feature
+such as cross-segment load-balancing relies on per-segment load-balancers, and
+both load balancers reconfigure the underlying compound tree each frame.
 
 \end{compactdesc}
 
@@ -382,7 +414,7 @@ and the fast RLE compression with optimised data preconditioning.
 \section{Load Balancing}
 
 Optimal resource usage in larger visualization clusters relies on an even
-contribution of work over the available resources. This load balancing problem
+distribution of work over the available resources. This load balancing problem
 requires real-time algorithms based on imperfect knowledge of the system
 behavior. In our architecture, load-balancing acts by modifying compound tree
 parameters at runtime. For example, a sort-first load balancer adapts the
@@ -400,7 +432,7 @@ scenarios.
 
 \cite{EEP:11} introduces a novel algorithm for load-balancing an arbitrary set
 of rendering resources for driving visualization installations with many output
-display, such as tiled display walls or multi-projector systems. The author
+displays, such as tiled display walls or multi-projector systems. The author
 contributed the algorithm and implementation for this publication.
 
 \cite{SPEP:16} provides an implementation and detailed analysis of central task
@@ -999,7 +1031,7 @@ A more formal classification of compound entities is:
   parallel compositing, the algorithm is described by defining multiple input
   and output frames across all source compounds.
  \end{compactdesc}
- \item[Intermediate compounds] may be used to simplify the task decompostion or
+ \item[Intermediate compounds] may be used to simplify the task decomposition or
  to configure parallel compositing.
 \end{compactdesc}
 
