@@ -664,11 +664,16 @@ OpenGL Multipipe SDK \cite{BRE:05}.
 \end{wrapfigure}
 
 To separate the responsibilities in a parallel rendering application, different
-entities are resonsible for different aspects of the runtime system: the
-application process to drive a rendering session, the server process or thread
-to control the parallel rendering configuration, render clients to execute the
-rendering tasks, and an administrative API to reconfigure the rendering session
-at runtime.
+entities are responsible for different aspects of the runtime system: the
+application process to drive a rendering session, the server to control the
+parallel rendering configuration, render clients to execute the rendering
+tasks, and an administrative API to reconfigure the rendering session at
+runtime.
+
+The administrative API can connect to a server, and modify some aspects of the
+resource hierarchy, e.g., to create new output channels. Its description is
+outside of the scope of this thesis, and is just mentioned here for
+completeness.
 
 \subsection{Application}
 
@@ -680,7 +685,7 @@ besides the application node, all application code is executed in the same
 process, and no network data distribution has to be implemented. The main
 rendering loop is quite simple: The application requests a new frame to be
 rendered, synchronizes on the completion of a frame and processes events
-received from the render clients. Figure~\ref{FIG_execution} shows a simplified
+received from the render clients. \fig{FIG_execution} shows a simplified
 execution model of an Equalizer application.
 
 
@@ -850,16 +855,16 @@ layout, that is, this set of views is currently used for rendering. It
 is possible to specify \textsf{OFF} as a layout, which deactivates the
 canvas. It is possible to use the same layout on different canvases.
 
-\begin{wrapfigure}{r}{.382\textwidth}
- \includegraphics[width=.382\textwidth]{images/canvas.pdf}
- {\caption{\label{fCanvas}A Canvas using four Segments}}
-\end{wrapfigure}
-
 A \textsf{segment} represents one output channel of the canvas, e.g., a
 projector or a display. A segment has an output channel, which references the
 channel to which the display device is connected. To synchronize the video
 output, a canvas swap barrier or a swap barrier on each segment synchronize the
 respective window buffer swaps.
+
+\begin{wrapfigure}{l}{.382\textwidth}
+  \includegraphics[width=.382\textwidth]{images/canvas.pdf}
+  {\caption{\label{fCanvas}A Canvas using four Segments}}
+\end{wrapfigure}
 
 A segment covers a part of its parent canvas, which is configured using the
 segment viewport. The viewport is in normalized coordinates relative to the
@@ -1059,22 +1064,12 @@ frames. These parameters are used in conjunction with compound tasks for
 parallel compositing, and advanced features such as monitoring and dynamic frame
 resolution introduced later.
 
-\begin{wrapfigure}{r}{.618\textwidth}
- \includegraphics[width=.618\textwidth]{images/directSendCompound}
- {\caption{\label{fDirectSendCmp}Direct Send Compound}}
-\end{wrapfigure}
-
 \fig{fDirectSend} shows the pixel flow of direct send composting for a three-way
 sort-last decomposition, where the destination channel also contributes to the
 rendering. In the first step, each channel exchanges two color+depth tiles with
 its neighbors, and then $z$-composites its own tile. This yields one complete
 tile on each channel, of which two color tiles are then assembled on the
 destination channel.
-
-\begin{figure}[ht]
- \includegraphics[width=\textwidth]{images/directSend}
- {\caption{\label{fDirectSend}Direct Send Compositing}}
-\end{figure}
 
 The corresponding compound tree is shown schematically in \fig{fDirectSendCmp}.
 Each of the three channels has a child compound to execute the rendering and
@@ -1085,6 +1080,11 @@ result, creating a complete tile. For the two source-only channels, a final
 color-only output image is connected to the destination channel. The arrows
 illustrate the pixel flow for one of the tiles.
 
+\begin{wrapfigure}{r}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/directSendCompound}
+  {\caption{\label{fDirectSendCmp}Direct Send Compound}}
+\end{wrapfigure}
+
 For most rendering applications even a relatively complex setup such as this
 example requires very little programmer involvement. The abstractions provided
 by the resource description, render context and compounds enable Equalizer to
@@ -1094,6 +1094,11 @@ context to decompose its rendering. All other tasks, in particular the parallel
 compositing and pixel transfers, are fully handled by Equalizer. Applications
 which require ordered compositing, for example volume rendering, overwrite the
 assemble callback to reorder the input frames correctly.
+
+\begin{figure}[h!t]
+  \includegraphics[width=\textwidth]{images/directSend}
+  {\caption{\label{fDirectSend}Direct Send Compositing}}
+\end{figure}
 
 The abstraction through frames is flexible, but still allows many architectural
 optimizations:
@@ -1626,9 +1631,9 @@ uniform color areas but is often useless for non-trivial full frame color
 results. We developed two enhancements to improve this, per-component RLE
 compression and {\em swizzling} of color bits.
 
-Equalizer also implements more complex compression algorithms such as
+Equalizer also integrates more complex compression algorithms such as
 \textsf{libjpeg-turbo}, which are however of little practical use on modern
-interconnects. Their compression overhead is often to high to be amortized by
+interconnects. Their compression overhead is often too high to be amortized by
 the decreased network transmission time on modern 10 GBit/s or faster
 interconnects.
 
@@ -1638,9 +1643,10 @@ compression ratio.
 
 \subsection{Enhanced RLE Compression}
 
-Our first RLE method used a fast 64-bit version that compares two pixels
-at the same time (8-bit per channel RGBA format). While this method is very fast
-it shows poor compression results in most practical settings since it can only compress adjacent pixels of the same color.
+Run-length encoding (RLE) is a simple compression scheme, which on modern
+architectures is purely constrained by the memory bandwidth. For image
+compression in visualization applications, we can exploit some characteristics
+of the data to improve the compression ratio over the standard RLE compression.
 
 \begin{wrapfigure}{r}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/RLE}
@@ -1648,20 +1654,24 @@ it shows poor compression results in most practical settings since it can only c
   \label{fRLE}
 \end{wrapfigure}
 
-The first improvement is to treat each color components separately by producing
-up to four RLE-compressed output streams as illustrated in Figure~\ref{fRLE}.
-While the basic RLE compression yields an up to 10\% compression rate in
-practical scenarios, per-component RLE improves this to up to 25\% since
-individual color components change less often than full pixels (based on results
-from \cite{MEP:10}).
+Our first RLE method implements a fast 64-bit version that compares two pixels
+at the same time (8 bit per channel RGBA format). While this method is very
+fast it shows poor compression results in most practical settings since it can
+only compress adjacent pixels of the same color. We have observed a compression
+rate of up to 10\% in practical scenarios,
 
+The first improvement is to treat each color component separately by producing
+four independent RLE-compressed output streams as illustrated in \fig{fRLE}.
+This per-component RLE improves the compression rate from 10\% to about 25\%
+since individual color components change less often than full pixels (based on
+results from \cite{MEP:10}).
 
-A second improvement is {\em bit-swizzling} of color values before per-component
-compression. The swizzling step is a data pre-conditioner, which reorders and
-interleaves the per-component bits as shown in Figure~\ref{fSwizzle}. Now the
-per-component RLE compression separately compresses the higher, medium and lower
-order bits in separate streams, thus achieving stronger compression for smoothly
-changing color values since high-order bits tend to change less often.
+The second improvement is {\em bit-swizzling} of color values before
+per-component compression. The swizzling step is a data pre-conditioner, which
+reorders and interleaves the per-component bits as shown in \fig{fSwizzle}. Now
+the per-component RLE compression separately compresses the higher, medium and
+lower order bits in separate streams, thus achieving stronger compression for
+smoothly changing color values since high-order bits change less often.
 
 \begin{figure}[h!t]
   \centering
@@ -1675,6 +1685,10 @@ above. Since the preconditioning step only requires bit shift and mask
 operations, it is entirely executed in registers and has no measurable
 impact on performance, since the whole algorithm is memory bound on modern CPUs.
 
+All RLE compressors perform a data decomposition on the input image, and
+parallelize the compression of each data chunk across multiple threads. This
+parallel execution improves the performance by saturating multiple memory
+channels over a single-threaded implementation.
 
 \subsection{GPU Transfer and CPU Compression Plugins}
 
@@ -1874,7 +1888,7 @@ distribution of workload among them. The algorithm can easily be extended to use
 predictive load-balancing based on a load estimation given the application.
 
 CSLB is implemented in {\em Equalizer} as two layers of hierarchically organized
-components, specified in the configuration. Figure~\ref{fViewEqualizer} depicts
+components, specified in the configuration. \fig{fViewEqualizer} depicts
 a snapshot of a simple CSLB setup along with its configuration file. Two
 destination channels, {\em Channel1} and {\em Channel2}, each connected to a
 projector, create the final output for a multi-projector view. Each projector is
