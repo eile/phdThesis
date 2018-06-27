@@ -2165,25 +2165,41 @@ network-related functionality, e.g., to communicate with a sound server on a
 different machine. A \textsf{LocalNode} has a connection set and uses this to
 manage connections with other nodes.
 
+\subsection{Data Streams}
 
-\subsection{Command Handling}
+Data streams implement serialization and buffering on top of connections. They
+use output and input stream operators (\textless\textless and
+\textgreater\textgreater) with function overloads to provide serialization for
+all common data types. The input stream will perform byte swapping if the
+endianess differs between the sending and receiving node. Applications can
+easily provide overloads for their own classes for serialization. All
+serialized data is assembled in a memory buffer and send over the connection
+once the data is complete. An output data stream might send its data to many
+connections, e.g., when an object update is sent to all subscribed slave nodes.
+
+\subsection{Thread-aware Command Dispatch}
+
+Collage sends commands over connections. A command is identified by its type
+(typically the C++ class handling it) and a command identifier. These fields
+are used to implement thread-aware dispatching of received commands to handler
+functions.
 
 Nodes and objects communicate using commands derived from data streams. The
 basic command dispatch is implemented in the \textsf{Dispatcher} class, from
 which \textsf{Node} and \textsf{Object} are sub-classed.
 
-The dispatcher allows the registration of a commands with a dispatch queue and
-an invocation method. Each command has a type and command identifier, which is
+The dispatcher allows the registration of commands with a dispatch queue and an
+invocation method. Each command has a type and command identifier, which is
 used to identify the receiver, registered queue and method. The dispatch pushes
 the packet to the registered queue. When the commands are dequeued by the
-processing thread the registered command method is invoked.
+processing thread, the registered command method is invoked.
 
 This dispatch and invocation functionality is used within Equalizer to dispatch
 commands from the receiver thread to the appropriate node or pipe thread, and
-then to invoke the command when it is processed by these threads. This
-dispatching provides object-oriented semantics, since C++ instances can register
-themselves on the dispatcher, and get automatically invoked in the correct
-thread when an appropriate command arrives.
+then to call a specific method when it is processed by these threads. This
+dispatching provides object-oriented semantics, since C++ instances can
+register themselves on the dispatcher, and get automatically invoked in the
+correct thread when an appropriate command arrives.
 
 \subsection{Nodes}
 
@@ -2198,23 +2214,23 @@ It encapsulates the communication logic for connecting remote nodes, as well as
 object registration and mapping. Local nodes are set up in the listening state
 during initialization.
 
-A remote \textsf{Node} can either be connected explicitly by the application or
-due to a connection from a remote node. The explicit connection can be done by
-programmatically creating a node, adding the necessary
-\textsf{ConnectionDescription}s and connecting it to the local node. It may also
-be done by connecting the remote node to the local node by using its
+A remote \textsf{Node} can either be connected explicitly by the application,
+or implicitly due to a connection from a remote node. The explicit connection
+can be done by programmatically creating a node, adding the necessary
+\textsf{ConnectionDescription}s and connecting it to the local node. It may
+also be done by connecting the remote node to the local node by using its
 \textsf{NodeID}. This will cause Collage to query connection information for
-this node from the already-connected nodes and zeroconf, instantiating the node
+this node from the already connected nodes and zeroconf, instantiating the node
 and connecting it. Both operations may fail.
 
 \subsubsection{\label{sZeroconf}Zeroconf Discovery}
 
 Each \textsf{LocalNode} provides a \textsf{Zeroconf} communicator, which allows
-node and resource discovery. The service "\_collage.\_tcp" is used to announce
-the presence of a listening \textsf{LocalNode} using the ZeroConf protocol to
-the network. The node identifier and all listening connection descriptions are
-announced, which is used to connect unknown nodes by using the node identifier
-alone.
+node and resource discovery. The zeroconf service "\_collage.\_tcp" is used to
+announce the presence of a listening \textsf{LocalNode} using the ZeroConf
+protocol to the network. The node identifier and all listening connection
+descriptions are announced, which is used to connect unknown nodes by using the
+node identifier alone.
 
 \subsubsection{Communication between Nodes}
 
@@ -2232,7 +2248,6 @@ bound function.
   \includegraphics[width=\textwidth]{images/netNode.pdf}
   {\caption{\label{fNetNode}Communication between two Nodes}}
 \end{figure}
-
 
 \section{Distributed, Versioned Objects}
 
@@ -2509,3 +2524,9 @@ We foresee an increasing importance of interactive raytracing, which has its
 own set of challenges for parallel rendering. In particular for large data
 rendering, there are a number of open questions, such as out-of-core parallel
 raytracing and data-parallel decompositions with global illumination.
+
+One of the remaining challenges is to make interactive supercomputing
+accessible. Significant research has been performed on how to link simulations
+with visualization, and how to use this monitoring to interactively steer the
+simulation. These advances now need to be translated into easily usable
+software components, integrated well with existing resource management systems.
