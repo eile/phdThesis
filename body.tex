@@ -188,12 +188,10 @@ include VR Juggler \cite{BJHMBC:01} (and its derivatives), Chromium
 transparent interception and distribution of the OpenGL command stream and into
 the parallization of the application rendering code (\fig{fChromium}).
 
-\begin{figure}[ht]
- \includegraphics[height=4cm]{images/Chromium}\hfil%
- \includegraphics[height=4cm]{images/MPK}%
- \caption{Transparent OpenGL interception and parallelization of the rendering code\label{fChromium}}
+\begin{figure}[h!t]
+ \includegraphics[width=\textwidth]{images/chromiumVsEq}
+ \caption{Parallelization and transparent OpenGL interception of the rendering code\label{fChromium}}
 \end{figure}
-
 
 VR Juggler \cite{BJHMBC:01,JBBC:98} is a graphics framework for virtual reality
 applications which shields the application developer from the underlying
@@ -439,112 +437,6 @@ contributed the algorithm and implementation for this publication.
 queueing with work packages and different task affinity modes for sort-first and
 sort-last rendering. The author provided the   base queueing infrastructure for
 this publication.
-
-
-\section{Applications}
-
-A key performance measure for a good design of any framework is the usage in
-third-party applications. While the evaluation and architecture of applications
-build on Equalizer is outside of the scope of this thesis, we name a few
-examples here to illusterate the variety of use cases.
-
-\subsection{Livre}
-
-Livre (Large-scale Interactive Volume Rendering Engine) is a GPU ray-casting
-based parallel 4D volume renderer, implementing state-of-the-art view-dependent
-level-of-detail rendering (LOD) and out-of-core data management~\cite{EHKRW:06}.
-Hierarchical and out-of-core LOD data management is supported by an implicit
-volume octree, accessed asynchronously by the renderer from a data source on a
-shared file system. Different data sources providing an octree conform access to
-RAW or compressed as well as to implicitly generated volume data (e.g. such as
-from event simulations or surface meshes) can be used.
-
-High-level state information, e.g., camera position and rendering settings, is
-shared in Livre through \textsf{Collage} objects between the parallel
-applications and rendering threads. Sort-first decomposition is efficiently
-supported through octree traversal and culling both for scalability as well as
-for driving large-scale tiled display walls.
-
-\subsection{RTT Deltagen}
-
-RTT Deltagen (now Dassault 3D Excite) is a commercial application for
-interactive, high quality rendering of CAD data. The RTT Scale module,
-delivering multi-GPU and distributed execution, is based on \textsf{Equalizer}
-and \textsf{Collage}, and has driven many of the aforementioned features.
-
-RTT Scale uses a master-slave execution mode, were a single Deltagen instance
-can go into ``Scale mode'' at any time by launching an \textsf{Equalizer}
-configuration. Consequently, the whole internal representation needed for
-rendering is based on a \textsf{Collage}-based data distribution. The rendering
-clients are separate, smaller applications which will map their scenes during
-startup. At runtime, any change performed in the main application is committed
-as a delta at the beginning of the next frame. Multicast is used to keep data
-distribution times during session launch reasonable for larger cluster sizes
-(tens to hundreds of nodes).
-
-RTT Scale is used for a wide variety of use cases. In virtual reality, the
-application is used for virtual prototyping and design reviews in front of
-high-resolution display walls and CAVEs, as well as for virtual prototyping of
-human-machine interactions using CAVEs and HMDs. For scalability, sort-first and
-tile compounds are used to achieve fast, high-quality rendering, primarily for
-interactive raytracing, both based on CPUs and GPUs. For CPU-based raytracing,
-often Linux-based rendering clients are used with a Windows-based application
-node.
-
-\subsection{RTNeuron}
-
-RTNeuron \cite{HBBES:13} is a scalable real-time rendering tool for the
-visualisation of neuronal simulations based on cable models. It is based on
-OpenSceneGraph for data management and Equalizer for parallel rendering, and
-focuses not only on fast rendering times, but also on fast loading times with no
-offline preprocessing. It provides level of detail (LOD) rendering, high quality
-anti-aliasing based on jittered frusta and accumulation during still views,
-interactive modification of the visual representation of neurons on a per-neuron
-basis (full neuron vs. soma only, branch pruning depending on the branch level,
-\dots). RTNeuron implements both sort-first and sort-last rendering with order
-independent transparency.
-
-\subsection{RASTeR}
-
-RASTeR~\cite{BGP:09} is an out-of-core and view-dependent real-time
-multiresolution terrain rendering approach using a patch-based restricted
-quadtree triangulation. For load-balanced parallel rendering~\cite{GMBP:10} it
-exploits fast hierarchical view-frustum culling of the level-of-detail (LOD)
-quadtree for sort-first decomposition, and uniform distribution of the visible
-LOD triangle patches for sort-last decomposition. The latter is enabled by a
-fast traversal of the patch-based restricted quadtree triangulation hierarchy
-which results in a list of selected LOD nodes, constituting a view-dependent cut
-or \emph{front of activated nodes} through the LOD hierarchy. Assigning and
-distributing equally sized segments of this active LOD front to the concurrent
-rendering threads results in a near-optimal sort-last decomposition for each
-frame.
-
-\subsection{Bino}
-
-Bino is a stereoscopic 3D video player capable of running on very large display
-systems. Originally written for the immersive semi-cylindrical projection
-system at the University of Siegen, it has been used in many installations
-thanks to its flexibility of configuration. Bino decodes the video on each
-Equalizer rendering process, and only synchronizes the time step globally,
-therefore providing a scalable solution to video playback.
-
-\subsection{Omegalib}
-
-Omegalib \cite{Omegalib} is a software framework built on top of Equalizer that
-facilitates application development for hybrid reality environments such as the
-Cave 2. Hybrid reality enviroments aim to create a seamless 2D/3D environment
-that supports both information-rich analysis (traditionally done on tiled
-display wall) as well as virtual reality simulation exploration (traditionally
-done in VR systems) at a resolution matching human visual acuity. Omegalib
-supports dynamic reconfigurability of the display environment, so that areas of
-the display can be interactively allocated to 2D or 3D workspaces as needed. It
-makes it possible to have multiple immersive applications running on a
-cluster-controlled display system, have different input sources dynamically
-routed to applications, and have rendering results optionally redirected to a
-distributed compositing manager. Omegalib supports pluggable front-ends, to
-simplify the integration of third-party libraries like OpenGL, OpenSceneGraph,
-and the Visualization Toolkit (VTK).
-
 
 \chapter{Parallel Rendering Architecture}\label{sArchitecture}
 
@@ -2464,6 +2356,143 @@ implementation can achieve above 90\% wire speed on 10~GBit/s Ethernet, shows
 good scalability with respect to the multicast group size, and is very effective
 for distributing structured and unstructured application data to a large number
 of rendering clients concurrently.
+
+\chapter{Applications}
+
+A key performance measure for a good design of any framework is the acceptance
+by developers, which is reflected in the usage in third-party applications.
+While the evaluation and architecture of applications build on Equalizer is
+outside of the scope of this thesis, we name a few examples here to illustrate
+the variety of use cases.
+
+\section{Livre}
+
+\begin{wrapfigure}{r}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/livre}
+  {\caption{\label{fLivre}Livre running on a 4x3 tiled display wall}}
+\end{wrapfigure}
+
+Livre (Large-scale Interactive Volume Rendering Engine) is a GPU ray-casting
+based parallel 4D volume renderer, implementing state-of-the-art view-dependent
+level-of-detail rendering (LOD) and out-of-core data management~\cite{EHKRW:06}.
+
+Hierarchical and out-of-core LOD data management is supported by an implicit
+volume octree, accessed asynchronously by the renderer from a data source on a
+shared file system. Different data sources providing an octree conform access to
+RAW or compressed as well as to implicitly generated volume data (e.g. such as
+from event simulations or surface meshes) can be used.
+
+High-level state information, e.g., camera position and rendering settings, is
+shared in Livre through \textsf{Collage} objects between the parallel
+applications and rendering threads. Sort-first decomposition is efficiently
+supported through octree traversal and culling both for scalability as well as
+for driving large-scale tiled display walls.
+
+\section{RTT Deltagen}
+
+RTT Deltagen (now Dassault 3D Excite) is a commercial application for
+interactive, high quality rendering of CAD data. The RTT Scale module,
+delivering multi-GPU and distributed execution, is based on \textsf{Equalizer}
+and \textsf{Collage}, and has driven many of the aforementioned features.
+
+\begin{wrapfigure}{r}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/DeltaGen}
+  {\caption{\label{fDeltaGen}RTT Deltagen rendering mixing OpenGL rendering and raytracing (for the head light)}}
+\end{wrapfigure}
+
+RTT Scale uses a master-slave execution mode, were a single Deltagen instance
+can go into ``Scale mode'' at any time by launching an \textsf{Equalizer}
+configuration. Consequently, the whole internal representation needed for
+rendering is based on a \textsf{Collage}-based data distribution. The rendering
+clients are separate, smaller applications which will map their scenes during
+startup. At runtime, any change performed in the main application is committed
+as a delta at the beginning of the next frame. Multicast is used to keep data
+distribution times during session launch reasonable for larger cluster sizes
+(tens to hundreds of nodes).
+
+RTT Scale is used for a wide variety of use cases. In virtual reality, the
+application is used for virtual prototyping and design reviews in front of
+high-resolution display walls and CAVEs, as well as for virtual prototyping of
+human-machine interactions using CAVEs and HMDs. For scalability, sort-first and
+tile compounds are used to achieve fast, high-quality rendering, primarily for
+interactive raytracing, both based on CPUs and GPUs. For CPU-based raytracing,
+often Linux-based rendering clients are used with a Windows-based application
+node.
+
+\section{RTNeuron}
+
+\begin{wrapfigure}{r}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/RTNeuron}
+  {\caption{\label{fRTNeuron}RTNeuron running in a six-sided CAVE}}
+\end{wrapfigure}
+
+RTNeuron \cite{HBBES:13} is a scalable real-time rendering tool for the
+visualisation of neuronal simulations based on cable models. It is based on
+OpenSceneGraph for data management and Equalizer for parallel rendering, and
+focuses not only on fast rendering times, but also on fast loading times with no
+offline preprocessing. It provides level of detail (LOD) rendering, high quality
+anti-aliasing based on jittered frusta and accumulation during still views,
+interactive modification of the visual representation of neurons on a per-neuron
+basis (full neuron vs. soma only, branch pruning depending on the branch level,
+\dots). RTNeuron implements both sort-first and sort-last rendering with order
+independent transparency.
+
+\section{RASTeR}
+
+\begin{wrapfigure}{r}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/raster}
+  {\caption{\label{fRaster}RASTeR running on a 3x2 tiled display wall}}
+\end{wrapfigure}
+
+RASTeR~\cite{BGP:09} is an out-of-core and view-dependent real-time
+multiresolution terrain rendering approach using a patch-based restricted
+quadtree triangulation. For load-balanced parallel rendering~\cite{GMBP:10} it
+exploits fast hierarchical view-frustum culling of the level-of-detail (LOD)
+quadtree for sort-first decomposition, and uniform distribution of the visible
+LOD triangle patches for sort-last decomposition. The latter is enabled by a
+fast traversal of the patch-based restricted quadtree triangulation hierarchy
+which results in a list of selected LOD nodes, constituting a view-dependent cut
+or \emph{front of activated nodes} through the LOD hierarchy. Assigning and
+distributing equally sized segments of this active LOD front to the concurrent
+rendering threads results in a near-optimal sort-last decomposition for each
+frame.
+
+\section{Bino}
+
+\begin{wrapfigure}{r}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/bino}
+  {\caption{\label{fBino}Bino video player on a semi-cylindrical multi-projector wall}}
+\end{wrapfigure}
+
+Bino is a stereoscopic 3D video player capable of running on very large display
+systems. Originally written for the immersive semi-cylindrical projection
+system at the University of Siegen, it has been used in many installations
+thanks to its flexibility of configuration. Bino decodes the video on each
+Equalizer rendering process, and only synchronizes the time step globally,
+therefore providing a scalable solution to video playback.
+
+\section{Omegalib}
+
+\begin{wrapfigure}{r}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/omegalib}
+  {\caption{\label{fOmegalib}An Omegalib application running in the Cave2}}
+\end{wrapfigure}
+
+Omegalib \cite{Omegalib} is a software framework built on top of Equalizer that
+facilitates application development for hybrid reality environments such as the
+Cave 2. Hybrid reality enviroments aim to create a seamless 2D/3D environment
+that supports both information-rich analysis (traditionally done on tiled
+display wall) as well as virtual reality simulation exploration (traditionally
+done in VR systems) at a resolution matching human visual acuity. Omegalib
+supports dynamic reconfigurability of the display environment, so that areas of
+the display can be interactively allocated to 2D or 3D workspaces as needed. It
+makes it possible to have multiple immersive applications running on a
+cluster-controlled display system, have different input sources dynamically
+routed to applications, and have rendering results optionally redirected to a
+distributed compositing manager. Omegalib supports pluggable front-ends, to
+simplify the integration of third-party libraries like OpenGL, OpenSceneGraph,
+and the Visualization Toolkit (VTK).
+
 
 \chapter{Conclusion}\label{sConclusion}
 
