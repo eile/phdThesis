@@ -23,10 +23,10 @@ scanning systems, as well as from data collections and numerical simulations in
 a number of science and technology domains.
 
 \begin{figure}[ht]\label{FIG_teaser}
- \includegraphics[height=5cm]{images/slices}\hfil%
- \includegraphics[height=5cm]{images/cave2}\\%
- \includegraphics[height=5.27cm]{images/cave}\hfil%
- \includegraphics[height=5.27cm]{images/tide}%
+ \includegraphics[height=4.7cm]{images/slices}\hfil%
+ \includegraphics[height=4.7cm]{images/cave2}\\%
+ \includegraphics[height=4.95cm]{images/cave}\hfil%
+ \includegraphics[height=4.95cm]{images/tide}%
  \caption{Large Data Visualization: Large data visualization of a
   brain simulation, molecular visualization in the Cave$^2$, exploration of EM
   stack reconstructions in a Cave, collaborative data analysis on a tiled
@@ -1779,14 +1779,20 @@ the decision of optimal GPU usage for each segment as well as optimal
 distribution of workload among them. The algorithm can easily be extended to use
 predictive load-balancing based on a load estimation given the application.
 
-CSLB is implemented in {\em Equalizer} as two layers of hierarchically organized
-components, specified in the configuration. \fig{fViewEqualizer} depicts
-a snapshot of a simple CSLB setup along with its configuration file. Two
-destination channels, {\em Channel1} and {\em Channel2}, each connected to a
-projector, create the final output for a multi-projector view. Each projector is
-driven by a distinct GPU, constituting the source channels {\em Source1} and
-{\em Source2}. But each source channel GPU can contribute to the rendering of
-the other destination channel segment.
+CSLB is implemented in {\em Equalizer} as two layers of hierarchically
+organized components, specified in the configuration. \fig{fViewEqualizer}
+depicts a snapshot of a simple CSLB setup along with its configuration file.
+Two destination channels, {\em Channel1} and {\em Channel2}, each connected to
+a projector, create the final output for a multi-projector view. Each projector
+is driven by a distinct GPU, constituting the source channels {\em Source1} and
+{\em Source2}. Each source channel GPU can contribute to the rendering of the
+other destination channel segment. For each destination channel, a set of
+potential resources are allocated. A top-level {\em view\_equalizer} assigns
+the usage of each resource, based on which a per-segment {\em load\_equalizer}
+computes the 2D split to balance the assigned resources within the display. The
+left segment of the display has a higher workload, so, both {\em Source1} and
+{\em Source2} are used to render for {\em Channel1}, whereas {\em Channel2}
+makes use of only {\em Source2} to assemble the image for the right segment.
 
 \begin{figure}[h!t] \center
   \subfigure[CSLB resources setup.]{\includegraphics[width=0.47\textwidth]{images/viewEqualizerSetup}
@@ -1829,7 +1835,7 @@ compound \\
 	\fbox{\box0}
 	\end{minipage}
    }
-\caption{A dual-GPU, dual-display cross-segment load-balancing setup: For each destination channel, a set of potential resources are allocated. A top-level {\em view\_equalizer} assigns the usage of each resource, based on which a per-segment {\em load\_equalizer} computes the 2D split to balance the assigned resources within the display. The left segment of the display has a higher workload, so, both {\em Source1} and {\em Source2} are used to render for {\em Channel1}, whereas {\em Channel2} makes use of only {\em Source2} to assemble the image for the right segment.}
+\caption{A dual-GPU, dual-display cross-segment load-balancing setup}
 \label{fViewEqualizer}
 \end{figure}
 
