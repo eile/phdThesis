@@ -1261,9 +1261,10 @@ parallel rendering system, these modes are largely usable with any Equalizer
 application and can be combined with all other modes.
 
 Most of these rendering modes are similar to sort-first rendering, in that they
-decompose the final view spatially or temporally. Stereo compounds decompose per
-eye pass, DPlex compounds temporally, pixel and subpixel compounds use equal
-spatial decompositions. Finally, tile and chunk compounds implement implicit
+decompose the final view spatially or temporally, while computing complete
+pixels on each source channel. Stereo compounds decompose per eye pass, DPlex
+compounds temporally, pixel and subpixel compounds use equal spatial
+decompositions. Finally, tile and chunk compounds implement implicit
 load-balancing for sort-first and sort-last rendering using queueing of work
 items.
 
@@ -1320,14 +1321,14 @@ DPlex is very well load-balanced, since most applications observe a strong
 frame-to-frame coherence with respect to the rendering load. This decomposition
 mode has the pecularity that small imbalances tend to accumulate such that the
 concurrent frames all finish simultaneously. To provide a smooth framerate, if
-so desired, a \textsf{framerate equalizer} can be installed on the destination
-compound. \sref{sFramerateEq} covers this functionality. It is transparent to
+so desired, a framerate equalizer can be installed on the destination compound.
+\sref{sFramerateEq} covers this functionality. It is transparent to
 \textsf{Equalizer} applications, but does require the configuration latency to
-be equal or greater than the number of source channels.
+be greater or equal than the number of source channels.
 
 DPlex rendering is not hard-coded into our framework, but configured by
 restricting the rendering task temporally on each source compound. This is
-achieved by setting a \textsf{period} and \textsf{phase} parameter, which
+achieved by setting a \textsf{period} and \textsf{phase} parameters, which
 configure the number of frames skipped and starting offset on the given source
 compound. A simple DPlex compound would have a destination compound with $n$
 source compounds, where each source has a period of $n$ and one phase from
@@ -1337,20 +1338,16 @@ work.
 
 \section{Pixel}
 
-\begin{wrapfigure}{r}{.382\textwidth}
- \includegraphics[width=.382\textwidth]{images/Pixel}
- {\caption{\label{fPixel}Pixel Compound}}
-\end{wrapfigure}
-
-Pixel compounds (\fig{fPixel}) decompose the destination channel by interleaving
-pixels in image space. They are a variant of sort-first rendering which works
-well for fill-limited applications which are not geometry bound, for example
-direct volume rendering. Source channels cannot reduce geometry load through
-view frustum culling, since each source channel has almost the same frustum.
-However, the fragment load on all source channels is reduced linearly and well
-load-balanced due to the interleaved distribution of pixels. This functionality
-is transparent to \textsf{Equalizer} applications, and the default compositing
-uses the stencil buffer to blit pixels onto the destination channel.
+Pixel compounds (\fig{fPixel}) decompose the destination channel by
+interleaving pixels in image space. They are a variant of sort-first rendering
+well suited for fill-limited applications which are not geometry bound, for
+example direct volume rendering. Source channels cannot reduce geometry load
+through view frustum culling, since each source channel has almost the same
+frustum. However, the fragment load on all source channels is reduced linearly
+and well load-balanced due to the interleaved distribution of pixels. This
+functionality is transparent to \textsf{Equalizer} applications, and the
+default compositing uses the stencil buffer to blit pixels onto the destination
+channel.
 
 Pixel compounds are configured by restricting each source compound with a pixel
 kernel. The kernel describes the size of the decomposition in 2D space, and the
@@ -1358,30 +1355,42 @@ kernel. The kernel describes the size of the decomposition in 2D space, and the
 enabling features by generalizing the underlying algorithm rather then
 hardcoding them.
 
+\begin{figure}[t]\center
+  \subfigure[]{
+ \includegraphics[width=.31\textwidth]{images/Pixel}
+    \label{fPixel}
+  }\hfil
+  \subfigure[]{
+    \includegraphics[width=.31\textwidth]{images/Subpixel}
+    \label{fSubpixel}
+  }\hfil
+  \subfigure[]{
+    \includegraphics[width=.31\textwidth]{images/tile}
+    \label{fTiles}
+  }
+  \caption{Pixel, Subpixel and Tile Compounds.}
+\end{figure}
+
 \section{Subpixel}
 
-\begin{wrapfigure}{r}{.382\textwidth}
- \includegraphics[width=.382\textwidth]{images/Subpixel}
- {\caption{\label{fSubpixel}Subpixel Compound}}
-\end{wrapfigure}
-
 Subpixel compounds (\fig{fSubpixel}) are similar to pixel compounds, but they
-decompose the work for a single pixel, for example with Monte-Carlo ray tracing,
-FSAA or depth of field rendering. The default compositing algorithm uses
-accumulation and averaging of all computed fragments for a pixel. Like Pixel
-compoungds, this mode is naturally load-balanced on the fragment processing
-stage but cannot scale geometry processing. This feature is not fully
-transparent to the application, since it decomposes rendering algorithms which
-render multiple samples per pixel. Applications needs to adapt their rendering
-code, for example to jitter or tilt the frustum based on the subpixel executed
-in the current rendering pass.
+decompose the work for a single pixel, for example with Monte-Carlo ray
+tracing, FSAA or depth of field rendering. The default compositing algorithm
+uses accumulation and averaging of all computed fragments for a pixel. Like
+Pixel compounds, this mode is naturally load-balanced on the fragment
+processing stage but cannot scale geometry processing. This feature is not
+fully transparent to the application, since it decomposes rendering algorithms
+which render multiple samples per pixel. Applications needs to adapt their
+rendering code, for example to jitter or tilt the frustum based on the subpixel
+executed in the current rendering pass.
+
+Since subpixel compounds increase the amount of pixels to be composited
+linearly with the number of source channels, they can use the same parallel
+compositing algorithms as sort-last rendering. Since the compositing logic is
+decoupled from the task decomposition, it reuses the same code as sort-last
+parallel compositing except for the combination step on each GPU.
 
 \section{Tiles and Chunks\label{sTile}}
-
-\begin{wrapfigure}{r}{.382\textwidth}
- \includegraphics[width=.382\textwidth]{images/tile}
- {\caption{\label{fTiles}Tile Compound}}
-\end{wrapfigure}
 
 Tile (\fig{fTiles}) and chunk decompositions are a variant of sort-first and
 sort-last rendering, respectively. They decompose the scene into a predefined
@@ -1398,7 +1407,7 @@ application to hundreds of rendering nodes.
 
 A major contribution of our parallel rendering system is the flexible system
 architecture. While many applications and frameworks implement a subset of the
-features mentioned above, all of them hardcode the algorithms to a certain
+features mentioned above, most of them hardcode the algorithms to a certain
 degree, predeterming the number of possible configurations. In Equalizer, both
 the decomposition and the recomposition of the rendering task are derived
 through a number of orthogonal parameters, which are easily combined to
