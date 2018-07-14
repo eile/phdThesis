@@ -336,18 +336,18 @@ the art in many aspects:
 
 \begin{compactdesc}
 
-\item[Minimally invasive API:] The guiding principle for the API design was
-to enable applications to retain all their rendering code and application logic.
+\item[Minimally invasive API:] The guiding principle for the API design was to
+enable applications to retain all their rendering code and application logic.
 The programming interface is based on a set of C++ classes, modeled closely to
 the resource hierarchy of a graphics rendering system. The application
-subclasses these objects and overrides C++ task methods, similar to C callbacks.
-These task methods will be called in parallel by the framework, depending on the
-current configuration. The contract for the  implementation of the task methods
-does not assume any rendering library, algorithm or technology, thus
-facilitating the adaptation of existing applications for parallel rendering.
-This parallel rendering interface is significantly different from Chromium
-\cite{HHNFAKK:02} and more similar to VRJuggler \cite{BJHMBC:01} or MPK
-\cite{BRE:05}.
+subclasses these objects and overrides C++ task methods, similar to C
+callbacks. These task methods will be called in parallel by the framework,
+depending on the current configuration. The contract for the implementation of
+the task methods does not assume any specific rendering library, algorithm or
+technology, thus facilitating the adaptation of existing applications for
+parallel rendering. This parallel rendering interface is significantly
+different from Chromium \cite{HHNFAKK:02} and more similar to VRJuggler
+\cite{BJHMBC:01} or MPK \cite{BRE:05}.
 
 \item[Runtime configuration:] The architecture of our parallel rendering
 framework makes a clear separation between rendering algorithm and the runtime
@@ -388,12 +388,12 @@ both load balancers reconfigure the underlying compound tree each frame.
 \end{compactdesc}
 
 \cite{EMP:09} and \cite{ESP:18} publish the architectural foundations of
-parallel rendering frameworks. Any algorithmic and architectural contributions
-in these publications are contributed by the author, while experimental results
-have significant contributions from the secondary authors. \cite{BRE:05}
-provides in many ways the foundation for Equalizer, to which the author was a
-technical contributor for the implementation of a parallel rendering framework
-for shared memory systems.
+parallel rendering frameworks. Any algorithmic, implementation and
+architectural contributions in these publications are contributed by the
+author, while experimental results have significant contributions from the
+secondary authors. \cite{BRE:05} provides in many ways the foundation for
+Equalizer, to which the author was a contributor for the implementation of a
+parallel rendering framework for shared memory systems.
 
 \section{Scalable Rendering}
 
@@ -408,18 +408,18 @@ compositing has advantages on commodity visualization clusters. The
 implementation, algorithm and experimental analysis in this paper are
 contributed by the author.
 
-\cite{EBAHMP:12} introduces many algorithmic optimization for modern
+\cite{MEP:10} introduced more sort-last compositing optimizations, most notably
+automatic region-of-interest detection and new compression algorithms. The
+author contributed the foundations for using region of interest for compositing,
+and the fast RLE compression with optimised data preconditioning.
+
+\cite{EBAHMP:12} introduces many algorithmic optimizations for modern
 visualization clusters, ranging from asynchronous compositing, thread and memory
 placement on NUMA architectures, region of interest, and an analysis of
 real-world application performance. We show that careful system design and
 detailed optimizations are necessary to achieve scalability on larger
 visualization clusters. For this publication, the author contributed the
 algorithms, large parts of the implementation, and some experimental analysis.
-
-\cite{MEP:10} introduced more sort-last compositing optimizations, most notably
-automatic region-of-interest detection and new compression algorithms. The
-author contributed the foundations for using region of interest for compositing,
-and the fast RLE compression with optimised data preconditioning.
 
 \section{Load Balancing}
 
