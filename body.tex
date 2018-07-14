@@ -192,43 +192,46 @@ the parallization of the application rendering code (\fig{fChromium}).
  \caption{Parallelization and transparent OpenGL interception of the rendering code\label{fChromium}}
 \end{figure}
 
+\subsubsection{VRJuggler}
+
 VR Juggler \cite{BJHMBC:01,JBBC:98} is a graphics framework for virtual reality
 applications which shields the application developer from the underlying
 hardware architecture, devices and operating system. Its main aim is to make
 virtual reality configurations easy to set up and use without the need to know
 details about the devices and hardware configuration, but not specifically to
-provide scalable parallel rendering. Extensions of VR Juggler, such as for
-example ClusterJuggler \cite{BC:03} and NetJuggler \cite{AGLMR:02}, are
-typically based on the replication of application and data on each cluster node
-and basically take care of synchronization issues, but fail to provide a
-flexible and powerful configuration mechanism that efficiently supports scalable
-rendering as also noted in \cite{SWNH:03}. VR Juggler does not support scalable
-parallel rendering such as sort-first and sort-last task decomposition and image
+provide scalable rendering. Extensions of VR Juggler, such as for example
+ClusterJuggler \cite{BC:03} and NetJuggler \cite{AGLMR:02}, are typically based
+on the replication of application and data on each cluster node and basically
+take care of synchronization issues, but fail to provide a flexible and
+powerful configuration mechanism that efficiently supports scalable rendering
+as also noted in \cite{SWNH:03}. VR Juggler does not support scalable parallel
+rendering such as sort-first and sort-last task decomposition and image
 compositing nor does it provide support for network swap barriers
 (synchronization), distributed objects, image compression and transmission, or
 multiple rendering threads per process, important for multi-GPU systems.
 
-While Chromium \cite{HHNFAKK:02} provides a powerful and transparent abstraction
-of the OpenGL API, that allows a flexible configuration of display resources,
-its main limitation with respect to scalable rendering is that it is focused on
+\subsubsection{Chromium}
+
+Chromium \cite{HHNFAKK:02} provides a powerful and transparent abstraction of
+the OpenGL API that allows a flexible configuration of display resources. Its
+main limitation with respect to scalable rendering is that it is focused on
 streaming OpenGL commands through a network of nodes, often initiated from a
 single source. This has also been observed in \cite{SWNH:03}. The problem comes
 in when the OpenGL stream is large in size, due to not only containing OpenGL
-calls but also the rendered data such as geometry and image data. Only if the
-geometry and textures are mostly static and can be kept in GPU memory on the
-graphics card, no significant bottleneck can be expected as then the OpenGL
-stream is composed of a relatively small number of rendering instructions.
-However, as it is typical in real-world visualization applications, display and
-object settings are interactively manipulated, data and parameters may change
-dynamically, and large data sets do not fit statically in GPU memory but are
-often dynamically loaded from out-of-core and/or multiresolution data
-structures. This can lead to frequent updates not only of commands and
-parameters wich have to be distributed but also of the rendered data itself
-(geometry and texture), thus causing the OpenGL stream to expand dramatically.
-Furthermore, this stream of function calls and data must be packaged and
-broadcast in real-time over the network to multiple nodes for each rendered
-frame. This makes CPU performance and network bandwidth a more likely limiting
-factor.
+calls but also geometry and image data. Only if the geometry and textures are
+mostly static and can be kept in GPU memory on the graphics card, no
+significant bottleneck can be expected as then the OpenGL stream is composed of
+a relatively small number of rendering instructions. However, as it is typical
+in real-world visualization applications, display and object settings are
+interactively manipulated, data and parameters may change dynamically, and
+large data sets do not fit statically in GPU memory but are often dynamically
+loaded from out-of-core and/or multiresolution data structures. This can lead
+to frequent updates not only of commands and parameters wich have to be
+distributed but also of the rendered data itself (geometry and texture), thus
+causing the OpenGL stream to expand dramatically. Furthermore, this stream of
+function calls and data must be packaged and broadcast in real-time over the
+network to multiple nodes for each rendered frame. This makes CPU performance
+and network bandwidth a more likely limiting factor.
 
 The performance experiments in \cite{HHNFAKK:02} indicate that Chromium is
 working quite well when the rendering problem is fill-rate limited. This is due
@@ -260,16 +263,20 @@ becomes the single-threaded application rendering code, the amount of
 application data the single application instance can load or process, or the the
 size of the OpenGL command stream send over the network.
 
-{CGLX}~\cite{DK:11} tries to bring parallel execution transparently to
-OpenGL applications, by emulating the GLUT API and intercepting certain OpenGL
-calls. In contrast to frameworks like {Chromium} and {ClusterGL}
-which distribute OpenGL calls, {CGLX} follows the distributed application
-approach. This works transparently for trivial applications, but quickly
-requires the application developer to address the complexities of a distributed
-application, when mutable application state needs to be synchronized across
-processes. For realistic applications, writing parallel applications remains the
-only viable approach for scalable parallel rendering, as shown by the success of
- {Paraview}, {Visit} and {Equalizer}-based applications.
+\subsubsection{CGLX}
+
+{CGLX}~\cite{DK:11} tries to bring parallel execution transparently to OpenGL
+applications, by emulating the GLUT API and intercepting certain OpenGL calls.
+In contrast to frameworks like {Chromium} and {ClusterGL} which distribute
+OpenGL calls, {CGLX} follows the distributed application approach. This works
+transparently for trivial applications, but quickly requires the application
+developer to address the complexities of a distributed application, when
+mutable application state needs to be synchronized across processes. For
+realistic applications, writing parallel applications remains the only viable
+approach for scalable rendering, as shown by the success of {Paraview}, {Visit}
+and {Equalizer}-based applications.
+
+\subsubsection{OpenGL Multipipe SDK}
 
 OpenGL Multipipe SDK (MPK) \cite{BRE:05} implemented an effective parallel
 rendering API for a shared memory multi-CPU/GPU system. It is similar to IRIS
@@ -277,9 +284,13 @@ Performer \cite{RH:94} in that it handles multi-GPU rendering by a lean
 abstraction layer via a conceptual callback mechanism, and that it runs
 different application tasks in parallel. However, MPK is not designed nor meant
 for rendering nodes separated by a network. MPK focuses on providing a parallel
-rendering framework for a single application, parts of which are run in parallel
-on multiple rendering channels, such as the culling, rendering and final image
-compositing processes.
+rendering framework for a single application, parts of which are run in
+parallel on multiple rendering channels, such as the culling, rendering and
+final image compositing processes. Equalizer in many ways is an evolution of
+MPK for distributed execution, improved performance and better configurability.
+The author used to be the technical lead developer of OpenGL Multipipe SDK.
+
+\subsubsection{Tiled Display Walls}
 
 Software for driving and interacting with tiled display walls has received
 significant attention, including {Sage}~\cite{Sage} and
@@ -301,12 +312,14 @@ give a summary of the contributions of this thesis, listing relevant
 publications and the contribution of the author to these publications.
 \cref{sArchitecture} introduces the architecture of a parallel rendering
 framework, the foundation for this thesis. \cref{sScalable} presents new
-algorithms for the task decomposition in parallel rendering. \cref{sCompositing}
-focuses on optimisations to reduce the cost of recombining the results of a
-parallel rendering decomposition. \cref{sLoadBalancing} describes better
-approaches to balance the task assignment to rendering resources. Before a
-conclusion in \cref{sConclusion}, \cref{sCollage} describes the design and
-architecture of a network library tailored for parallel rendering.
+algorithms for the task decomposition in parallel rendering.
+\cref{sCompositing} focuses on optimisations to reduce the cost of recombining
+the results of a parallel rendering decomposition. \cref{sLoadBalancing}
+describes better approaches to balance the task assignment to rendering
+resources. \cref{sCollage} describes the design and architecture of a network
+library tailored for parallel rendering. Before a conclusion in
+\cref{sConclusion}, \cref{sApplications} provides an overview of major
+Equalizer applications.
 
 
 \chapter{Contributions}
@@ -2444,7 +2457,7 @@ good scalability with respect to the multicast group size, and is very effective
 for distributing structured and unstructured application data to a large number
 of rendering clients concurrently.
 
-\chapter{Applications}
+\chapter{Applications}\label{sApplications}
 
 A key performance measure for a good design of any framework is the acceptance
 by developers, which is reflected in the usage in third-party applications.
