@@ -849,18 +849,20 @@ control host with two tracked head-mounted displays.
 
 \subsection{Compounds}
 
-Compound trees are used to describe how multiple rendering resources are
-combined to produce the desired output, especially how multiple GPUs are
-aggregated to increase rendering performance. They are the core contribution
-enabling a flexible resource configuration.
+Compound trees describe how multiple rendering resources are combined to
+produce the desired output, especially how multiple GPUs are aggregated to
+increase rendering performance. They are the core contribution enabling a
+flexible resource configuration. They are modified at runtime by
+\textsf{equalizers} to implement dynamic behaviour, e.g., for load balancing.
 
-Compounds are a data structure to describe the parallel execution of rendering
-tasks in the form of a tree.  Each compound corresponds to some rendering tasks
-(clear, draw, assemble, readback) and references a  channel from the resource
-description which executes the tasks in the given order. A compound may provide
-output frames from the readback task to others, and can request input
-frames from others for its own assembly task, and output frames are linked to
-input frames by name.
+Compounds are a data structure to describe the execution of rendering tasks in
+the form of a tree. Each compound corresponds to some rendering tasks (clear,
+draw, assemble, readback) and references a channel from the resource
+description which executes the tasks in the given order. The allocation of
+channels on pipes and nodes determines which resources execute the task, and
+what can be executed in parallel. A compound may provide output frames from the
+readback task to others, and can request input frames from others for its own
+assembly task. Output frames are linked to input frames by name.
 
 Compound trees are a logical description of the rendering pipeline, and only
 reference the actual physical resources through their channels. This allows
@@ -870,10 +872,10 @@ configuration by using channels of different windows on one local workstation
 before deploying it to multiple physical GPUs.
 
 A simple leaf compound description for rendering a part of the data set, given
-by the data {\em range}, into a particular region of the {\em viewport} is given
-in \fig{FIG_leaf_compound}. The data range is a logical mapping of the data set
-onto the unit interval and is left to the application to interpret
-appropriately. Hence  the range [0 $\frac{1}{2}$] indicates that the first half
+by the data {\em range}, into a particular region of the {\em viewport} is
+given in \fig{FIG_leaf_compound}. The data range is a logical mapping of the
+data set onto the unit interval and is left to the application to interpret
+appropriately. Hence the range [0 $\frac{1}{2}$] indicates that the first half
 of the data set should be rendered, for example the first $\frac{n}{2}$
 triangles of a polygonal mesh with $n$ faces. The viewport is indicated by the
 parameters [x y width height] as fraction of the parent's viewport, and in the
@@ -882,7 +884,7 @@ resulting framebuffer data -- including per-pixel color and depth -- of the
 rendering executed on this channel is read back and made available to other
 compounds by the name left\_half.
 
-\begin{figure}[ht]\center
+\begin{figure}[h!t]\center
  {\begin{tabbing} \ \ \ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \= \kill
    \> {\bf compound} \{						\\
    \>\> {\bf channel} "draw"					\\
@@ -897,24 +899,18 @@ compounds by the name left\_half.
 \end{figure}
 
 A non-leaf compound performing some image assembly and compositing task is
-indicated in \fig{FIG_inner_compound}. Framebuffer data is read from two other
+provided in \fig{FIG_inner_compound}. Framebuffer data is read from two other
 compounds which supposedly execute rendering for part\_a and part\_b of the data
-set in parallel. The compound itself executes for example $z$-depth visibility
+set in parallel. The compound itself executes by default $z$-depth visibility
 compositing of the two input images on its channel and returns the resulting
-color framebuffer.
+color framebuffer in the output frame named frame.display.
 
-\begin{figure}[ht]\center
- {\begin{tabbing} \ \ \ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \= \kill
-   \> {\bf compound} \{						\\
-   \>\> {\bf channel} "display"				\\
-   \>\> inputframe \{ name "part\_a" \}			\\
-   \>\> inputframe \{ name "part\_b" \}			\\
-   \>\> outputframe \{ buffer [ COLOR ] \}	\\
-   \> \}
-  \end{tabbing}}
- \vspace{-2mm}
- \caption{Compound performing image compositing.\label{FIG_inner_compound}}
-\end{figure}
+\begin{figure}[h!t]\center {\begin{tabbing} \ \ \ \ \ \=\ \ \ \=\ \ \ \=\ \ \
+\=\ \ \ \=\ \ \ \= \kill \> {\bf compound} \{ \\ \>\> {\bf channel} "display"
+\\ \>\> inputframe \{ name "part\_a" \} \\ \>\> inputframe \{ name "part\_b" \}
+\\ \>\> outputframe \{ buffer [ COLOR ] \} \\ \> \} \end{tabbing}}
+\vspace{-2mm} \caption{Compound performing image
+compositing.\label{FIG_inner_compound}} \end{figure}
 
 Leaf compounds execute all tasks by default, but the focus is often on the draw
 task with a default assemble and standard readback task used to pass the
@@ -937,7 +933,7 @@ readback and transfer to another node.
 All attributes as well as the channel are inherited from the parent compound if
 not specified otherwise. The {\em viewport}, {\em data range} and {\em eye}
 attributes are used to describe the decomposition of the parent's 2D viewport,
-database range and eye passes, respectively.
+database range, temporal, pixel, subpixel and eye passes, respectively.
 
 A more formal classification of compound entities is:
 
@@ -945,7 +941,7 @@ A more formal classification of compound entities is:
  \item [Root compound] is the top-level compound of a compound tree. It might
  also be a destination compound, or can be empty (not referencing a channel)
  when synchronizing multiple destination channels.
- \item [Destination compound(s)] are the top-most compound referencing a
+ \item [Destination compound(s)] are the top-most compounds referencing a
  destination channel. This destination channel determines the rendering context
  for the whole subtree, that is, compounds and their channels lower in the
  hierarchy contribute to the rendering of the destination channel be executing
@@ -961,12 +957,15 @@ A more formal classification of compound entities is:
   child can be limited by setting the \textsf{viewport}, \textsf{range},
   \textsf{period} an  \textsf{phase}, \textsf{pixel}, \textsf{subpixel},
   \textsf{eye} or \textsf{zoom} as desired.
+
   \item[Compositing] Source compounds define an \textsf{output\_frame} to read
   back the result. This output frame is used as an \textsf{input\_frame} on the
   destination compound receiving the pixels. The frames are connected with each
-  other by their name, which has to be unique within the root compound tree. For
-  parallel compositing, the algorithm is described by defining multiple input
-  and output frames across all source compounds.
+  other by their name, which has to be unique within the root compound tree.
+  For parallel compositing, the algorithm is described by defining multiple
+  input and output frames across all source compounds and restricting the task
+  to assemble and readback.
+
  \end{compactdesc}
  \item[Intermediate compounds] may be used to simplify the task decomposition or
  to configure parallel compositing.
@@ -1046,10 +1045,10 @@ ways. The compound tree with its task decomposition, input and output frames, is
 a specialized description ``programming'' scalable rendering across parallel
 resources.
 
-Compositing if configured using output frames connected to input frames,
+Compositing is configured using output frames connected to input frames,
 compound tasks and eye passes, as well as frame parameters. In its simplest
-form, a sort-first source compound provides and output frame, which is routed to
-an input frame using the same name on the destination compound. The source
+form, a sort-first source compound provides an output frame, which is routed
+to an input frame using the same name on the destination compound. The source
 viewport decomposes the task, and the output frame collects this partial result
 from the source channel and composites it using the correct offset onto the
 destination channel.
@@ -1068,6 +1067,11 @@ its neighbors, and then $z$-composites its own tile. This yields one complete
 tile on each channel, of which two color tiles are then assembled on the
 destination channel.
 
+\begin{wrapfigure}{r}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/directSendCompound}
+  {\caption{\label{fDirectSendCmp}Direct Send Compound}}
+\end{wrapfigure}
+
 The corresponding compound tree is shown schematically in \fig{fDirectSendCmp}.
 Each of the three channels has a child compound to execute the rendering and
 read back to incomplete tiles for sort-last compositing. These three leaf
@@ -1076,11 +1080,6 @@ channel receives two tiles and assembles them onto its partially rendered
 result, creating a complete tile. For the two source-only channels, a final
 color-only output image is connected to the destination channel. The arrows
 illustrate the pixel flow for one of the tiles.
-
-\begin{wrapfigure}{r}{.618\textwidth}
-  \includegraphics[width=.618\textwidth]{images/directSendCompound}
-  {\caption{\label{fDirectSendCmp}Direct Send Compound}}
-\end{wrapfigure}
 
 For most rendering applications even a relatively complex setup such as this
 example requires very little programmer involvement. The abstractions provided
@@ -1107,11 +1106,13 @@ destination channel will assemble its four input frames one by one as the output
 frame is received. Due to the asynchronous execution and resulting pipelining of
 operations, this availability changes each frame depending on the runtime of
 other tasks.
-\item[Asynchronous Compression, GPU and Network Transfers:] Compressing,
+
+\item[Parallel Compression, Downloads and Network Transfers:] Compressing,
 transmitting and receiving frames between nodes is handled by threads
 independent from the render thread. GPU transfers are handled by asynchronous
 PBO transfers. Pipelining all these operations with the actual rendering
 significantly minimizes the compositing overhead.
+
 \item[On-GPU Transfers:] Occasionally, the source and destination channel are on
 the same GPU. Using textures as pixel buffers allows minimal overhead for the
 output to input frame transfer.
