@@ -1123,8 +1123,9 @@ output to input frame transfer.
 Compounds in itself only provide a static configuration of the parallel
 rendering setup. \textsf{Equalizers} are algorithms which hook into a compound
 and modify parameters of their respective subtree at runtime to dynamically
-optimize the resource usage, by each tuning one aspect of the decomposition. Due
-to their nature, they are transparent to application developers, but might have
+optimize the resource usage. Each equalizer foucuses on tuning one aspect of
+the decomposition, allowing them to be composited in a configuration. Due to
+their nature, they are transparent to application developers, but might have
 application-accessible parameters to tune their behavior. Resource equalization
 is the critical component for scalable parallel rendering, and therefore the
 eponym for the \textsf{Equalizer} project name.
@@ -1136,12 +1137,32 @@ balancing is one use case for equalizers, where the algorithm analysis runtime
 statistics to change the task decomposition each frame to equalize rendering
 times between all resources.
 
+In \cref{sLoadBalancing} we provide an extensive overview over the available
+equalizers.
+
 \section{Runtime Reconfiguration}
 
-Supported by the distribution execution layer, introduced in the next Section,
+Supported by the distribution execution layer, introduced in the next section,
 Equalizer implements dynamic reconfiguration of a running visualization
 application. This functionality is used by runtime layout switches and runtime
 reliability.
+
+Runtime reconfiguration is designed to be a side effect of the internal resource
+management algorithm, that is, the initialization and exit of a configuration
+uses the same code path as the runtime addition of a single channel. Rendering
+resources in Equalizer are ref-counted by the compounds using them, and the
+state change between inactivated and activated triggers a launch or stop of the
+associated resource. These resource counters are propagated up the resource
+hierarchy, that is, a channel will (de)activate its window, pipe and node.
+
+Channel and window (de)activation are relatively lightweight and only incur the
+creation and initialization of the class instance (and associated OpenGL
+resources) on the client. A pipe (de)activation incurs additionally a new (or
+removed) operating system thread, and a node (de)activation is tied to a
+process. Depending on the application logic, at some level of the resource
+hierarchy application data has to be distributed to the rendering client. An
+application may use pre-launched rendering clients which run even when not
+active, and can use this to cache application state for faster reconfiguration.
 
 Layout switches are caused by the activation of a different layout on a canvas
 by the application code. A typical layout switch will only (de)active channels,
@@ -1165,23 +1186,6 @@ load-balanced source channels, the load equalizer will simply reassign the work
 to other source channels. For static configurations, the source channel
 contribution will be missing from the final image. For destination channels,
 the corresponding output display will disappear from the configuration.
-
-Runtime reconfiguration is designed to be a side effect of the internal resource
-management algorithm, that is, the initialization and exit of a configuration
-uses the same code path as the runtime addition of a single channel. Rendering
-resources in Equalizer are ref-counted by the compounds using them, and the
-state change between inactivated and activated triggers a launch or stop of the
-associated resource. These resource counters are propagated up the resource
-hierarchy, that is, a channel will (de)activate its window, pipe and node.
-
-Channel and window (de)activation are relatively lightweight and only incur the
-creation and initialization of the class instance (and associated OpenGL
-resources) on the client. A pipe (de)activation incurs additionally a new (or
-removed) operating system thread, and a node (de)activation is tied to a
-process. Depending on the application logic, at some level of the resource
-hierarchy application data has to be distributed to the rendering client. An
-application may use pre-launched rendering clients which run even when not
-active, and can use this to cache application state for faster reconfiguration.
 
 \section{Distributed Execution Layer}
 
