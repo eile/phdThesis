@@ -57,9 +57,9 @@ performing efficient interactive data exploration has not kept up with the pace
 in hardware developments and data gathering capabilities. On one hand, this is
 due to an inherent delay between hardware and software capabilities, since
 development typically only starts once the hardware is available. On the other
-hand, existing software engineered for different design parameters has a
-significant inertia to change, to the extreme of the necessity to rewrite it
-from scratch.
+hand, existing software is often engineered for different design parameters and
+has a significant inertia to change, to the extreme of the necessity to rewrite
+it from scratch.
 
 In the context of emerging data-intensive knowledge discovery and data analysis,
 efficient interactive data exploration methodologies have become increasingly
@@ -76,7 +76,7 @@ current and future challenges.
 Interactive visualization poses an unique set of challenges. Its goal is to
 present a believable alternate universe to the visual system of the user. This
 process turns interactive visualization into a powerful tool, since it utilizes
-the brains native capabilities to interpret and understand data. Virtual
+the brains' native capabilities to interpret and understand data. Virtual
 Reality takes this goal to the extreme, and when done right, makes the user
 forget that he interacts with a virtual world.
 
@@ -84,17 +84,17 @@ To achieve this goal, visualization has the daunting task to transform large
 amount of data into colored pixels in a short amount of time. Believable
 visualization has to minimize the latency between user input and the resulting
 output, and to maximize the number of frames rendered per second. With
-increased immersion in the data, these parameter become more important --
+increased immersion in the data, these parameters become more important --
 for Virtual Reality, a 60~Hz refresh rate and a latency below 50~ms is needed,
-whereas for non-immersive destop visualization 10~Hz and 200~ms are acceptable.
+whereas for non-immersive desktop visualization 10~Hz and 200~ms are acceptable.
 
 In the context of parallel rendering, these constraints make building a
 parallel and distributed application harder compared to other distributed
-domains such as simulations and cloud computing. In particular, one has to be
+applications for simulations and cloud computing. In particular, one has to be
 careful with synchronization and pipelining of operations to minimize latency.
-In addition, an interactive application has different requirements when it comes
-to resource allocation compared to other large-scale distributed computing
-domains.
+In addition, an interactive application has different requirements when it
+comes to resource allocation compared to other large-scale distributed
+computing domains.
 
 \section{Parallel Rendering}
 
@@ -103,17 +103,17 @@ different computers, to generate images for one or more output displays. The
 goal is to increase the output resolution, rendering performance or rendering
 quality. Traditionally the focus has been on the first two goals, often in
 isolation to each other, e.g., algorithms and implementations for Cave systems
-tend to be orthogonal to scalable rendering for large data visualization.
+tend to be different from scalable rendering for large data visualization.
 
 The main performance indicator for Large Data Interactive Rendering is the
 performance of the rendering algorithm, that is, the framerate with which the
 program produces new images. This framerate can be improved by either using
 faster or more hardware, or by better algorithms exploiting the existing
-hardware and data. This thesis primarily focuses on the first approach using
+hardware and data. This thesis primarily focuses on the first approach, using
 parallel rendering to exploit the CPU and GPU parallelism available on a single
 system or a distributed cluster. The early fundamental concepts have been laid
 down in \cite{MCEF:94} and \cite{Crockett:97} (\fig{fSorts}). A number of
-domain specific parallel rendering algorithms and special-purpose hardware
+domain specific parallel rendering algorithms and special purpose hardware
 solutions have been proposed in the past, however, only few generic parallel
 rendering frameworks have been developed. We will focus on sort-last and
 sort-first rendering, since sort-middle architectures are only feasible in a
@@ -126,12 +126,12 @@ transferred in the sorting stage.
 \end{figure}
 
 
-\subsection{Domain specific solutions}
+\subsection{Domain Specific solutions}
 
 Cluster-based parallel rendering has been commercialized for off-line rendering
 (i.e. distributed ray-tracing) for computer generated animated movies or special
 effects, since the ray-tracing technique is inherently amenable to
-parallelization for off-line processing. Other special-purpose solutions exist
+parallelization for off-line processing. Other special purpose solutions exist
 for parallel rendering in specific application domains such as volume rendering
 \cite{LWMT:97,Wittenbrink:98,HSCSM:00,SL:02,GS:02,NSJLYZ:05} or
 geo-visualization \cite{VR:91,AG:95,LDC:96,JLMV:06}. However, such specific
@@ -146,28 +146,27 @@ parallel rendering system, basic concepts presented in \cite{NC:07} such as load
 management and adaptive LOD data traversal can be carried over to other
 sort-first parallel rendering solutions.
 
-\subsection{Special-purpose architectures}
+\subsection{Special Purpose Architectures}
 
 Historically, high-performance real-time rendering systems have relied on an
-integrated proprietary system architecture, such as the early SGI graphics super
-computers. These special-purpose solutions have become a niche product as their
+integrated proprietary system architecture, such as the early SGI graphics supercomputers. These special purpose solutions have become a niche product as their
 graphics performance does not keep up with off-the-shelf workstation graphics
 hardware and scalability of clusters.
 
-Due to its conceptual simplicity, a number of special-purpose image compositing
-hardware solutions for sort-last parallel rendering have been developed. The
+Due to its conceptual simplicity, a number of special purpose image compositing
+hardware solutions for sort-first parallel rendering have been developed. The
 proposed hardware architectures include Sepia \cite {MHS:99a,sepia}, Sepia~2
 \cite{LMSBHa:01,LMSBH:01}, Lightning~2 \cite{Stoll01}, Metabuffer
 \cite{Blanke00,Zhang01}, MPC Compositor \cite{Muraki01} and PixelFlow
 \cite{Molnar92,Eyles97}, of which only a few have reached the commercial
 product stage (i.e. Sepia~2 and MPC Compositor). However, the inherent
-inflexibility and setup overhead have limited their distribution and application
-support. Moreover, with the recent advances in the speed of CPU-GPU interfaces,
-such as PCI Express, NVLink and other modern interconnects, combinations of
-software and GPU-based solutions offer more flexibility at comparable
-performance.
+inflexibility and setup overhead have limited their distribution and
+application support. Moreover, with the recent advances in the speed of CPU-GPU
+and GPU-GPU interfaces, such as PCI Express, NVLink and other modern
+interconnects, combinations of software and GPU-based solutions offer more
+flexibility at comparable performance.
 
-\subsection{Generic approaches}
+\subsection{Generic Approaches}
 
 A number of algorithms and systems for parallel rendering have been developed in
 the past. On one hand, some general concepts applicable to cluster parallel
@@ -795,7 +794,7 @@ segment. \fig{fDisplay} shows a real-world setup of a single canvas with six
 segments using underlap, with a two-view layout activated. This configuration
 generates eight destination channels.
 
-\begin{figure}[ht!]\center
+\begin{figure}[h!t]\center
  \includegraphics[width=.9\textwidth]{images/wallLayout.jpg}
  {\caption{\label{fDisplay}Tiled Display Wall using a six-segment canvas with a two-view layout}}
 \end{figure}
@@ -931,6 +930,71 @@ A more formal classification of compound entities is:
  \item[Intermediate compounds] may be used to simplify the task decomposition or
  to configure parallel compositing.
 \end{compactdesc}
+
+\section{Virtual Reality}
+
+Virtual Reality is an important field for parallel rendering. It does require
+special attention to support it as a first-class citizen in a generic parallel
+rendering framework. \textsf{Equalizer} has been used in many virtual reality
+installations, such as the Cave2 \cite{FNTTL:13}, the high-resolution C6 CAVE
+at the KAUST visualization laboratory, and head-mounted displays
+(\fig{FIG_teaser}). In the following we lay out the features needed to support
+these installations, motivated by application use cases.
+
+\subsection{Head Tracking}
+
+Head tracking is the minimal feature needed to support immersive installations.
+\textsf{Equalizer} does support multiple, independent tracked views through the
+observer abstraction. Built-in VRPN support enables the direct,
+application-transparent configuration of a VRPN tracker device. Alternatively,
+applications can provide a $4\times 4$ tracking matrix. Both CAVE-like tracking
+with fixed projection surfaces and HMD tracking with moving displays are
+implemented.
+
+\subsection{Dynamic Focus Distance}
+
+To our knowledge, all parallel rendering systems have the focal plane coincide
+with the physical display surface. For better viewing comfort, we introduce a
+new dynamic focus mode, where the application defines the distance of the focal
+plane from the observer, based on the current \textit{lookat} distance.
+
+\begin{figure}[h!t]\center
+ \includegraphics[width=.9\textwidth]{images/focus}
+ {\caption{\label{fFocus}Dynamic Focus in a Cave}}
+\end{figure}
+
+\fig{fFocus} illustrates this feature in a top-down view of a Cave. The
+observed teapot is significantly behind the front projection wall in the
+virtual world. In a standard implementation (left side), the focal plane
+coincides with the projection surface. In our implementation, the application
+configures a focus distance to coincide with the observed teapot (right side).
+The dotted line shows the focal plane for both projection walls. Initial
+experiments show that this provides better viewing comfort, in particular for
+objects placed in front of the physical displays.
+
+\subsection{Asymmetric Eye Position}
+
+Traditional head tracking computes the left and right eye positions by using an
+interocular distance. However, human heads are not symmetric, and by measuring
+individual users a more precise frustum can be computed. \textsf{Equalizer}
+supports this through the optional configuration of individual 3D eye
+translations relative to the tracking matrix.
+
+\subsection{Model Unit}
+
+This feature allows applications to specify a scaling factor between the model
+and the real world, to allow exploration of macroscopic or microscopic worlds
+in virtual reality. The unit is per view, allowing different scale factors
+within the same application. It scales both the specified projection surface as
+well as the eye position (and therefore eye separation) to achieve the
+necessary effect.
+
+\subsection{Runtime Stereo Switch}
+
+Applications can switch each view between mono and stereo rendering at runtime,
+and run both monoscopic and stereoscopic views concurrently. This switch does
+potentially involve the start and stop of resources and processes for passive
+stereo or stereo-dependent task decompositions.
 
 \section{Compositing}
 
@@ -1604,6 +1668,23 @@ compression for interactive parallel rendering.
 
 
 \chapter{Load Balancing}\label{sLoadBalancing}
+
+\begin{wrapfigure}{r}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/loadBalancing}
+  \caption{\label{floadeq}Load Balancing}
+\end{wrapfigure}
+
+Load balancing changes the resource assignment per source channel based on the
+resource load. Static load balancing, shown in \fig{floadeq} top, performs this
+assignment during initialization. Dynamic load balancing can either be reactive
+or proactive (middle and bottom of \fig{floadeq}). Reactive load-balancing
+utilizes statistics from previous frames to predict future load distribution.
+Predictive load-balancing uses an application-provided load estimation (or cost
+function) to estimate the load distribution of the current frame. Both
+approaches reassign resources dynamically, typically for each rendered frame.
+Implicitely load-balanced algorithms achieve a good load balance by other
+means, for example through work stealing between resources.
+
 
 {\em Equalizers} are an addition to compound trees. They modify parameters of
 their respective compound subtree at runtime to dynamically optimize the
