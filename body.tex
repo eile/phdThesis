@@ -1467,31 +1467,36 @@ processes during the stereo switch.
 
 During sort-last and subpixel decompositions, each rendering resource produces
 an output which needs to be combined with the result of other resources on a
-per-pixel level. This compositing step reduces the amount of output information,
-either through depth-sorting or blending the inputs. This loss of information in
-the compositing step can be exploited by distributing the work over multiple
-resources, commonly called parallel compositing.
-
-\begin{wrapfigure}{r}{.618\textwidth}
- \includegraphics[width=.618\textwidth]{images/depth}
- {\caption{\label{fDepth}Depth-sorted sort-last compositing}}
-\end{wrapfigure}
+per-pixel level. This compositing step reduces the amount of information,
+either through depth-sorting or blending the inputs. This loss of information
+in the compositing step can be exploited by distributing the work over multiple
+resources, commonly called parallel compositing. Parallel compositing leverages multiple computate resources as well as parallel memory and network bandwidth.
 
 For sort-last rendering, there are two approaches to combine the partial
-results: $z$-sorting using the depth buffer, and spatial rendering with
-back-to-front compositing.
+results: $z$-sorting using the depth buffer, and spatial rendering
+decomposition with back-to-front compositing.
 
 The first algorithm uses both the color and depth buffer, and assigns the final
 pixel to the color of the source with the front-most depth buffer values. It
 requires no spatial ordering of the data during rendering. It does not
 correctly composite pixels with transparent geometry. Due to the use of the
 depth buffer, it is also more expensive since more pixel data needs to be
-processed. It is often used for polygonal data, as shown in \fig{fDepth}.
+processed. Furthermore, depth buffer readback tends to slower, and compression
+algorithms for depth buffer data tend not to perform as wall as color buffer
+compression. Depth-sorted compositing is often used for polygonal data, as
+shown in \fig{fDepth}.
 
-\begin{wrapfigure}{r}{.312\textwidth}
- \includegraphics[width=.312\textwidth]{images/sorted}
- {\caption{\label{fSorted}Back-to-front sort-last compositing}}
-\end{wrapfigure}
+\begin{figure}[h!t]\center
+  \subfigure[]{
+ \includegraphics[height=4.5cm]{images/depth}
+    \label{fDepth}
+  }\hfil
+  \subfigure[]{
+    \includegraphics[height=4.5cm]{images/sorted}
+    \label{fSorted}
+  }
+  \caption{Depth-sorted and back-to-front sort-last compositing.}
+\end{figure}
 
 Spatial compositing is often used for direct volume rendering, and requires the
 application to render convex regions of data on each source, and then depth-sort
@@ -1501,15 +1506,18 @@ level, rather then the fragment level as in the first algorithm, it can operate
 using only the color buffer, as shown in \fig{fSorted}.
 
 This algorithm produces correct transparency, unless multi-sampling is used
-during rendering. Multisampling incurs also a loss of information, where
+during rendering. Multisampling also incurs a loss of information, where
 multiple samples are collapsed into a single pixel. Pixels where samples are
 generated from different geometries are problematic, since the averaging
-operations blends them with incomplete information during sort-last rendering. A
-correct algorithm would need to composite all fragments from all sources before
-collapsing them. Spatial compositing provides better performance, and scales
-nicer with other optimisations such as region of interest due to compact regions
-produced by the spatial sorting. In \cite{EBAHMP:12} we applied this algorithm
-to mesh-based rendering with transparency.
+operations blends them with incomplete information during sort-last rendering.
+A correct algorithm would need to composite all fragments from all sources
+before collapsing them.
+
+Spatial compositing provides better performance, and scales nicer with other
+optimisations such as region of interest due to compact regions produced by the
+spatial sorting. In \cite{EBAHMP:12} we applied this algorithm to mesh-based
+rendering with transparency and presented performance benefits over
+depth-sorted compositing.
 
 Contrary to most other implementations, parallel compositing algorithms in
 Equalizer are not hardcoded, but rather expressed explicitly in the
@@ -1521,7 +1529,7 @@ configure a subset of the rendering (viewport and framebuffer attachments), and
 are read back after rendering and assembly.
 
 \begin{figure}[h!t]\center
- \includegraphics[width=\columnwidth]{images/binarySwap}
+ \includegraphics[width=0.9\columnwidth]{images/binarySwap}
  {\caption{\label{fBS}Binary swap sort-last compositing}}
 \end{figure}
 
@@ -1535,36 +1543,36 @@ nodes using a binary compositing tree.
 In \cite{EP:07} we have shown that for commodity clusters, direct-send
 compositing provides better performance over the binary swap algorithm commonly
 used on HPC systems. While it uses more messages in total, direct send has fewer
-synchronization points than binary swap. Furthemore, due to the early assembly
+synchronization points than binary swap. Furthermore, due to the early assembly
 optimization, direct send can handle imbalances between nodes better since a
 late channel has a smaller penalty for the overall execution time.
 
 
 \section{Region of Interest}
 
-During scalable rendering using any decomposition most of the time pixel data
-has to be copied from the source channel framebuffer to either the
-destinationation channel framebuffer, or to an intermediate channel during
-parallel compositing. The distributed image compositing cost is directly
-dependent on how much data has to be sent over the network, which in turn is
-related to how much screen space is actively covered. Depending on the data set
-and viewpoint, only a subset of the framebuffer shows pixeles generated from the
-data. In particular for sort-last rendering, every node potentially renders into
-the entire frame buffer. With an increasing number of nodes the set of affected
-pixels typically decreases, leaving blank areas that can be omitted for
-transmission and compositing.
+During scalable rendering, pixel data has to be copied from the source channel
+framebuffer to either the destination channel framebuffer, or to an
+intermediate channel during parallel compositing. The distributed image
+compositing cost is directly dependent on how much data has to be sent over the
+network, which in turn is related to how much screen space is actively covered.
+Depending on the data set and viewpoint, only a subset of the framebuffer shows
+pixels generated from the data. In particular for sort-last rendering, every
+node potentially renders into the entire frame buffer. With an increasing
+number of nodes, the set of affected pixels typically decreases, leaving blank
+areas that can be omitted for transmission and compositing.
 
-Equalizer provides an API for the programmer to provide the region of interest,
-i.e., the screen-space 2D bounding box enclosing the data rendered by a single
-resource. We have extended the core parallel rendering framework to use an
-application-provided ROI to optimize the \textsf{load\_equalizer} as well as
-the image compositing. The compositing code uses the ROI to minimize image
-readback size, and consequently network transmission. The ROI is an output
-frame parameter, and is transmitted to all input frames together with the pixel
-data. On the input frame, the compositing code respects this parameter to place
-the pixel data on the right position. The application can easily compute a good
-ROI estimation by computing the screen-space projection of the model's bounding
-sphere or bounding box.
+Equalizer provides an API for the programmer to provide the region of interest
+(ROI). The ROI is the screen-space 2D bounding box fully enclosing the data
+rendered by a single resource, which can be easily computed by computing the
+screen-space projection of the model's bounding volume. We have extended the
+core parallel rendering framework to use this application-provided ROI to
+optimize the \textsf{load\_equalizer} as well as the image compositing.
+
+The compositing code uses the ROI to minimize image readback size, and
+consequently network transmission. The ROI is an output frame parameter, and is
+transmitted to all input frames together with the pixel data. On the input
+frame, the compositing code respects this parameter to place the pixel data on
+the right position. The usage of ROI for load balancing is described in \cref{sLoadBalancing}.
 
 In \cite{MEP:10}, this application-provided ROI was extended with an algorithm
 which automatically computes the ROI by analyzing the framebuffer to maximize
@@ -1573,7 +1581,7 @@ the amount of blank framebuffer omitted during compositing.
 In \cite{EBAHMP:12} we show that using ROI can quadruple the rendering
 performance for the costly compositing step in sort-last rendering. This is
 especially the case when the application rendering code selects a spatially
-compact subset during sort-lsat decomposition. For sort-first rendering, ROI
+compact subset during sort-last decomposition. For sort-first rendering, ROI
 allows the algorithm to scale to a higher number of resources before
 synchronization and compositing overhead eats up any potential speedup due to
 the task decomposition.
@@ -1636,11 +1644,12 @@ minimize that bottleneck.
 
 Basic run-length encoding (RLE) has been used as a fast standard to improve
 network throughput for interactive image transmission. However, it only gives
-sufficient results in specific rendering contexts and fails to provide a general
-improvement as shown in \cite{MEP:10}. RLE only works to compact large empty or
-uniform color areas but is often useless for non-trivial full frame color
-results. We developed two enhancements to improve this, per-component RLE
-compression and {\em swizzling} of color bits.
+sufficient results in specific rendering contexts and fails to provide a
+general improvement as shown in \cite{MEP:10}. RLE only works to compact large
+empty or uniform color areas but is often useless for non-trivial full frame
+color results. We developed two enhancements to improve this, per-component RLE
+compression and {\em swizzling} of color bits. These preconditioning steps
+exploit typical characteristics of image data.
 
 Equalizer also integrates more complex compression algorithms such as
 \textsf{libjpeg-turbo}, which are however of little practical use on modern
@@ -1655,21 +1664,15 @@ compression ratio.
 \subsection{Enhanced RLE Compression}
 
 Run-length encoding (RLE) is a simple compression scheme, which on modern
-architectures is purely constrained by the memory bandwidth. For image
+architectures is purely constrained by the available memory bandwidth. For image
 compression in visualization applications, we can exploit some characteristics
 of the data to improve the compression ratio over the standard RLE compression.
 
-\begin{wrapfigure}{r}{.618\textwidth}
-  \includegraphics[width=.618\textwidth]{images/RLE}
-  \caption{Comparison of 64-bit and per-component RLE.}
-  \label{fRLE}
-\end{wrapfigure}
-
-Our first RLE method implements a fast 64-bit version that compares two pixels
+Our basic RLE implementation is a fast 64-bit version that compares two pixels
 at the same time (8 bit per channel RGBA format). While this method is very
 fast it shows poor compression results in most practical settings since it can
 only compress adjacent pixels of the same color. We have observed a compression
-rate of up to 10\% in practical scenarios,
+rate of up to 10\% in practical scenarios.
 
 The first improvement is to treat each color component separately by producing
 four independent RLE-compressed output streams as illustrated in \fig{fRLE}.
@@ -1677,12 +1680,19 @@ This per-component RLE improves the compression rate from 10\% to about 25\%
 since individual color components change less often than full pixels (based on
 results from \cite{MEP:10}).
 
+\begin{wrapfigure}{r}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/RLE}
+  \caption{Comparison of 64-bit and per-component RLE.}
+  \label{fRLE}
+\end{wrapfigure}
+
 The second improvement is {\em bit-swizzling} of color values before
-per-component compression. The swizzling step is a data pre-conditioner, which
-reorders and interleaves the per-component bits as shown in \fig{fSwizzle}. Now
-the per-component RLE compression separately compresses the higher, medium and
-lower order bits in separate streams, thus achieving stronger compression for
-smoothly changing color values since high-order bits change less often.
+per-component compression. This swizzling step is a data pre-conditioner, which
+reorders and interleaves the per-component bits as shown in \fig{fSwizzle} by
+grouping them by significance of the corresponding bits. Now the per-component
+RLE compression separately compresses the higher, medium and lower order bits
+in separate streams, thus achieving stronger compression for smoothly changing
+color values since high-order bits change less often.
 
 \begin{figure}[h!t]
   \centering
@@ -1699,7 +1709,7 @@ impact on performance, since the whole algorithm is memory bound on modern CPUs.
 All RLE compressors perform a data decomposition on the input image, and
 parallelize the compression of each data chunk across multiple threads. This
 parallel execution improves the performance by saturating multiple memory
-channels over a single-threaded implementation.
+channels compared to a single-threaded implementation.
 
 \subsection{GPU Transfer and CPU Compression Plugins}
 
@@ -1707,7 +1717,7 @@ Equalizer uses runtime-loadable plugins to transfer pixel data from and to the
 GPU, as well as plugins to compress and decompress pixel data for network
 compression. This separation allows different code paths for multi-GPU machines
 where no CPU-based compression is used, and for distributed execution where data
-is compressed before transfer.
+is compressed before network transfer.
 
 The GPU transfer might also apply compression. This is typically done on the GPU
 to reduce the amount of memory transferred. One example is YUV subsampling,
