@@ -1572,7 +1572,8 @@ The compositing code uses the ROI to minimize image readback size, and
 consequently network transmission. The ROI is an output frame parameter, and is
 transmitted to all input frames together with the pixel data. On the input
 frame, the compositing code respects this parameter to place the pixel data on
-the right position. The usage of ROI for load balancing is described in \cref{sLoadBalancing}.
+the right position. The usage of ROI for load balancing is described in
+\sref{sLoadEqualizer}.
 
 In \cite{MEP:10}, this application-provided ROI was extended with an algorithm
 which automatically computes the ROI by analyzing the framebuffer to maximize
@@ -1736,7 +1737,7 @@ compression for interactive parallel rendering.
 
 \begin{wrapfigure}{r}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/loadBalancing}
-  \caption{\label{floadeq}Load Balancing}
+  \caption{\label{floadeq}Static, Reactive and Predictive Load Balancing}
 \end{wrapfigure}
 
 Load balancing changes the resource assignment per source channel based on the
@@ -1750,22 +1751,28 @@ approaches reassign resources dynamically, typically for each rendered frame.
 Implicitely load-balanced algorithms achieve a good load balance by other
 means, for example through work stealing between resources.
 
-
-{\em Equalizers} are an addition to compound trees. They modify parameters of
-their respective compound subtree at runtime to dynamically optimize the
-resource usage, by each tuning one aspect of the decomposition or recomposition.
-Due to their nature, they are transparent to application developers, but might
-have application-accessible parameters to tune their behavior. Resource
-equalization is the critical component for scalable parallel rendering, and
-therefore the eponym for the \textsf{Equalizer} project name.
+Load balancing in Equalizer is implemented in {\em Equalizers}. Equalizers are
+an addition to compound trees. They modify parameters of their respective
+compound subtree at runtime to dynamically optimize the resource usage, by each
+tuning one aspect of the decomposition or recomposition. Due to their nature,
+they are transparent to application developers, but might have
+application-accessible parameters to tune their behavior. Resource equalization
+is the critical component for scalable parallel rendering, and therefore the
+eponym for the \textsf{Equalizer} project name.
 
 In this section we present various {\em equalizer} implementations: two
-variants for load balancing for sort-first and sort-last rendering, work
-packages for sort-last and sort-first rendering, cross-segment load-balancing
-for multi-display installations, constant frame rate rendering using dynamic
-frame resolution, and monitoring of large-scale visualization systems.
+variants for reactive load balancing for sort-first and sort-last rendering,
+implicitely load balanced work packages for sort-last and sort-first rendering,
+cross-segment load-balancing for multi-display installations, constant frame
+rate rendering using dynamic frame resolution, and monitoring of large-scale
+visualization systems.
 
-\section{Sort-First and Sort-Last Load Balancing}
+\section{Sort-First and Sort-Last Load Balancing}\label{sLoadEqualizer}
+
+\begin{wrapfigure}{r}{.382\textwidth}
+  \includegraphics[width=.382\textwidth]{images/loadeq}
+  \caption{\label{floadeq}Load-Balancing}
+\end{wrapfigure}
 
 Sort-first (\fig{floadeq}) and sort-last load balancing are the most obvious
 optimizations for these parallel rendering modes. Our load equalizers are fully
@@ -1776,10 +1783,12 @@ Equalizer implements two different algorithms, a \textsf{load\_equalizer} and a
 \textsf{tree\_equalizer}, which have shown to each have their advantage
 depending on the type of rendering load.
 
-\begin{wrapfigure}{r}{.382\textwidth}
-  \includegraphics[width=.382\textwidth]{images/loadeq}
-  \caption{\label{floadeq}Load-Balancing}
-\end{wrapfigure}
+Both equalizers extract their load metrics from statistics collected by the
+rendering clients, these statistics are sent asynchronously from the clients to
+the server, where the equalizers subscribe to them for operation. At the
+beginning of each frame, the server triggers all equalizers on all compound
+trees, which allows them to set new decomposition parameters before the
+rendering tasks are computed.
 
 The \textsf{load\_equalizer} builds a model of the rendering load in screen
 space or data space. It stores a 2D (for sort-first) or 1D (for sort-last) grid
@@ -1792,28 +1801,27 @@ tree, first decomposed into horizontal tiles and then each horizontal tile into
 vertical sub-tiles. Our binary split tree provides more compact tiles for larger
 cluster configurations.
 
-\begin{wrapfigure}{l}{.382\textwidth}
+\begin{wrapfigure}{r}{.382\textwidth}
   \includegraphics[width=.382\textwidth]{images/roi}
-  \caption{Load distribution areas with (top) and without (bottom) using the ROI
-    of the right-hand sort-first parallel rendering.}
+  \caption{Load distribution areas with (top) and without (bottom) using region of interest information.}
   \label{fROI}
 \end{wrapfigure}
 
-The load-balancer has to operate on the assumption that the load is uniform
+The load balancer has to operate on the assumption that the load is uniform
 within one load grid tile. This leads naturally to estimation errors, since in
 reality the load is not uniformly distributed, e.g., it tends to increase
 towards the center of the screen in \fig{fROI}. We reuse the region of interest
-(ROI) of each source channel to automatically refine the load grid as shown
-\fig{fROI}. In cases where the rendered data projects only to a limited screen
-area, this ROI refinement provides the load-balancer with a more accurate load
-indicator leading to a better load prediction.
+(ROI) from compositing of each source channel to automatically refine the load
+grid as shown \fig{fROI}. In cases where the rendered data projects only to a
+limited screen area, this ROI refinement provides the load-balancer with a more
+accurate load indicator leading to a better load prediction.
 
 The \textsf{tree\_equalizer} uses the same binary kD-tree structure as the
 \textsf{load\_equalizer} for recursive load balancing. It computes the
-accumulated render time of all children for each nodee of the tree, and uses
-this to allocate an equal render time to each subtree. It makes no assumption of
-the load distribution in 2D or 1D space, it only tries to correct the imbalance
-in render time.
+accumulated render time of all children for each node of the tree, and uses
+this to allocate an equal render time to each subtree. It makes no assumption
+of the load distribution in 2D or 1D space, it only tries to correct the
+imbalance in render time.
 
 Both equalizers implement tuneable parameters allowing application developers to
 optimize the load balancing based on the characteristics of their rendering
@@ -1828,9 +1836,12 @@ within the region of interest assumed by the load balancers is in reality not
 equal, causing the load balancing to overshoot. Damping is a normalized scalar
 defining how much of the computed delta from the previous position is applied to
 the new split.
-\item[Resistance] eliminates small deltas in the load balancing step. This might
-help the application to cache visibility computations since the frustum does not
-change each frame.
+
+\item[Resistance] eliminates small deltas in the load balancing step, i.e., it
+only changes the viewport or range if the change is over the configured limit.
+This can help the application to cache visibility computations since the
+frustum does not change each frame.
+
 \item[Boundaries] define the modulo factor in pixels onto which a load split may
 fall. Some rendering algorithms produce artefacts related to the OpenGL raster
 position, e.g., screen door transparency, which can be eliminated by aligning
@@ -1842,40 +1853,44 @@ corresponding boundary.
 In \cite{ESP:18} we have shown that the simpler \textsf{tree\_equalizer}
 outperforms the load-grid-driven \textsf{load\_equalizer} in most cases, except
 for sort-first volume rendering where the load in the region of interest is
-relatively uniform. This counterintuitive result seems to again confirm that
-simple algorithms often outperform theoretically better, but more complex
-implementations. The decoupling of the load balancing algorithm from the rest of
-the system enabled by the compound architecture opens the possibility for more
-research in this area.
+relatively uniform. This result is counterintuitive since the
+\textsf{load\_equalizer} operates with more information and should be able to
+produce better results. It seems to confirm that simple algorithms often
+outperform theoretically better, but more complex implementations. The
+decoupling of the load balancing algorithm from the rest of the system enabled
+by the compound architecture opens the possibility for more research in this
+area.
 
 \subsection{Dynamic Work Packages}
 
 Load-balancing can be classified into explicit and implicit approaches, where
 explicit methods centrally compute a task decomposition up-front, before a new
-frame is rendered, while implicit methods decompose the workload into task units
-that can dynamically be assigned to the resources during rendering, based on the
-work progress of the individual resources. Explicit load-balancing can be
-reactive, based on load distribution in previous frames, or predictive, based on
-an application-provided cost function. Explicit load-balancing typically assigns
-a single task to each resource to minimize static per-task costs.  The
-aforementioned equalizers implement explicit reactive load balancing.
+frame is rendered, while implicit methods decompose the workload into task
+units that can dynamically be assigned to the resources during rendering, based
+on the work progress of the individual resources. Explicit load-balancing
+typically assigns a single task to each resource to minimize static per-task
+costs. The aforementioned equalizers implement explicit reactive load
+balancing.
 
-Implicit load-balancing generally uses a finer granularity of many more task
-units than resources to minimize the load imbalance due to a fixed coarse task
+Implicit load-balancing generally uses a finer granularity of many more tasks
+than resources to minimize the load imbalance due to a fixed coarse task
 granularity. Implicit load-balancing uses central task distribution or
 distributed task stealing between resources. Implicit algorithms are more
 commonly used for off-line raytracing compared to real-time rasterization
 algorithms due to the practically non-existent per-tile cost in raytracing.
+Furthermore, since each rendered task directly sends its result for
+compositing, work packages exhibit a better pipelining of rendering and
+compositing operations.
 
 Our work package implementation uses a task pulling mechanism, an approach that
-has been employed before in distributed computing. Rather than having the server
-push tasks to the rendering clients, our dynamic work packages approach works by
-managing fine grained tasks on a server side queue, while the clients request
-and execute the tasks as they become available. Every rendering client employs a
-local queue of work packages for caching purposes. During rendering, a client
-first works on packages from its local queue and concurrently requests packages
-from the server whenever the amount of available packages sinks below some
-threshold. In~\cite{SPEP:16}, this basic, random task
+has been employed before in distributed computing. Rather than having the
+server push tasks to the rendering clients, our dynamic work packages approach
+works by managing fine grained tasks on a server side queue, while the clients
+request and execute the tasks as they become available. Every rendering client
+employs a small local, prefetched queue of work packages for caching purposes.
+During rendering, a client first works on packages from its local queue and
+concurrently requests packages from the server whenever the amount of available
+packages sinks below some threshold. In~\cite{SPEP:16}, this basic, random task
 assignment was extended with client-affinity models.
 
 Depending on the sort-first or sort-last decomposition mode, a
@@ -1903,10 +1918,10 @@ balancing (CSLB) is a novel dynamic load balancing approach to dynamically
 allocate $n$ rendering resources to $m$ output channels (with $n\geq m$), as
 shown in \fig{fvieweq}.
 
-\begin{wrapfigure}{r}{.382\textwidth}
-  \includegraphics[width=.382\textwidth]{images/vieweq}
+\begin{figure}[h!t]
+  \includegraphics[width=\textwidth]{images/vieweq}
   \caption{\label{fvieweq}Cross-Segment Load-Balancing}
-\end{wrapfigure}
+\end{figure}
 
 The $m$ output channels typically each drive a display or projector of a
 multi-display system. With CSLB, they are not required to be planar to each
@@ -1991,14 +2006,18 @@ handles the resource assignment. Each child of this root compound has one
 destination channel, constituting one of the $m$ display segments, with a {\sf
 load\_equalizer} or \textsf{tree\_equalizer} each. Hence the {\sf
 view\_equalizer} supervises the different destination channels of a
-multi-display setup. The {\sf load\_equalizer} on the other hand is
-responsible for the partitioning of the rendering task among its child
-compounds. Therefore, each destination channel of a display segment has its
-source channel leaf nodes sharing the actual rendering load. One physical
-graphics resource (GPU), being assigned to a source channel, can be referenced
-in multiple leaf nodes and thus contribute to different displays. For
-performance reason, one resource is at most assigned two rendering tasks, e.g.,
-to update itself and to contribute to another display.
+multi-display setup. The {\sf load\_equalizer} on the other hand is responsible
+for the partitioning of the rendering task among its child compounds using the
+precomputed usage for each child. Therefore, each destination channel of a
+display segment has its source channel leaf nodes sharing the actual rendering
+load. One physical graphics resource (GPU), being assigned to a source channel,
+can be referenced in multiple leaf nodes and thus contribute to different
+displays.
+
+For performance reason, the view equalizer assigns each resource to at most two
+rendering tasks, e.g., to update itself and to contribute to another display.
+Furthermore, it gives priority to the source compound using the same channel as
+the output channel of each segment, thus minimizing pixel transfers.
 
 The rendered data, viewing configuration and user interaction will at runtime
 produce different rendering loads for each segment of a multi-display system. As
@@ -2034,8 +2053,8 @@ The DFR equalizer (\fig{fdfr}) provides a functionality similar to dynamic
 video resizing \cite{MBDM:97}, that is, it maintains a constant framerate by
 adapting the rendering resolution of a fill-limited application. While the aforementioned uses a now-obsolete hardware implementation, our implementation is purely in software.
 
-\begin{wrapfigure}{r}{.382\textwidth}
-  \includegraphics[width=.382\textwidth]{images/dfr}
+\begin{wrapfigure}{l}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/dfr}
   \caption{\label{fdfr}Dynamic Frame Resolution}
 \end{wrapfigure}
 Dynamic frame resolution (DFR) works by rendering into a source channel
@@ -2705,6 +2724,11 @@ We foresee an increasing importance of interactive raytracing, which has its
 own set of challenges for parallel rendering. In particular for large data
 rendering, there are a number of open questions, such as out-of-core parallel
 raytracing and data-parallel decompositions with global illumination.
+
+Load balancing to better utilize the available resource, and to increase
+scalability to higher node counts, remains an open area of research. While this
+thesis provides many new results in this area, a comprehensive benchmark and
+study of different algorithms and applications would be very valuable.
 
 One of the remaining challenges is to make interactive supercomputing
 accessible. Significant research has been performed on how to link simulations
