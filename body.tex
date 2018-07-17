@@ -2685,23 +2685,24 @@ in this task. The base framework allowed us to take parallel rendering research
 to a new level, by enabling the easy implementation of new decomposition
 algorithms, many improvements for result composition, novel load-balancing
 schemes, and numerous whole system optimizations, all of which are much harder
-without such a framework. This is not only supported by the contributions of
-this thesis, but by other publications and doctoral theses completed using
-Equalizer. This research has not only been performed in the original research
-group; Equalizer has also been picked up by other laboratories, e.g., the
-Electronic Visualization Laboratory at the University of Illinois at Chicago
-for Cave2 research.
+without such a framework and associated applications. This is not only
+supported by the contributions of this thesis, but by other publications and
+doctoral theses completed using Equalizer. This research has not only been
+performed in the original research group; Equalizer has also been picked up by
+other laboratories, e.g., the Electronic Visualization Laboratory at the
+University of Illinois at Chicago for Cave2 research.
 
 Beyond the core system design, we have incorporated many new parallel rendering
 algorithms in our framework. Most notably, cross-segment load-balancing
 provides a novel approach to better assign multiple rendering resources to
 multi-display systems. It maximizes rendering locality for the display GPUs and
-is not limited to planar displays as most other approaches. Having a
-fully-featured rendering framework and real-world applications enabled us to
-implement many algorithmic improvements and optimizations, and evaluate them in
-a holistic and realistic setup. This work advances parallel rendering with new
-decomposition modes, compositing algorithms, better load-balancing and an
-asynchronous rendering pipeline. Last, but not least, a network library for
+is not limited to planar displays as most other approaches.
+
+Having a fully-featured rendering framework and real-world applications enabled
+us to implement many algorithmic improvements and optimizations, and evaluate
+them in a holistic and realistic setup. This work advances parallel rendering
+with new decomposition modes, compositing algorithms, better load-balancing and
+an asynchronous rendering pipeline. Last, but not least, a network library for
 distributed, interactive visualization applications greatly facilitates the
 task to distribute and synchronize application state in a parallel rendering
 system.
@@ -2731,7 +2732,7 @@ an application.
 We foresee an increasing importance of interactive raytracing, which has its
 own set of challenges for parallel rendering. In particular for large data
 rendering, there are a number of open questions, such as out-of-core parallel
-raytracing and data-parallel decompositions with global illumination.
+raytracing and data-parallel decomposition with global illumination.
 
 Load balancing to better utilize the available resource, and to increase
 scalability to higher node counts, remains an open area of research. While this
