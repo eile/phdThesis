@@ -2102,11 +2102,13 @@ resource usage by not needlessly rendering the same view multiple times.
 \chapter{Data Distribution and Synchronization}\label{sCollage}
 
 Most research in parallel rendering ignores the problem of managing application
-state in a distributed rendering session. To research core scalability
-algorithms this problem is trivially to solve, whereas in real-world
-applications it often is one of the major challenges for using a distributed
-rendering cluster. Researching and improving the system behavior of non-trivial
-applications is however critical for meaningful parallel rendering research.
+state in a distributed rendering session. For core parallel rendering research
+this problem is trivially to solve, whereas in real-world applications it often
+is one of the major challenges for using a distributed rendering cluster.
+Researching and improving the system behavior of non-trivial applications is
+however critical for meaningful parallel rendering research, and therefore
+providing a distributed network library is a key component of a parallel
+rendering system.
 
 For this reason, we have spend a significant effort in researching, designing
 and implementing a distributed execution layer which is used by Equalizer and
@@ -2136,20 +2138,20 @@ peer-to-peer network.
 \item[Dynamic connection management:] As a consequence of the peer-to-peer
 network, all nodes in a cluster are equivalent. Due to the heterogenous nature
 of a parallel rendering application we felt the need to furthermore have no
-constraints on the management of connections between nodes. Nodes are identified
-and addressed by an universally unique identifier. The network layer lazily
-establishes a connection to any given node, by querying its known neighbors or a
-zeroconf network for connection parameters. Connections may be established
-concurrently by both sides of a node pair (e.g. during parallel compositing),
-which required the implementation of a robust handshake protocol during
-connection establishment. For larger cluster installations, a fully connected
-peer-to-peer network would be suboptimal, for example on Windows operating
-systems there is a latency penalty once more than 64 connections are needed due
-to some low-level implementation details.
+constraints on the management of connections between nodes. Nodes are
+identified and addressed by an universally unique identifier. The network layer
+lazily establishes a connection to any given node, by querying its known
+neighbors or a zeroconf network for connection parameters. Connections may be
+established concurrently by both sides of a node pair (e.g. during parallel
+compositing), which requires a robust handshake protocol during connection
+establishment. For larger cluster installations, a fully connected peer-to-peer
+network would be suboptimal, for example on Windows operating systems there is
+a latency penalty once more than 64 connections are needed due to low-level
+implementation details.
 
 \item[Transport layer abstraction:] The actual network protocol is abstracted
-internally by an API requiring byte-oriented stream semantics. While this choice
-of abstraction makes it harder for RDMA-based protocols to deliver full
+by an API requiring byte-oriented stream semantics. While this choice of
+abstraction makes it harder for RDMA-based protocols to deliver full
 performance, it has proven useful in supporting a large set of transports, from
 standard Ethernet sockets, SDP for InfiniBand, native Verbs for Infiniband, UDT
 to even a fully-featured multicast-over-UDP implementation. In particular the
@@ -2157,12 +2159,13 @@ ease of integration for multicast transport is strong evidence for the
 usefulness of this abstraction.
 
 \item[Convenient to use for existing applications:] The history and code
-structure of visualization applications is often very different from distributed
-applications such as simulation codes. They have been developed for years for
-desktop systems, often are single-threaded and have data models and object
-hierarchies built for their domain-specific problems and algorithms. The network
-library needs to provide primitives which match this reality as closely as
-possible by providing a modern, object-oriented C++ API for data distribution.
+structure of visualization applications is often very different from other
+distributed applications such as simulation codes. They have been developed for
+years for desktop systems, often are single-threaded and have data models and
+object hierarchies built for their domain-specific problems and algorithms. The
+network library needs to provide primitives which match this reality as closely
+as possible by providing a modern, object-oriented C++ API for data
+distribution.
 
 \end{compactdesc}
 
@@ -2209,12 +2212,12 @@ of endpoints for multicast connections.
 
 \subsection{Connection}
 
-A connection is the basic primitive used for communication between processes in
-Collage. It provides a stream-oriented communication between two endpoints. A
-connection is either closed, connected or listening. A closed connection cannot
-be used for communications. A connected connection can be used to read or write
-data to the communication peer. A listening connection can accept connection
-requests.
+A \textsf{Connection} is the basic primitive used for communication between
+processes in Collage. It provides a stream-oriented communication between two
+endpoints. A connection is either closed, connected or listening. A closed
+connection cannot be used for communications. A connected connection can be
+used to read or write data to the communication peer. A listening connection
+can accept connection requests leading to new, connected connections.
 
 A \textsf{ConnectionSet} is used to manage multiple connections. The typical use
 case is to have one or more listening connections for the local process, and a
@@ -2378,8 +2381,11 @@ still in transmission. All versioned objects have the following characteristics:
   slaves. These versions are continuous. It is possible to commit on slave
   instances, but special care has to be taken to handle possible
   conflicts.
-\item Slave instance versions can only be advanced; that is, \textsf{sync(
-  version)} with a version smaller than the current version will fail.
+
+\item Slave instance versions can only be advanced; that is,
+\textsf{sync(version)} with a version smaller than the current version will
+fail.
+
 \item Newly mapped slave instances are mapped to the oldest available
   version by default, or to the version specified when calling
   \textsf{mapObject}.
@@ -2423,13 +2429,13 @@ bytes has been serialized to the internal buffer, it is transmitted and
 serialization continues. This is used both for the initial mapping data and for
 commit data.
 
-Caching retains instance data of objects in a client-side cache, and reuses this
-data to accelerate mapping of objects. The instance cache is either filled by
-``snooping'' on multicast transmissions or by an explicit preloading when the
-master objects are registered. The preloading sends instance data of recently
-registered master objects to all connected nodes, while the corresponding node
-is idle. These nodes simply enter the received data to their cache. Preloading
-uses multicast when available.
+Caching retains instance data of objects in a client-side cache, and reuses
+this data to accelerate mapping of objects. The instance cache is either filled
+by ``snooping'' on multicast transmissions or by an explicit preloading when
+the master objects are registered. The preloading sends instance data of
+recently registered master objects to all connected nodes during idle time of
+the corresponding node. These nodes simply enter the received data to their
+cache. Preloading uses multicast when available.
 
 Due to the master-slave model of data distribution, multicast is used to
 optimize the transmission time of data. If the contributing nodes share a
@@ -2534,7 +2540,7 @@ A key performance measure for a good design of any framework is the acceptance
 by developers, which is reflected in the usage in third-party applications.
 While the evaluation and architecture of applications build on Equalizer is
 outside of the scope of this thesis, we name a few examples here to illustrate
-the variety of use cases.
+the variety of use cases supported by our framework.
 
 \section{Livre}
 
@@ -2544,27 +2550,29 @@ the variety of use cases.
 \end{wrapfigure}
 
 Livre (Large-scale Interactive Volume Rendering Engine) is a GPU ray-casting
-based parallel 4D volume renderer, implementing state-of-the-art view-dependent
-level-of-detail rendering (LOD) and out-of-core data management~\cite{EHKRW:06}.
+parallel 4D volume renderer, implementing state-of-the-art view-dependent
+level-of-detail rendering (LOD) and out-of-core data
+management~\cite{EHKRW:06}.
 
 Hierarchical and out-of-core LOD data management is supported by an implicit
 volume octree, accessed asynchronously by the renderer from a data source on a
-shared file system. Different data sources providing an octree conform access to
-RAW or compressed as well as to implicitly generated volume data (e.g. such as
-from event simulations or surface meshes) can be used.
+shared file system. Different data sources provide an octree-conform access to
+RAW or compressed files, as well as to on-the-fly generated volume data (e.g.
+such as from event simulations or surface meshes).
 
 High-level state information, e.g., camera position and rendering settings, is
-shared in Livre through \textsf{Collage} objects between the parallel
-applications and rendering threads. Sort-first decomposition is efficiently
-supported through octree traversal and culling both for scalability as well as
-for driving large-scale tiled display walls.
+shared in Livre through \textsf{Collage} objects between the application and
+rendering threads. Sort-first decomposition is efficiently supported through
+octree traversal and culling, both for scalability as well as for driving
+large-scale tiled display walls.
 
 \section{RTT Deltagen}
 
 RTT Deltagen (now Dassault 3D Excite) is a commercial application for
 interactive, high quality rendering of CAD data. The RTT Scale module,
 delivering multi-GPU and distributed execution, is based on \textsf{Equalizer}
-and \textsf{Collage}, and has driven many of the aforementioned features.
+and \textsf{Collage}, and has driven many of the features implemented in
+Equalizer.
 
 \begin{wrapfigure}{r}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/DeltaGen}
@@ -2573,11 +2581,11 @@ and \textsf{Collage}, and has driven many of the aforementioned features.
 
 RTT Scale uses a master-slave execution mode, were a single Deltagen instance
 can go into ``Scale mode'' at any time by launching an \textsf{Equalizer}
-configuration. Consequently, the whole internal representation needed for
-rendering is based on a \textsf{Collage}-based data distribution. The rendering
-clients are separate, smaller applications which will map their scenes during
-startup. At runtime, any change performed in the main application is committed
-as a delta at the beginning of the next frame. Multicast is used to keep data
+configuration. Consequently, the internal representation needed for rendering
+is based on a \textsf{Collage}-based data distribution. The rendering clients
+are separate, smaller applications which will map their scenes during startup.
+At runtime, any change performed in the main application is committed as a
+delta at the beginning of the next frame. Multicast is used to keep data
 distribution times during session launch reasonable for larger cluster sizes
 (tens to hundreds of nodes).
 
