@@ -22,12 +22,12 @@ large-scale data is continuously generated at a growing rate from sensor and
 scanning systems, as well as from data collections and numerical simulations in
 a number of science and technology domains.
 
-\begin{figure}[ht]\label{FIG_teaser}
+\begin{figure}[ht]
  \includegraphics[height=4.7cm]{images/slices}\hfil%
  \includegraphics[height=4.7cm]{images/cave2}\\%
  \includegraphics[height=4.95cm]{images/cave}\hfil%
  \includegraphics[height=4.95cm]{images/tide}%
- \caption{Large Data Visualization: Large data visualization of a
+ \caption{\label{FIG_teaser}Large Data Visualization: Large data visualization of a
   brain simulation, molecular visualization in the Cave$^2$, exploration of EM
   stack reconstructions in a Cave, collaborative data analysis on a tiled
   display wall.}
@@ -565,7 +565,7 @@ This parallel rendering interface is significantly different from Chromium
 \cite{HHNFAKK:02} and more similar to VRJuggler \cite{BJHMBC:01} or OpenGL
 Multipipe SDK \cite{BRE:05}.
 
-\begin{wrapfigure}{r}{.618\textwidth}
+\begin{wrapfigure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/processes}
  {\caption{\label{fProcessing}Parallel Rendering Entities}}
 \end{wrapfigure}
@@ -759,7 +759,7 @@ surfaces, e.g., a display wall, configure a frustum for the respective canvas.
 For non-planar surfaces, the frustum will be configured on each display
 segment.
 
-\begin{wrapfigure}{r}{.618\textwidth}
+\begin{wrapfigure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/frusta.pdf}
  {\caption{\label{fFrusta}Wall and Projection Parameters}}
 \end{wrapfigure}
@@ -789,7 +789,7 @@ channel to which the display device is connected. To synchronize the video
 output, a canvas swap barrier or a swap barrier on each segment synchronize the
 respective window buffer swaps.
 
-\begin{wrapfigure}{r}{.382\textwidth}
+\begin{wrapfigure}{O}{.382\textwidth}
   \includegraphics[width=.382\textwidth]{images/canvas.pdf}
   {\caption{\label{fCanvas}A Canvas using four Segments}}
 \end{wrapfigure}
@@ -816,11 +816,6 @@ object is accessible to the application thread and all render threads
 contributing to its rendering. This allows the application to manage
 view-specific data by attaching it as a distributed object to the view.
 
-\begin{wrapfigure}{r}{.618\textwidth}
- \includegraphics[width=.618\textwidth]{images/layout.png}
- {\caption{\label{fLayout}Layout with four Views}}
-\end{wrapfigure}
-
 A view has a fractional viewport relative to its layout. A layout is often
 fully covered by its views, but this is not a requirement. Each view can have a
 frustum description. The view's frustum overrides frusta specified at the
@@ -829,13 +824,18 @@ rendering, e.g., to compare two models side-by-side on a canvas. If the view
 does not specify a frustum, it will use the sub-frustum resulting from the
 covered area on the canvas.
 
+\begin{wrapfigure}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{images/layout.png}
+ {\caption{\label{fLayout}Layout with four Views}}
+\end{wrapfigure}
+
 A view might have an observer, in which case its frustum is tracked by this
 observer. \fig{fLayout} shows an example layout using four views on a single
 segment. \fig{fDisplay} shows a real-world setup of a single canvas with six
 segments using underlap for the display bezels, with a two-view layout
 activated. This configuration generates eight destination channels.
 
-\begin{figure}[h!t]\center
+\begin{figure}[t]\center
  \includegraphics[width=\textwidth]{images/wallLayout.jpg}
  {\caption{\label{fDisplay}Tiled Display Wall using a six-segment canvas with a two-view layout}}
 \end{figure}
@@ -1067,7 +1067,7 @@ its neighbors, and then $z$-composites its own tile. This yields one complete
 tile on each channel, of which two color tiles are then assembled on the
 destination channel.
 
-\begin{wrapfigure}{r}{.618\textwidth}
+\begin{wrapfigure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/directSendCompound}
   {\caption{\label{fDirectSendCmp}Direct Send Compound}}
 \end{wrapfigure}
@@ -1285,7 +1285,7 @@ destination channel. Due to the strong similarity between both eye passes, this
 mode provides close to perfect load balance. \fig{fStereo} shows an anaglyphic
 stereo compound.
 
-\begin{wrapfigure}{r}{.618\textwidth}
+\begin{wrapfigure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/Stereo}
  {\caption{\label{fStereo}Anaglyphic Stereo Compound}}
 \end{wrapfigure}
@@ -1313,7 +1313,7 @@ increases the framerate almost linearly, it does not decrease the latency
 between user input and the corresponding output. Consequently, this
 decomposition mode is mostly useful for non-interactive movie generation.
 
-\begin{wrapfigure}{r}{.382\textwidth}
+\begin{wrapfigure}{O}{.382\textwidth}
 \includegraphics[width=.382\textwidth]{images/DPlex}
 {\caption{\label{fDPlex}Time-Multiplex Compound}} \end{wrapfigure}
 
@@ -1541,15 +1541,19 @@ are read back after rendering and assembly.
 Two commonly used parallel compositing algorithms are direct send and binary
 swap. Both distribute the compositing task equally over all available
 resources, and then collect the composited tiles on the destination channel.
+
 Direct send, shown in \fig{fDirectSend}, uses one operation on each resource to
 fully composite a single tile. Binary swap, shown in \fig{fBS}, exchanges
 pixels between pairs of nodes using a binary compositing tree which gradually
 assembles a tile on each resource. Both use a sort-first-like assembly
-operation to collect the fully assembled tiles on the destination channel.
+operation to collect the fully assembled tiles on the destination channel. 2-3
+swap \cite{Yu:2008:MPV:1413370.1413419} is an extension to binary swap, which
+overcomes the power-of-two source channel requirement by exchanging
+compositions between groups of two or three nodes in the compositing tree.
 
-In \cite{EP:07} we have shown that for commodity clusters, direct send
-compositing provides better performance over the binary swap algorithm commonly
-used on HPC systems. While it uses more messages in total, direct send has fewer
+In \cite{EP:07} we have shown that on commodity clusters, direct send
+compositing provides better performance over binary swap commonly used on HPC
+systems. While it uses more messages in total, direct send has fewer
 synchronization points than binary swap. Furthermore, due to the early assembly
 optimization, direct send can handle imbalances between nodes better since a
 late channel has a smaller penalty for the overall execution time.
@@ -1690,7 +1694,7 @@ This per-component RLE improves the compression rate from 10\% to about 25\%
 since individual color components change less often than full pixels (based on
 results from \cite{MEP:10}).
 
-\begin{wrapfigure}{r}{.618\textwidth}
+\begin{wrapfigure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/RLE}
   \caption{32 bit, 64 bit and per-component RLE compression schemes}
   \label{fRLE}
@@ -1745,21 +1749,22 @@ compression for interactive parallel rendering.
 
 \chapter{Load Balancing}\label{sLoadBalancing}
 
-\begin{wrapfigure}{r}{.618\textwidth}
-  \includegraphics[width=.618\textwidth]{images/loadBalancing}
-  \caption{\label{floadeq}Static, Reactive and Predictive Load Balancing}
-\end{wrapfigure}
-
 Load balancing changes the resource assignment per source channel based on the
-resource load. Static load balancing, shown in \fig{floadeq} top, performs this
-assignment during initialization. Dynamic load balancing can either be reactive
-or proactive (middle and bottom of \fig{floadeq}). Reactive load-balancing
-utilizes statistics from previous frames to predict future load distribution.
-Predictive load-balancing uses an application-provided load estimation (or cost
-function) to estimate the load distribution of the current frame. Both
-approaches reassign resources dynamically, typically for each rendered frame.
-Implicitely load-balanced algorithms achieve a good load balance by other
-means, for example through work stealing between resources.
+resource load. Static load balancing, shown in \fig{floadbalancing} top,
+performs this assignment during initialization. Dynamic load balancing can
+either be reactive or predictive (middle and bottom of \fig{floadbalancing}).
+Reactive load-balancing utilizes statistics from previous frames to predict
+future load distribution. Predictive load-balancing uses an
+application-provided load estimation (also called cost function) to estimate
+the load distribution of the current frame. Both approaches reassign resources
+dynamically, typically for each rendered frame. Implicitely load-balanced
+algorithms achieve a good load balance by other means, for example through work
+stealing between resources.
+
+\begin{figure}[h!t]
+  \includegraphics[width=\textwidth]{images/loadBalancing}
+  \caption{\label{floadbalancing}Static, Reactive and Predictive Load Balancing}
+\end{figure}
 
 Load balancing in Equalizer is implemented in {\em Equalizers}. Equalizers are
 an addition to compound trees. They modify parameters of their respective
@@ -1779,7 +1784,7 @@ visualization systems.
 
 \section{Sort-First and Sort-Last Load Balancing}\label{sLoadEqualizer}
 
-\begin{wrapfigure}{r}{.382\textwidth}
+\begin{wrapfigure}{O}{.382\textwidth}
   \includegraphics[width=.382\textwidth]{images/loadeq}
   \caption{\label{floadeq}Load-Balancing}
 \end{wrapfigure}
@@ -1811,7 +1816,7 @@ tree, first decomposed into horizontal tiles and then each horizontal tile into
 vertical sub-tiles. Our binary split tree provides more compact tiles for larger
 cluster configurations.
 
-\begin{wrapfigure}{r}{.382\textwidth}
+\begin{wrapfigure}{I}{.382\textwidth}
   \includegraphics[width=.382\textwidth]{images/roi}
   \caption{Load distribution areas with (top) and without (bottom) using region of interest information.}
   \label{fROI}
@@ -1822,9 +1827,9 @@ within one load grid tile. This leads naturally to estimation errors, since in
 reality the load is not uniformly distributed, e.g., it tends to increase
 towards the center of the screen in \fig{fROI}. We reuse the region of interest
 (ROI) from compositing of each source channel to automatically refine the load
-grid as shown \fig{fROI}. In cases where the rendered data projects only to a
-limited screen area, this ROI refinement provides the load-balancer with a more
-accurate load indicator leading to a better load prediction.
+grid as shown \fig{fROI}, top. In cases where the rendered data projects only
+to a limited screen area, this ROI refinement provides the load-balancer with a
+more accurate load estimation leading to a better load prediction.
 
 The \textsf{tree\_equalizer} uses the same binary kD-tree structure as the
 \textsf{load\_equalizer} for recursive load balancing. It computes the
@@ -1897,11 +1902,12 @@ has been employed before in distributed computing. Rather than having the
 server push tasks to the rendering clients, our dynamic work packages approach
 works by managing fine grained tasks on a server side queue, while the clients
 request and execute the tasks as they become available. Every rendering client
-employs a small local, prefetched queue of work packages for caching purposes.
-During rendering, a client first works on packages from its local queue and
-concurrently requests packages from the server whenever the amount of available
-packages sinks below some threshold. In~\cite{SPEP:16}, this basic, random task
-assignment was extended with client-affinity models.
+employs a small local, prefetched queue of work packages to hide the round-trip
+latency to fetch new packages. During rendering, a client first works on
+packages from its local queue and concurrently requests packages from the
+server whenever the amount of available packages sinks below some threshold.
+In~\cite{SPEP:16}, this basic, random task assignment was extended with
+client-affinity models.
 
 Depending on the sort-first or sort-last decomposition mode, a
 \textsf{tile\_equalizer} or \textsf{chunk\_equalizer} generates tiles or
@@ -1930,40 +1936,48 @@ shown in \fig{fvieweq}.
 
 \begin{figure}[h!t]
   \includegraphics[width=\textwidth]{images/vieweq}
-  \caption{\label{fvieweq}Cross-Segment Load-Balancing}
+  \caption{\label{fvieweq}Six-to-two Cross-Segment Load-Balancing}
 \end{figure}
 
 The $m$ output channels typically each drive a display or projector of a
-multi-display system. With CSLB, they are not required to be planar to each
-other, that is, the algorithm works equally for tiled display wall and immersive
-installations. Commonly, each destination channel is solely responsible for
-rendering and/or compositing of its corresponding display segment.
+multi-display system. Commonly, each destination channel is solely responsible
+for rendering and/or compositing of its corresponding display segment.
 
 A key element of CSLB is that the $m$ GPUs physically driving the $m$ display
 segments will not be restricted in a one-to-one mapping to rendering tasks of
 the corresponding display segment. In fact, CSLB performs dynamic assignment of
 $n$ graphics resources from a pool to drive $m$ different destination display
 segments, where the $m$ destination channel GPUs themselves may also be part of
-the pool of graphics resources. Dynamic resource assignment is performed through
-load-balancing components that exploit statistical data from previous frames for
-the decision of optimal GPU usage for each segment as well as optimal
-distribution of workload among them. The algorithm can easily be extended to use
-predictive load-balancing based on a load estimation given the application.
+the pool of graphics resources.
 
-CSLB is implemented in {\em Equalizer} as two layers of hierarchically
-organized components, specified in the configuration. \fig{fViewEqualizer}
-depicts a snapshot of a simple CSLB setup along with its configuration file.
-Two destination channels, {\em Channel1} and {\em Channel2}, each connected to
-a projector, create the final output for a multi-projector view. Each projector
-is driven by a distinct GPU, constituting the source channels {\em Source1} and
-{\em Source2}. Each source channel GPU can contribute to the rendering of the
-other destination channel segment. For each destination channel, a set of
-potential resources are allocated. A top-level {\em view\_equalizer} assigns
-the usage of each resource, based on which a per-segment {\em load\_equalizer}
-computes the 2D split to balance the assigned resources within the display. The
-left segment of the display has a higher workload, so, both {\em Source1} and
-{\em Source2} are used to render for {\em Channel1}, whereas {\em Channel2}
-makes use of only {\em Source2} to assemble the image for the right segment.
+CSLB also does not require a planar display surface, that is, the algorithm
+works equally for tiled display walls and immersive installations.
+
+Dynamic resource assignment is performed through load-balancing components that
+exploit statistical data from previous frames for the decision of optimal GPU
+usage for each segment as well as optimal distribution of workload among them.
+The algorithm can easily be extended to use predictive load-balancing based on
+a load estimation given the application.
+
+CSLB is implemented in Equalizer as two layers of hierarchically organized
+components, specified in the configuration. The first level globally assigns
+fractions of resources to each destination channel, and the second level
+consist of load\_equalizers or tree\_equalizers balancing the assigned
+resources for each destination channel.
+
+\fig{fViewEqualizer} depicts a snapshot of a simple CSLB setup along with its
+configuration file. Two destination channels, {\em Channel1} and {\em
+Channel2}, each connected to a projector, create the final output for a
+multi-projector view. Each projector is driven by a distinct GPU, constituting
+the source channels {\em Source1} and {\em Source2}. Each source channel GPU
+can contribute to the rendering of the other destination channel segment. For
+each destination channel, a set of potential resources are allocated. A
+top-level {\em view\_equalizer} assigns the usage of each resource, based on
+which a per-segment {\em load\_equalizer} computes the 2D split to balance the
+assigned resources within the display. The left segment of the display has a
+higher workload, so, both {\em Source1} and {\em Source2} are used to render
+for {\em Channel1}, whereas {\em Channel2} makes use of only {\em Source2} to
+assemble the image for the right segment.
 
 \begin{figure}[h!t] \center
   \subfigure[CSLB resources setup.]{\includegraphics[width=0.47\textwidth]{images/viewEqualizerSetup}
@@ -2046,27 +2060,32 @@ GPUs used for driving the display segments themselves, as well as any additional
 source GPUs for rendering. It combines multi-display parallel rendering with
 scalable rendering for optimal performance. \cite{EEP:11} provides experimental
 results for a six-monitor tiled display wall with up to 12 source GPUs, where
-CSLB can more then double the framerate over a static resource assignment. A
-strength of this algorithm lies in its flexibility. On one hand, it can perform
-dynamic resource assignment not only for a planar display system as some
-approaches which built a single virtual framebuffer for all output displays, but
-also for curved displays and CAVE installations. On the other hand, it allows a
-flexible assignment of potential contributing GPUs to each output channel
-individually, that is, each output may have a different, potentially
-overlapping, set of GPUs which may contribute to its rendering. \cite{EEP:11}
-shows in its experiments that there is a sweet spot of the number of resources
-per channel.
+CSLB can more than double the framerate over a static resource assignment.
 
+A strength of this algorithm lies in its flexibility. On one hand, it can
+perform dynamic resource assignment not only for a planar display system as
+some approaches which built a single virtual framebuffer for all output
+displays, but also for curved displays and CAVE installations. On the other
+hand, it allows a flexible assignment of potential contributing GPUs to each
+output channel individually, that is, each output may have a different,
+potentially overlapping, set of GPUs which may contribute to its rendering.
+\cite{EEP:11} shows in its experiments that there is a sweet spot of the number
+of resources per channel.
+
+\clearpage
 \section{Dynamic Frame Resolution}
 
 The DFR equalizer (\fig{fdfr}) provides a functionality similar to dynamic
 video resizing \cite{MBDM:97}, that is, it maintains a constant framerate by
-adapting the rendering resolution of a fill-limited application. While the aforementioned uses a now-obsolete hardware implementation, our implementation is purely in software.
+adapting the rendering resolution of a fill-limited application. While the
+aforementioned uses a now-obsolete hardware implementation, our implementation
+is purely in software.
 
-\begin{wrapfigure}{l}{.618\textwidth}
+\begin{wrapfigure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/dfr}
   \caption{\label{fdfr}Dynamic Frame Resolution}
 \end{wrapfigure}
+
 Dynamic frame resolution (DFR) works by rendering into a source channel
 (typically on a FBO) separate to the destination channel, and then scaling the
 rendering during the transfer (typically through an on-GPU texture) to the
@@ -2095,7 +2114,7 @@ performance penalty, but it greatly improves the perceived rendering quality for
 users in DPlex compounds.
 
 \section{Monitoring}
-\begin{wrapfigure}{r}{.382\textwidth}
+\begin{wrapfigure}{R}{.382\textwidth}
   \includegraphics[width=.382\textwidth]{images/monitoreq}
   \caption{\label{fmonitor}Monitoring}
 \end{wrapfigure}
@@ -2554,7 +2573,7 @@ the variety of use cases supported by our framework.
 
 \section{Livre}
 
-\begin{wrapfigure}{r}{.618\textwidth}
+\begin{wrapfigure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/livre}
   {\caption{\label{fLivre}Livre running on a 4x3 tiled display wall}}
 \end{wrapfigure}
@@ -2584,7 +2603,7 @@ delivering multi-GPU and distributed execution, is based on \textsf{Equalizer}
 and \textsf{Collage}, and has driven many of the features implemented in
 Equalizer.
 
-\begin{wrapfigure}{r}{.618\textwidth}
+\begin{wrapfigure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/DeltaGen}
   {\caption{\label{fDeltaGen}RTT Deltagen rendering mixing OpenGL rendering and raytracing (for the head light)}}
 \end{wrapfigure}
@@ -2610,7 +2629,7 @@ node.
 
 \section{RTNeuron}
 
-\begin{wrapfigure}{r}{.618\textwidth}
+\begin{wrapfigure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/RTNeuron}
   {\caption{\label{fRTNeuron}RTNeuron running in a six-sided CAVE}}
 \end{wrapfigure}
@@ -2628,7 +2647,7 @@ independent transparency.
 
 \section{RASTeR}
 
-\begin{wrapfigure}{r}{.618\textwidth}
+\begin{wrapfigure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/raster}
   {\caption{\label{fRaster}RASTeR running on a 3x2 tiled display wall}}
 \end{wrapfigure}
@@ -2648,7 +2667,7 @@ frame.
 
 \section{Bino}
 
-\begin{wrapfigure}{r}{.618\textwidth}
+\begin{wrapfigure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/bino}
   {\caption{\label{fBino}Bino video player on a semi-cylindrical multi-projector wall}}
 \end{wrapfigure}
@@ -2662,7 +2681,7 @@ therefore providing a scalable solution to video playback.
 
 \section{Omegalib}
 
-\begin{wrapfigure}{r}{.618\textwidth}
+\begin{wrapfigure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/omegalib}
   {\caption{\label{fOmegalib}An Omegalib application running in the Cave2}}
 \end{wrapfigure}
