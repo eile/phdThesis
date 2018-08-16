@@ -84,7 +84,7 @@
 			<real>-1</real>
 			<key>Points</key>
 			<array>
-				<string>{127.55905437469477, 425.19684791564941}</string>
+				<string>{127.55905437469482, 425.19684791564941}</string>
 				<string>{155.90551090240479, 552.75590229034424}</string>
 			</array>
 			<key>Style</key>
@@ -111,7 +111,7 @@
 			<key>Tail</key>
 			<dict>
 				<key>ID</key>
-				<integer>953</integer>
+				<integer>951</integer>
 				<key>Info</key>
 				<integer>3</integer>
 			</dict>
@@ -178,7 +178,7 @@
 			<real>-1</real>
 			<key>Points</key>
 			<array>
-				<string>{127.55905437469477, 680.31495666503906}</string>
+				<string>{127.55905437469482, 680.31495666503906}</string>
 				<string>{198.42519569396973, 680.31495666503906}</string>
 			</array>
 			<key>Style</key>
@@ -205,7 +205,7 @@
 			<key>Tail</key>
 			<dict>
 				<key>ID</key>
-				<integer>951</integer>
+				<integer>953</integer>
 			</dict>
 		</dict>
 		<dict>
@@ -258,7 +258,7 @@
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{14.17322826385498, 368.50393486022949}, {113.3858261108398, 113.38582611083984}}</string>
+			<string>{{14.173228263855023, 623.62204360961914}, {113.3858261108398, 113.38582611083984}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>ID</key>
@@ -354,7 +354,7 @@
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{14.17322826385498, 623.62204360961914}, {113.3858261108398, 113.38582611083984}}</string>
+			<string>{{14.173228263855037, 368.50393486022949}, {113.3858261108398, 113.38582611083984}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>ID</key>
@@ -799,7 +799,7 @@
 	<key>MasterSheets</key>
 	<array/>
 	<key>ModificationDate</key>
-	<string>2018-06-19 15:34:11 +0000</string>
+	<string>2018-08-13 05:57:46 +0000</string>
 	<key>Modifier</key>
 	<string>Stefan Eilemann</string>
 	<key>NotesVisible</key>
@@ -894,7 +894,7 @@
 		<key>TopSlabHeight</key>
 		<real>33</real>
 		<key>VisibleRegion</key>
-		<string>{{-115, 0}, {1047.4946705005786, 1141.568359375}}</string>
+		<string>{{-115, 0}, {1047.4946705005786, 1141.5683593750002}}</string>
 		<key>Zoom</key>
 		<real>0.9460668659310878</real>
 		<key>ZoomValues</key>

@@ -528,9 +528,9 @@ this is detrimental for scalability, as even slight load imbalances limit
 parallel speedup. The Equalizer execution model is fully asynchronuous, and
 only introduces synchronization points when strictly needed. The main
 synchronization points are: configured swap barriers between a set of output
-which have to display simultaneously, the availability of input frames for
-scalable rendering, and a task synchronization to prevent runaway of the main
-loop execution. By default, Equalizer keeps up to one frame of latency in
+channels which have to display simultaneously, the availability of input frames
+for scalable rendering, and a task synchronization to prevent runaway of the
+main loop execution. By default, Equalizer keeps up to one frame of latency in
 execution, that is, some resource might render the next frame while others are
 still finishing the current. Nonetheless, resources which are ready will
 immediately display their result. This asynchronous execution architecture,
@@ -1465,12 +1465,16 @@ processes during the stereo switch.
 
 \section{Parallel Compositing}
 
-During sort-last and subpixel decompositions, each rendering resource produces
-an output which needs to be combined with the result of other resources on a
-per-pixel level. This compositing step reduces the amount of information,
-either through depth-sorting or blending the inputs. This loss of information
-in the compositing step can be exploited by distributing the work over multiple
-resources, commonly called parallel compositing. Parallel compositing leverages multiple computate resources as well as parallel memory and network bandwidth.
+Parallel compositing leverages multiple compute resources, memory bandwidth and
+network bandwidth within a visualization cluster to accelerate the compositing
+step in parallel rendering. During sort-last and subpixel decompositions, each
+rendering resource produces an output which needs to be combined with the
+result of other resources on a per-pixel level. This compositing step reduces
+the amount of information, either through depth-sorting or blending multiple
+input fragments into a single pixel. This loss of information in the
+compositing step can be exploited by distributing the work over multiple
+resources and then collecting the reduced image tiles, commonly called parallel
+compositing.
 
 For sort-last rendering, there are two approaches to combine the partial
 results: $z$-sorting using the depth buffer, and spatial rendering
@@ -1484,7 +1488,8 @@ depth buffer, it is also more expensive since more pixel data needs to be
 processed. Furthermore, depth buffer readback tends to slower, and compression
 algorithms for depth buffer data tend not to perform as wall as color buffer
 compression. Depth-sorted compositing is often used for polygonal data, as
-shown in \fig{fDepth}.
+shown in \fig{fDepth} since these applications often do not sort their geometry
+onto convex spatial regions.
 
 \begin{figure}[h!t]\center
   \subfigure[]{
@@ -1510,8 +1515,8 @@ during rendering. Multisampling also incurs a loss of information, where
 multiple samples are collapsed into a single pixel. Pixels where samples are
 generated from different geometries are problematic, since the averaging
 operations blends them with incomplete information during sort-last rendering.
-A correct algorithm would need to composite all fragments from all sources
-before collapsing them.
+A fully correct algorithm would need to composite all fragments from all
+sources before collapsing them.
 
 Spatial compositing provides better performance, and scales nicer with other
 optimisations such as region of interest due to compact regions produced by the
@@ -1520,7 +1525,7 @@ rendering with transparency and presented performance benefits over
 depth-sorted compositing.
 
 Contrary to most other implementations, parallel compositing algorithms in
-Equalizer are not hardcoded, but rather expressed explicitly in the
+Equalizer are not hardcoded, but rather configured explicitly in the
 configuration. The transport of pixel data for compositing is expressed through
 connected output and input frames. Output and input frames are connected by
 name; they do not need to follow the compound hierarchy, and a single output
@@ -1534,13 +1539,15 @@ are read back after rendering and assembly.
 \end{figure}
 
 Two commonly used parallel compositing algorithms are direct send and binary
-swap. Both distribute the compositing task equally over all available resources,
-and then collect the composited tiles on the destination channel. Direct send,
-shown in \fig{fDirectSend}, uses one operation on each resource to composite a
-single tile. Binary swap, shown in \fig{fBS}, exchanges pixels between pairs of
-nodes using a binary compositing tree.
+swap. Both distribute the compositing task equally over all available
+resources, and then collect the composited tiles on the destination channel.
+Direct send, shown in \fig{fDirectSend}, uses one operation on each resource to
+fully composite a single tile. Binary swap, shown in \fig{fBS}, exchanges
+pixels between pairs of nodes using a binary compositing tree which gradually
+assembles a tile on each resource. Both use a sort-first-like assembly
+operation to collect the fully assembled tiles on the destination channel.
 
-In \cite{EP:07} we have shown that for commodity clusters, direct-send
+In \cite{EP:07} we have shown that for commodity clusters, direct send
 compositing provides better performance over the binary swap algorithm commonly
 used on HPC systems. While it uses more messages in total, direct send has fewer
 synchronization points than binary swap. Furthermore, due to the early assembly
@@ -1552,14 +1559,16 @@ late channel has a smaller penalty for the overall execution time.
 
 During scalable rendering, pixel data has to be copied from the source channel
 framebuffer to either the destination channel framebuffer, or to an
-intermediate channel during parallel compositing. The distributed image
-compositing cost is directly dependent on how much data has to be sent over the
-network, which in turn is related to how much screen space is actively covered.
-Depending on the data set and viewpoint, only a subset of the framebuffer shows
-pixels generated from the data. In particular for sort-last rendering, every
-node potentially renders into the entire frame buffer. With an increasing
-number of nodes, the set of affected pixels typically decreases, leaving blank
-areas that can be omitted for transmission and compositing.
+intermediate channel during parallel compositing. The associated distributed
+image compositing cost is directly dependent on how much data has to be sent
+over the network, which in turn is related to how much screen space is actively
+covered. For sort-last rendering every node potentially renders into the entire
+frame buffer, resulting in a linear increase in the amount of pixels composited
+for increasing number of nodes. However, depending on the data set and
+viewpoint, only a subset of the framebuffer shows pixels generated from the
+data. With an increasing number of nodes, the set of affected pixels typically
+decreases, leaving blank areas that can be omitted for transmission and
+compositing.
 
 Equalizer provides an API for the programmer to provide the region of interest
 (ROI). The ROI is the screen-space 2D bounding box fully enclosing the data
@@ -1581,11 +1590,11 @@ the amount of blank framebuffer omitted during compositing.
 
 In \cite{EBAHMP:12} we show that using ROI can quadruple the rendering
 performance for the costly compositing step in sort-last rendering. This is
-especially the case when the application rendering code selects a spatially
-compact subset during sort-last decomposition. For sort-first rendering, ROI
-allows the algorithm to scale to a higher number of resources before
-synchronization and compositing overhead eats up any potential speedup due to
-the task decomposition.
+especially the case when the application rendering code uses a spatially
+compact subset during sort-last decomposition. For sort-first rendering, the
+ROI allows the algorithm to scale to a higher number of resources before
+synchronization and compositing overhead eats up any potential speedup gained
+from the task decomposition.
 
 \section{Asynchronous Compositing}
 
@@ -1649,8 +1658,8 @@ sufficient results in specific rendering contexts and fails to provide a
 general improvement as shown in \cite{MEP:10}. RLE only works to compact large
 empty or uniform color areas but is often useless for non-trivial full frame
 color results. We developed two enhancements to improve this, per-component RLE
-compression and {\em swizzling} of color bits. These preconditioning steps
-exploit typical characteristics of image data.
+compression and reordering of color bits. These preconditioning steps exploit
+typical characteristics of image data.
 
 Equalizer also integrates more complex compression algorithms such as
 \textsf{libjpeg-turbo}, which are however of little practical use on modern
@@ -1683,7 +1692,7 @@ results from \cite{MEP:10}).
 
 \begin{wrapfigure}{r}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/RLE}
-  \caption{Comparison of 64-bit and per-component RLE.}
+  \caption{32 bit, 64 bit and per-component RLE compression schemes}
   \label{fRLE}
 \end{wrapfigure}
 
@@ -1708,7 +1717,7 @@ operations, it is entirely executed in registers and has no measurable
 impact on performance, since the whole algorithm is memory bound on modern CPUs.
 
 All RLE compressors perform a data decomposition on the input image, and
-parallelize the compression of each data chunk across multiple threads. This
+parallelize the compression of data chunks across multiple threads. This
 parallel execution improves the performance by saturating multiple memory
 channels compared to a single-threaded implementation.
 
@@ -1720,11 +1729,12 @@ compression. This separation allows different code paths for multi-GPU machines
 where no CPU-based compression is used, and for distributed execution where data
 is compressed before network transfer.
 
-The GPU transfer might also apply compression. This is typically done on the GPU
-to reduce the amount of memory transferred. One example is YUV subsampling,
-where a shader implements chroma subsampling. Furthermore, a GPU transfer plugin
-might implement asynchronous downloads, where the download is started from the
-render thread an finished in a separate download thread as shown in
+The GPU transfer might also apply compression. This is typically done on the
+GPU to reduce the amount of memory transferred over the GPU-CPU interconnect.
+One example is YUV subsampling, where a shader implements the RGB to YUV color
+space conversion and subsequent chroma subsampling. Furthermore, a GPU transfer
+plugin may implement asynchronous downloads, where the download is started
+from the render thread an finished in a separate download thread as shown in
 \fig{fAsyncRB}. CPU compression plugins are always executed from asynchronous
 threads concurrently to the rendering threads.
 
