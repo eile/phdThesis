@@ -9,26 +9,130 @@
 \chapter*{Curriculum Vitae}
 \addcontentsline{toc}{chapter}{Curriculum Vitae}
 
+% paragraph indention for the first line
+\setlength{\parindent}{0em}
+\newcommand{\tind}{\hspace{-\tabcolsep}}
+\newcommand{\exrule}{\vspace{.2em}\hrule\vspace{.2em}}
+\def\Cplusplus{{\rm C\raise.2ex\hbox{\small ++}}}
+\sloppy
 
-%--------------------------------------------------------------------------------
-\section*{Personal Information}
-%--------------------------------------------------------------------------------
-\vspace{-5pt}
-\begin{table}[h] %\centering
-\begin{tabular}{@{} p{2.25cm} p{0.8\textwidth}}
-Name            & Fatih Erol \\
-Date of birth   & XXXXXX XX, 19XX \\
-Place of birth  & Trabzon, Turkey
-\end{tabular}
-\end{table}
-\vspace{-10pt}
+% paragraph spacing -- should be rubber length
+\setlength{\parskip}{1.5em plus .5em minus .5em}
 
+\parbox[t]{2.5cm}{\scshape Particulars}
+\parbox[t]{12.5cm}{
+  \begin{tabularx}{12.5cm}[t]{lX}
+    \tind Date of Birth & 9th August 1975, Wittenberg, Germany\\
+    \tind Nationality   & German, Swiss\\
+    \tind Languages     & German (native), English (fluent), French (fluent)\\
+    \tind Open Source Profile &
+\htmladdnormallink{github.com/eile}{https://github.com/eile}\\
+  \end{tabularx}
+}\\
 
-%--------------------------------------------------------------------------------
-\section*{Education}
-%--------------------------------------------------------------------------------
-\vspace{-5pt}
+\parbox[t]{2.5cm}{\scshape Profile}
+\parbox[t]{12.5cm}{Senior software engineer and technical team lead, with a
+  specialization in interactive large data visualization, \Cplusplus, parallel
+  and distributed programming. Successful track record of building and leading
+  engineering teams to success.
+}\\
 
+\parbox[t]{2.5cm}{\scshape Expertise}
+\parbox[t]{12.5cm}{
+  Technical leadership for high performance C++ applications, parallel
+    programming, distributed systems, Virtual Reality and collaborative
+    visualization\vspace{.5em}\\
+  Software and library design, test driven development and maintenance
+    using \Cplusplus, Typescript, Python, CMake and git\vspace{.5em}\\
+  Software development methodology during the whole lifecycle,
+    ranging from requirements analysis, specification, design,
+    implementation to documentation, education, debugging, optimization and
+    support\vspace{.5em}\\
+  Broad knowledge of operating systems: Mac OS X, Linux, Windows, Irix
+}\\
+
+\parbox[t]{2.5cm}{\scshape Experience}
+\parbox[t]{12.5cm}{
+  {\em Frontend Software Engineer} \hfill {\bf ESRI R\&D Center}\\
+  Z\"urich, Switzerland  \hfill {\bf Nov 2017 -- current}\exrule
+
+  Development of frontend APIs and rendering algorithms for 3D mapping.}\\
+
+\parbox[t]{2.5cm}{\hspace{1pt}}
+\parbox[t]{12.5cm}{
+  {\em Researcher, Parallel Rendering} \hfill {\bf University of Z"urich}\\
+  Z"urich, Switzerland \hfill {\bf 2005 -- 2007, October 2015 -- current}\exrule
+
+  Research new algorithms for large data visualization, in particular the
+  parallelization, load-balancing and data distribution of parallel OpenGL
+  applications on graphics clusters. Invented and developed Equalizer, a
+  framework for scalable, distributed OpenGL applications.}\\
+
+\parbox[t]{2.5cm}{\hspace{1pt}}
+\parbox[t]{12.5cm}{
+  {\em Visualization Team Manager} \hfill {\bf Blue Brain Project, EPFL}\\
+  Lausanne, Switzerland  \hfill {\bf May 2011 -- Sep 2017}\exrule
+
+  Built a team of seven software engineers, one post-doc, one PhD student and one
+  media designer to deliver innovative visualization software as well as media
+  for communication and scientific publications. Developed the long-term
+  interactive supercomputing vision and the corresponding medium-term roadmap
+  with the team, motivated and lead the implementation based on modular software
+  components. Drove the implementation of software engineering best practices
+  for the whole project.}\\
+
+\parbox[t]{2.5cm}{\hspace{1pt}}
+\parbox[t]{12.5cm}{
+  {\em CEO and Founder} \hfill {\bf Eyescale Software GmbH}\\
+  Neuch\^atel, Switzerland  \hfill {\bf January 2007 -- current}\exrule
+
+  Co-founder of Eyescale and lead developer of the Equalizer parallel rendering
+  framework and related libraries. Deploying Equalizer in existing ISV
+  applications to scale display size, performance and visual quality. Software
+  architecture, design and development, hardware and software consulting for
+  multi-GPU workstations, visualization clusters and Virtual Reality.  }\\
+
+\parbox[t]{2.5cm}{\hspace{1pt}}
+\parbox[t]{12.5cm}{
+  {\em Senior Software Engineer, 3D Graphics} \hfill {\bf Tungsten Graphics}\\
+  Neuch\^atel, Switzerland  \hfill {\bf January 2007 -- June 2007}\exrule
+  {\em Senior Software Engineer} \hfill {\bf Esmertec AG}\\
+  Neuch\^atel, Switzerland  \hfill {\bf January 2004 -- September 2005}\exrule
+
+  Job position details available on demand.
+}\\
+
+\parbox[t]{2.5cm}{\hspace{1pt}}
+\parbox[t]{12.5cm}{
+  {\em Senior Software Engineer}  \hfill {\bf Silicon Graphics, Inc.}\\
+  Neuch\^atel, Switzerland \hfill {\bf August 2000 -- December 2003}\exrule
+
+  Worked in SGI's advanced graphics division as technical lead for OpenGL
+  Multipipe SDK (MPK), a framework to develop high performance, scalable
+  visualization software. Worked on DataSync, a distributed shared memory API
+  for clusters.  }\\
+
+\parbox[t]{2.5cm}{\hspace{1pt}}
+\parbox[t]{12.5cm}{
+  {\em Software Engineer} \hfill {\bf Freelancer}\\
+  Munich, Germany         \hfill {\bf April 2000 -- July 2000}\exrule
+  {\em Software Engineer} \hfill {\bf Intec GmbH}\\
+  Wessling, Germany       \hfill {\bf October 1998 -- March 2000}\exrule
+
+  Job position details available on demand.
+}\vspace{1em}\\
+
+\parbox[t]{2.5cm}{\scshape Education}
+\parbox[t]{12.5cm}{
+  University of Zurich\\
+  PhD in Computer Science, in progress
+  \vspace{.3em}\\
+  \`Ecole Polytechnique F\`ed\`erale de Lausanne\\
+  Master in Computer Science, October 2015, Grade 5.6/6.0
+  \vspace{.3em}\\
+  Berufsakademie Heidenheim\\
+  Dipl.-Ing. (eq BS) in Computer Science, September 1998
+}\vspace{1em}\\
 
 %--------------------------------------------------------------------------------
 \section*{Publications}

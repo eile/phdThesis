@@ -887,11 +887,11 @@ compounds by the name left\_half.
 \begin{figure}[h!t]\center
  {\begin{tabbing} \ \ \ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \= \kill
    \> {\bf compound} \{						\\
-   \>\> {\bf channel} "draw"					\\
+   \>\> {\bf channel} ''draw''					\\
    \>\> buffer  [ COLOR DEPTH ]				\\
    \>\> range [0 $\frac{1}{2}$]				\\
    \>\> viewport [ 0 0 $\frac{1}{2}$ 1 ]                 \\
-   \>\> outputframe \{name "left\_half" \}	\\
+   \>\> outputframe \{name ''left\_half'' \}	\\
    \> \}
   \end{tabbing}}
  \vspace{-2mm}
@@ -906,8 +906,8 @@ compositing of the two input images on its channel and returns the resulting
 color framebuffer in the output frame named frame.display.
 
 \begin{figure}[h!t]\center {\begin{tabbing} \ \ \ \ \ \=\ \ \ \=\ \ \ \=\ \ \
-\=\ \ \ \=\ \ \ \= \kill \> {\bf compound} \{ \\ \>\> {\bf channel} "display"
-\\ \>\> inputframe \{ name "part\_a" \} \\ \>\> inputframe \{ name "part\_b" \}
+\=\ \ \ \=\ \ \ \= \kill \> {\bf compound} \{ \\ \>\> {\bf channel} ''display''
+\\ \>\> inputframe \{ name ''part\_a'' \} \\ \>\> inputframe \{ name ''part\_b'' \}
 \\ \>\> outputframe \{ buffer [ COLOR ] \} \\ \> \} \end{tabbing}}
 \vspace{-2mm} \caption{Compound performing image
 compositing.\label{FIG_inner_compound}} \end{figure}
@@ -1992,12 +1992,12 @@ compound \\
 \quad view\_equalizer \{\} \\
 \quad compound \\
 \quad \{ \\
-\quad \quad channel "Channel1" \\
+\quad \quad channel ''Channel1'' \\
 \quad \quad load\_equalizer\{\} \\
 \quad \quad compound \{\} \# self \\
 \quad \quad compound \\
 \quad \quad \{ \\
-\quad \quad \quad channel "Source2" \\
+\quad \quad \quad channel ''Source2'' \\
 \quad \quad \quad outputframe \{\} \\
 \quad \quad \} \\
 \quad \quad inputframe\{\} \\
@@ -2005,12 +2005,12 @@ compound \\
 \quad \} \\
 \quad compound \\
 \quad \{ \\
-\quad \quad channel "Channel2" \\
+\quad \quad channel ''Channel2'' \\
 \quad \quad load\_equalizer\{\} \\
 \quad \quad compound \{\} \# self \\
 \quad \quad compound \\
 \quad \quad \{  \\
-\quad \quad \quad channel "Source1"  \\
+\quad \quad \quad channel ''Source1''  \\
 \quad \quad \quad outputframe \{\}  \\
 \quad \quad \} \\
 \quad \quad inputframe\{\} \\
@@ -2321,7 +2321,7 @@ and connecting it. Both operations may fail.
 \subsubsection{\label{sZeroconf}Zeroconf Discovery}
 
 Each \textsf{LocalNode} provides a \textsf{Zeroconf} communicator, which allows
-node and resource discovery. The zeroconf service "\_collage.\_tcp" is used to
+node and resource discovery. The zeroconf service ''\_collage.\_tcp'' is used to
 announce the presence of a listening \textsf{LocalNode} using the ZeroConf
 protocol to the network. The node identifier and all listening connection
 descriptions are announced, which is used to connect unknown nodes by using the
@@ -2528,7 +2528,18 @@ negative acknowledgment, acknowledgment request), and up two six bytes of
 datagram-specific information (e.g. for acknowledgment: two bytes read node
 identifier, two bytes write node identifier, two bytes sequence number).
 
-\fig{fRSP} shows the data flow through the RSP implementation. Each member of the multicast group opens a listening connection, which will send query datagrams to the multicast socket. For each found member, a receiving connection instance is created and, similar to a TCP socket, passed to the application upon \textsf{accept}. Each connection instance has a fixed number (1024 by default) of fixed-size (1470 by default) buffers, each used directly as an UDP datagram. The listening connection uses these buffers for writing data, and each receiving connection uses its buffers for received data. These buffers are continuously cycled through two sets of queues: a blocking, thread-safe queue used on the application side for reading and writing data, and a non-blocking, lock-free and thread-safe queue on the protocol thread for data management.
+\fig{fRSP} shows the data flow through the RSP implementation. Each member of
+the multicast group opens a listening connection, which will send query
+datagrams to the multicast socket. For each found member, a receiving
+connection instance is created and, similar to a TCP socket, passed to the
+application upon \textsf{accept}. Each connection instance has a fixed number
+(1024 by default) of fixed-size (1470 by default) buffers, each used directly
+as an UDP datagram. The listening connection uses these buffers for writing
+data, and each receiving connection uses its buffers for received data. These
+buffers are continuously cycled through two sets of queues: a blocking,
+thread-safe queue used on the application side for reading and writing data,
+and a non-blocking, lock-free and thread-safe queue on the protocol thread for
+data management.
 
 \begin{figure}[h!t]\center
   \includegraphics[width=\textwidth]{images/rspPackets.pdf}
@@ -2584,10 +2595,10 @@ of rendering clients concurrently.
 \chapter{Applications}\label{sApplications}
 
 A key performance measure for a good design of any framework is the acceptance
-by developers, which is reflected in the usage in third-party applications.
-While the evaluation and architecture of applications build on Equalizer is
-outside of the scope of this thesis, we name a few examples here to illustrate
-the variety of use cases supported by our framework.
+by developers, for which a good indicator is the usage by third-party
+applications. While the evaluation and architecture of applications build on
+Equalizer is outside of the scope of this thesis, we name a few examples here
+to illustrate the variety of use cases supported by our framework.
 
 \section{Livre}
 
