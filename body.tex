@@ -1258,7 +1258,8 @@ break out of this standard classification. For each mode, we present its
 algorithm and implementation, potential impact on the application code, as well
 as its strengths and weaknesses. Due to the flexible architecture of our
 parallel rendering system, these modes are largely usable with any Equalizer
-application and can be combined with all other modes.
+application and can be combined with all other modes. Equalizer also supports
+sort-first and sort-last rendering, not further mentioned in this chapter.
 
 Most of these rendering modes are similar to sort-first rendering, in that they
 decompose the final view spatially or temporally, while computing complete
@@ -2131,7 +2132,7 @@ resource usage by not needlessly rendering the same view multiple times.
 \chapter{Data Distribution and Synchronization}\label{sCollage}
 
 Most research in parallel rendering ignores the problem of managing application
-state in a distributed rendering session. For core parallel rendering research
+state in a distributed rendering session. For basic parallel rendering research
 this problem is trivially to solve, whereas in real-world applications it often
 is one of the major challenges for using a distributed rendering cluster.
 Researching and improving the system behavior of non-trivial applications is
@@ -2162,29 +2163,28 @@ higher-level abstractions. In Collage, each communicating process is equal to
 all others, and no traffic prioritization or communication pattern is enforced
 by a node type. This has proven particularly useful during the implementation of
 parallel compositing algorithms, where the compositing nodes form an ad-hoc
-peer-to-peer network.
+peer-to-peer sub-network.
 
 \item[Dynamic connection management:] As a consequence of the peer-to-peer
 network, all nodes in a cluster are equivalent. Due to the heterogenous nature
-of a parallel rendering application we felt the need to furthermore have no
-constraints on the management of connections between nodes. Nodes are
-identified and addressed by an universally unique identifier. The network layer
-lazily establishes a connection to any given node, by querying its known
-neighbors or a zeroconf network for connection parameters. Connections may be
-established concurrently by both sides of a node pair (e.g. during parallel
-compositing), which requires a robust handshake protocol during connection
-establishment. For larger cluster installations, a fully connected peer-to-peer
-network would be suboptimal, for example on Windows operating systems there is
-a latency penalty once more than 64 connections are needed due to low-level
-implementation details.
+of a parallel rendering application we furthermore imposed no constraints on
+the management of connections between nodes. Nodes are identified and addressed
+by an universally unique identifier. The network layer lazily establishes a
+connection to any given node, by querying its known neighbors or a zeroconf
+network for connection parameters. Connections may be established concurrently
+by both sides of a node pair (e.g. during parallel compositing), which requires
+a robust handshake protocol during connection establishment. For larger cluster
+installations, a fully connected peer-to-peer network would be suboptimal, for
+example on Windows operating systems there is a latency penalty once more than
+64 connections are needed due to low-level implementation details.
 
 \item[Transport layer abstraction:] The actual network protocol is abstracted
-by an API requiring byte-oriented stream semantics. While this choice of
+by an API defining byte-oriented stream semantics. While this choice of
 abstraction makes it harder for RDMA-based protocols to deliver full
 performance, it has proven useful in supporting a large set of transports, from
 standard Ethernet sockets, SDP for InfiniBand, native Verbs for Infiniband, UDT
 to even a fully-featured multicast-over-UDP implementation. In particular the
-ease of integration for multicast transport is strong evidence for the
+ease of integration of multicast transport is strong evidence for the
 usefulness of this abstraction.
 
 \item[Convenient to use for existing applications:] The history and code
@@ -2378,6 +2378,8 @@ following object types are available:
 \item[Static] The object is not versioned nor buffered. The instance data is
   serialized whenever a new slave instance is mapped. No additional data is
   stored.
+\item[Unbuffered] The object is versioned and unbuffered. No data is stored, and
+  no previous versions can be mapped.
 \item[Instance] The object is versioned and buffered. The instance and delta
   data are identical; that is, only instance data is serialized. Previous
   instance data is saved to be able to map old versions.
@@ -2385,9 +2387,16 @@ following object types are available:
   smaller than the instance data. The delta data is transmitted to slave
   instances for synchronization. Previous instance and delta data is saved to be
   able to map and sync old versions.
-\item[Unbuffered] The object is versioned and unbuffered. No data is stored, and
-  no previous versions can be mapped.
 \end{compactdesc}
+
+Instance and delta objects have a memory overhead on the master instance to
+store past data. The number of old versions retained is configurable per
+object. For Equalizer applications, this overhead typically occurs on the
+application node holding the master instances, and is configured based on the
+configuration's latency. When using unbuffered objects, applications only
+observe inconsistent state during the initial mapping, when a too recent
+version is used by a render client. The push-based commit-sync logic eventually
+brings the object into a consistent state with respect to the rendered frame.
 
 Serialization is facilitated using output or input streams, which abstract the
 data transmission and are used like a \textsf{std::stream}. The data streams
@@ -2406,34 +2415,40 @@ application calls \textsf{sync} to synchronize the object to a new version. The
 still in transmission. All versioned objects have the following characteristics:
 
 \begin{compactitem}
-\item The master instance of the object generates new versions for all
-  slaves. These versions are continuous. It is possible to commit on slave
-  instances, but special care has to be taken to handle possible
-  conflicts.
+
+\item The master instance of the object generates new versions for all slaves.
+These versions are continuous. It is possible to commit on slave instances, but
+special care has to be taken to handle possible conflicts during concurrent
+commits from multiple slave instances.
 
 \item Slave instance versions can only be advanced; that is,
-\textsf{sync(version)} with a version smaller than the current version will
-fail.
+\textsf{sync(version)} with a version older than the current version will fail.
 
-\item Newly mapped slave instances are mapped to the oldest available
-  version by default, or to the version specified when calling
-  \textsf{mapObject}.
+\item Newly mapped slave instances are mapped to the oldest available version
+by default, or to the version specified when calling \textsf{mapObject}.
+
 \end{compactitem}
+
+Blocking commits allow to limit the number of outstanding, queued versions on
+the slave nodes. A token-based protocol will block the commit on the master
+instance if too many unsynchronized versions exist. This is useful to limit the
+amount of memory consumed by slave instance, and too prohibit run-away
+conditions of the master instance.
+
+\subsubsection{Serializable}
 
 \label{sec:Serializable}The \textsf{Collage} Serializable implements one
 convenient usage pattern for object data distribution. The
 \textsf{co::Serializable} data distribution is based on the concept of dirty
-bits, allowing inheritance with data distribution. Dirty bits form a 64-bit mask
-which marks the parts of the object to be distributed during the next commit.
+bits, allowing inheritance with data distribution. Dirty bits form a 64-bit
+mask which marks the parts of the object to be distributed during the next
+commit. Setters of the class mark the appropriate dirty bit.
+
 For serialization, the application developer implements \textsf{serialize} or
 \textsf{deserialize}, which are called with the bit mask specifying which data
 has to be transmitted or received. During a commit or sync, the current dirty
 bits are given, whereas during object mapping all dirty bits are passed to the
-serialization methods.
-
-Blocking commits allow to limit the number of outstanding, queued versions on
-the slave nodes. A token-based protocol will block the commit on the master
-instance if too many unsynchronized versions exist.
+serialization methods. A commit will clear the dirty mask after serialization.
 
 \subsubsection{Optimizations}
 
@@ -2466,14 +2481,17 @@ recently registered master objects to all connected nodes during idle time of
 the corresponding node. These nodes simply enter the received data to their
 cache. Preloading uses multicast when available.
 
-Due to the master-slave model of data distribution, multicast is used to
+Due to the master-slave nature of data distribution, multicast is used to
 optimize the transmission time of data. If the contributing nodes share a
 multicast session, and more than one slave instance is mapped, \textsf{Collage}
-automatically uses the multicast connection to send the new version information.
+automatically uses the multicast connection to send the new version
+information.
 
-In \cite{ESP:18} we provide an extensive analysis of data compression, buffering
-and multicast in practical scenarios, and show that they can provide substantial
-speedups for data distribution.
+In \cite{ESP:18} we provide an extensive analysis of data compression,
+buffering and multicast in practical scenarios, and show that they can provide
+substantial speedups for data distribution. In particular, our multicast
+implementation introduced in the next section, delivers substantial speedups
+for data distribution.
 
 %------------------------------------------------------------------------------
 \subsection{Reliable Stream Protocol}\label{sec:RSP}
