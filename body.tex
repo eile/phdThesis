@@ -887,11 +887,11 @@ compounds by the name left\_half.
 \begin{figure}[h!t]\center
  {\begin{tabbing} \ \ \ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \=\ \ \ \= \kill
    \> {\bf compound} \{						\\
-   \>\> {\bf channel} ''draw''					\\
+   \>\> {\bf channel} "draw"					\\
    \>\> buffer  [ COLOR DEPTH ]				\\
    \>\> range [0 $\frac{1}{2}$]				\\
    \>\> viewport [ 0 0 $\frac{1}{2}$ 1 ]                 \\
-   \>\> outputframe \{name ''left\_half'' \}	\\
+   \>\> outputframe \{name "left\_half" \}	\\
    \> \}
   \end{tabbing}}
  \vspace{-2mm}
@@ -906,8 +906,8 @@ compositing of the two input images on its channel and returns the resulting
 color framebuffer in the output frame named frame.display.
 
 \begin{figure}[h!t]\center {\begin{tabbing} \ \ \ \ \ \=\ \ \ \=\ \ \ \=\ \ \
-\=\ \ \ \=\ \ \ \= \kill \> {\bf compound} \{ \\ \>\> {\bf channel} ''display''
-\\ \>\> inputframe \{ name ''part\_a'' \} \\ \>\> inputframe \{ name ''part\_b'' \}
+\=\ \ \ \=\ \ \ \= \kill \> {\bf compound} \{ \\ \>\> {\bf channel} "display"
+\\ \>\> inputframe \{ name "part\_a" \} \\ \>\> inputframe \{ name "part\_b" \}
 \\ \>\> outputframe \{ buffer [ COLOR ] \} \\ \> \} \end{tabbing}}
 \vspace{-2mm} \caption{Compound performing image
 compositing.\label{FIG_inner_compound}} \end{figure}
@@ -1992,12 +1992,12 @@ compound \\
 \quad view\_equalizer \{\} \\
 \quad compound \\
 \quad \{ \\
-\quad \quad channel ''Channel1'' \\
+\quad \quad channel "Channel1" \\
 \quad \quad load\_equalizer\{\} \\
 \quad \quad compound \{\} \# self \\
 \quad \quad compound \\
 \quad \quad \{ \\
-\quad \quad \quad channel ''Source2'' \\
+\quad \quad \quad channel "Source2" \\
 \quad \quad \quad outputframe \{\} \\
 \quad \quad \} \\
 \quad \quad inputframe\{\} \\
@@ -2005,12 +2005,12 @@ compound \\
 \quad \} \\
 \quad compound \\
 \quad \{ \\
-\quad \quad channel ''Channel2'' \\
+\quad \quad channel "Channel2" \\
 \quad \quad load\_equalizer\{\} \\
 \quad \quad compound \{\} \# self \\
 \quad \quad compound \\
 \quad \quad \{  \\
-\quad \quad \quad channel ''Source1''  \\
+\quad \quad \quad channel "Source1"  \\
 \quad \quad \quad outputframe \{\}  \\
 \quad \quad \} \\
 \quad \quad inputframe\{\} \\
@@ -2321,7 +2321,7 @@ and connecting it. Both operations may fail.
 \subsubsection{\label{sZeroconf}Zeroconf Discovery}
 
 Each \textsf{LocalNode} provides a \textsf{Zeroconf} communicator, which allows
-node and resource discovery. The zeroconf service ''\_collage.\_tcp'' is used to
+node and resource discovery. The zeroconf service "\_collage.\_tcp" is used to
 announce the presence of a listening \textsf{LocalNode} using the ZeroConf
 protocol to the network. The node identifier and all listening connection
 descriptions are announced, which is used to connect unknown nodes by using the
