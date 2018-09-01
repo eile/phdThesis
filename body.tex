@@ -688,6 +688,76 @@ semantics for thread safe event handling. For Qt, which centralizes the event
 dispatch, Equalizer will reroute events to the render threads to ensure
 consistent behaviour.
 
+\subsubsection{NUMA Aware Thread Scheduling}
+
+Non-Unified Memory Access (NUMA) is a common hardware architecture for
+high-performance visualization clusters. Modern multi-socket visualization
+nodes use a NUMA architecture, where each CPU socket has a number of
+locally-attached memory buses, GPU and network devices, and CPU sockets are
+linked with an interconnect to each other. Accessing a memory address located
+on another processor has a performance penalty for both bandwidth and latency,
+and accessing a GPU or network interface from a remote processor is slower than
+a local access.
+
+\begin{wrapfigure}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{images/numaNode.pdf}
+ {\caption{\label{fNumaNode}Examplary Dual-Socket NUMA Node}}
+\end{wrapfigure}
+
+\fig{fNumaNode} shows one such NUMA visualization node, used in the experiments
+of \cite{EBAHMP:12}. It has two CPU sockets with six cores each, three GPUs
+connected to the two sockets, and two network cards (10 Gigabit Ethernet and
+InfiniBand) connected to one socket.
+
+In our parallel rendering system, a number of threads are used to drive a
+single process in the cluster: one main thread (main), one rendering thread for
+each GPU (draw) and one to finish the download operation during asynchronous
+downloads (read), one thread for receiving network data (recv), one auxilary
+command processing thread (cmd), and one thread for image transmission to other
+nodes (xmit). We have implemented automatic thread placement by extending and
+using the hwloc library in Equalizer using the following rules:
+
+\begin{compactitem}
+
+\item Restrict all node threads (main, recv, cmd, xmit) to the cores of the
+processor local to the network card.
+
+\item Restrict all GPU threads (draw, read) to the cores of the processor close
+to the respective GPU.
+
+\end{compactitem}
+
+\begin{wrapfigure}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{images/numaThreads.pdf}
+ {\caption{\label{fNumaThreads}Thread Placement on a Dual-Socket NUMA Node}}
+\end{wrapfigure}
+
+\fig{fNumaThreads} shows the thread placement for the example node used in
+\fig{fNumaNode}. The threads are placed to all cores of the respective
+processor, and the ratio of cores to threads varies with the used hardware and
+software configuration. Furthermore, many of the threads do not occupy a full
+core at runtime, especially the node threads which are mostly idle on a
+rendering client.
+
+When using the default memory placement strategy, memory is allocated on the
+processor where it is accessed first (first-touch NUMA allocation). In
+Equalizer, all GPU-specific memory allocations are done by the render threads
+executing the rendering code, therefore placing the CPU-side buffers onto the
+same socket as the corresponding GPU. Similarly, network buffers are allocated
+and used from the one of the node threads.
+
+\begin{wrapfigure}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{results/affinity.pdf}
+ {\caption{\label{rNuma}Influence of Thread Affinity on Rendering Performance}}
+\end{wrapfigure}
+
+We tested the influence of thread placement by explicitly placing the threads
+either on the correct or incorrect processor. We found that this leads to a
+performance improvement of more than 6\% in real-world rendering loads, as
+shown in \fig{rNuma}. While this is a relatively small influence, it becomes
+more important with higher framerates as the relative draw time decreases, and
+the memory-intensive compositing step increases.
+
 
 \section{Configuration}
 
@@ -1242,6 +1312,8 @@ allows data distribution with minimal application logic.
 
 \chapter{Scalable Rendering}\label{sScalable}
 
+\section{Overview}
+
 Scalable rendering is a subset of parallel rendering which aims to improve the
 framerate of a rendering task by decomposing it over multiple rendering
 resources. Parallel rendering includes other use cases, for example to use
@@ -1276,7 +1348,23 @@ rendering pipeline. To our knowledge no other implementation provides this
 breath and flexibility, and many of these algorithms appear for the first time
 in Equalizer.
 
-\section{Stereo}
+\section{Sort-First}
+
+Sort-first rendering decomposes the rendering task in screen space. It has many
+variants: tiled display walls and similar installations perform sort-first
+parallel rendering naturally by using multiple GPUs to drive the output
+displays, and classic sort-first scalable rendering assigns one screen-space
+region to each rendering resource, often combined with load balancing.
+Equalizer supports these classic sort-first modes. In the following subsections
+we present other variants of sort-first rendering, each tailored to a certain
+use case.
+
+\subsection{Stereo}
+
+\begin{wrapfigure}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{images/Stereo}
+ {\caption{\label{fStereo}Anaglyphic Stereo Compound}}
+\end{wrapfigure}
 
 Stereo, or eye decomposition, is a specialized version of sort-first rendering.
 Two GPUs get assigned each one of the eye passes during stereo rendering. For
@@ -1285,11 +1373,6 @@ anaglyphic stereo the frame buffer for one eye pass has to be copied to the
 destination channel. Due to the strong similarity between both eye passes, this
 mode provides close to perfect load balance. \fig{fStereo} shows an anaglyphic
 stereo compound.
-
-\begin{wrapfigure}{O}{.618\textwidth}
- \includegraphics[width=.618\textwidth]{images/Stereo}
- {\caption{\label{fStereo}Anaglyphic Stereo Compound}}
-\end{wrapfigure}
 
 While many implementations provide passive or active stereo rendering and
 sometimes decomposition using two GPUs, our implementation within our flexible
@@ -1301,43 +1384,7 @@ scalable rendering mode. One can also easily set up an application with mixed
 rendering, e.g., to render a monoscopic view on a control workstation while
 rendering stereoscopic on a larger immersive installation.
 
-
-\section{Time-Multiplex}
-
-Time-multiplexing distributes full frames over the available resources, such
-that each resource only renders a subset of the visible frames (\fig{fDPlex}).
-This mode is also called alternate frame rate or DPlex, was first implemented in
-\cite{BRE:05} for shared memory machines. The algorithm is however much better
-suited for distributed memory systems, since the separate memory space makes
-concurrent rendering of different frames much easier to implement. While it
-increases the framerate almost linearly, it does not decrease the latency
-between user input and the corresponding output. Consequently, this
-decomposition mode is mostly useful for non-interactive movie generation.
-
-\begin{wrapfigure}{O}{.382\textwidth}
-\includegraphics[width=.382\textwidth]{images/DPlex}
-{\caption{\label{fDPlex}Time-Multiplex Compound}} \end{wrapfigure}
-
-DPlex is very well load-balanced, since most applications observe a strong
-frame-to-frame coherence with respect to the rendering load. This decomposition
-mode has the pecularity that small imbalances tend to accumulate such that the
-concurrent frames all finish simultaneously. To provide a smooth framerate, if
-so desired, a framerate equalizer can be installed on the destination compound.
-\sref{sFramerateEq} covers this functionality. It is transparent to
-\textsf{Equalizer} applications, but does require the configuration latency to
-be greater or equal than the number of source channels.
-
-DPlex rendering is not hard-coded into our framework, but configured by
-restricting the rendering task temporally on each source compound. This is
-achieved by setting a \textsf{period} and \textsf{phase} parameters, which
-configure the number of frames skipped and starting offset on the given source
-compound. A simple DPlex compound would have a destination compound with $n$
-source compounds, where each source has a period of $n$ and one phase from
-$0..n-1$. While this generalization may seem artificial, it opens up different
-use cases, for example giving a fast GPU a smaller period, thus giving it more
-work.
-
-\section{Pixel}
+\subsection{Pixel}
 
 Pixel compounds (\fig{fPixel}) decompose the destination channel by
 interleaving pixels in image space. They are a variant of sort-first rendering
@@ -1372,7 +1419,7 @@ hardcoding them.
   \caption{Pixel, Subpixel and Tile Compounds.}
 \end{figure}
 
-\section{Subpixel}
+\subsection{Subpixel}
 
 Subpixel compounds (\fig{fSubpixel}) are similar to pixel compounds, but they
 decompose the work for a single pixel, for example with Monte-Carlo ray
@@ -1391,18 +1438,69 @@ compositing algorithms as sort-last rendering. Since the compositing logic is
 decoupled from the task decomposition, it reuses the same code as sort-last
 parallel compositing except for the combination step on each GPU.
 
-\section{Tiles and Chunks\label{sTile}}
+\subsection{Tiles \label{sTile}}
 
-Tile (\fig{fTiles}) and chunk decompositions are a variant of sort-first and
-sort-last rendering, respectively. They decompose the scene into a predefined
-set of fixed-size image tiles or database ranges. These tasks, or work packages,
-are queued and processed by all source channels by polling a server-central
-queue. Prefetching ensures that the task communication overlaps with rendering.
-As shown in~\cite{SPEP:16}, these modes can provide better performance due to
-being implicitly load-balanced, as long as there is an insignificant overhead
-for the render task setup. This mode is transparent to \textsf{Equalizer}
-applications. We have used a tile compound to scale an interactive ray tracing
-application to hundreds of rendering nodes.
+Tile (\fig{fTiles}) decompositions are a variant of sort-first rendering. They
+decompose the scene into a predefined set of fixed-size image tiles. These
+tasks, or work packages, are queued and processed by all source channels by
+polling a server-central queue. Prefetching ensures that the task communication
+overlaps with rendering. As shown in~\cite{SPEP:16}, work packages can provide
+better performance due to being implicitly load-balanced, as long as there is
+an insignificant overhead for the render task setup. This mode is transparent
+to \textsf{Equalizer} applications. We have used a tile compound to scale an
+interactive ray tracing application to hundreds of rendering nodes using RTT
+Deltagen.
+
+\section{Sort-Last}
+
+Sort-last rendering decomposes the rendering task in object space, that is,
+each rendering resource produces an incomplete full-resolution image. To our
+knowledge, sort-last rendering always requires a compositing step, which is the
+challenging part for this decomposition mode. It is often addressed using
+parallel compositing, which we discuss in \sref{sparcomp}.
+
+Equalizer does support classical sort-last rendering with or without
+load-balancing, where each resource renders one part of the applications
+database. Furthermore, we also implement chunk compounds, which are similar to
+tile compounds (\sref{sTile}), with which they share a lot of the
+infrastructure. Chunk compounds also produce work packages, although using a
+fixed-size subrange for each package instead of the tile coordinates used for
+tile compounds.
+
+\section{Time-Multiplex}
+
+\begin{wrapfigure}{O}{.382\textwidth}
+\includegraphics[width=.382\textwidth]{images/DPlex}
+{\caption{\label{fDPlex}Time-Multiplex Compound}} \end{wrapfigure}
+
+Time-multiplexing distributes full frames over the available resources, such
+that each resource only renders a subset of the visible frames (\fig{fDPlex}).
+This mode is also called alternate frame rate or DPlex, was first implemented in
+\cite{BRE:05} for shared memory machines. The algorithm is however much better
+suited for distributed memory systems, since the separate memory space makes
+concurrent rendering of different frames much easier to implement. While it
+increases the framerate almost linearly, it does not decrease the latency
+between user input and the corresponding output. Consequently, this
+decomposition mode is mostly useful for non-interactive movie generation.
+
+DPlex is very well load-balanced, since most applications observe a strong
+frame-to-frame coherence with respect to the rendering load. This decomposition
+mode has the pecularity that small imbalances tend to accumulate such that the
+concurrent frames all finish simultaneously. To provide a smooth framerate, if
+so desired, a framerate equalizer can be installed on the destination compound.
+\sref{sFramerateEq} covers this functionality. It is transparent to
+\textsf{Equalizer} applications, but does require the configuration latency to
+be greater or equal than the number of source channels.
+
+DPlex rendering is not hard-coded into our framework, but configured by
+restricting the rendering task temporally on each source compound. This is
+achieved by setting a \textsf{period} and \textsf{phase} parameters, which
+configure the number of frames skipped and starting offset on the given source
+compound. A simple DPlex compound would have a destination compound with $n$
+source compounds, where each source has a period of $n$ and one phase from
+$0..n-1$. While this generalization may seem artificial, it opens up different
+use cases, for example giving a fast GPU a smaller period, thus giving it more
+work.
 
 \section{Mixed Mode Compounds}
 
@@ -1439,6 +1537,13 @@ compounds, and the middle segments where given an additional machine setting up
 a two-way sort-first decomposition under each node of the two-way stereo
 compound.
 
+\item Combined sort-last and sort-first decomposition: Sort-first rendering is
+typically limited in the scalability of the decomposition step, where geometry
+overlap between resources often yields diminishing returns after about ten
+GPUs. Sort-last rendering on the other hand is often limited by the overhead of
+the compositing step. Combining both modes enables to balance these constraints
+for better scalability.
+
 \end{compactitem}
 
 \section{Stereo-Selective Compounds}
@@ -1464,7 +1569,21 @@ processes during the stereo switch.
 
 \chapter{Compositing}\label{sCompositing}
 
-\section{Parallel Compositing}
+\section{Overview}
+
+Compositing is collecting and combining partial results from multiple resources
+during scalable rendering onto one or more destination channel. While
+significant characteristics of the decomposition step, discussed in the
+previous chapter, are dependent on the application rendering code, compositing
+is largely a generic problem and can be optimised by a parallel rendering
+framework. Consequently, this area of parallel rendering research has received
+significant attention. By integrating many state-of-the art optimizations into
+our parallel rendering framework we provide a generic solution which scales
+well on modern visualization cluster architectures. Furthermore, we present new
+optimizations for NUMA-aware thread scheduling, insight into spatial sort-last
+polygonal rendering, and image compression algorithms.
+
+\section{Parallel Compositing\label{sparcomp}}
 
 Parallel compositing leverages multiple compute resources, memory bandwidth and
 network bandwidth within a visualization cluster to accelerate the compositing
@@ -1746,7 +1865,6 @@ threads concurrently to the rendering threads.
 The implementation of these steps in plugins provides a clean separation and
 interface for users and researchers interested in experimenting with image
 compression for interactive parallel rendering.
-
 
 \chapter{Load Balancing}\label{sLoadBalancing}
 
