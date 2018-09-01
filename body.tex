@@ -754,9 +754,12 @@ and used from the one of the node threads.
 We tested the influence of thread placement by explicitly placing the threads
 either on the correct or incorrect processor. We found that this leads to a
 performance improvement of more than 6\% in real-world rendering loads, as
-shown in \fig{rNuma}. While this is a relatively small influence, it becomes
-more important with higher framerates as the relative draw time decreases, and
-the memory-intensive compositing step increases.
+shown in \fig{rNuma}. This benchmark uses the aforementioned cluster nodes, and
+renders polygonal data using sort-first scalable rendering. The exact
+experiment setup is described in \cite{EBAHMP:12}. While this is a relatively
+small influence, it becomes more important with higher framerates as the
+relative draw time decreases, and the memory-intensive compositing step
+increases.
 
 
 \section{Configuration}
@@ -1620,7 +1623,7 @@ onto convex spatial regions.
     \includegraphics[height=4.5cm]{images/sorted}
     \label{fSorted}
   }
-  \caption{Depth-sorted and back-to-front sort-last compositing.}
+  \caption{Depth-Sorted and Back-to-Front Sort-Last Compositing.}
 \end{figure}
 
 Spatial compositing is often used for direct volume rendering, and requires the
@@ -1640,9 +1643,24 @@ sources before collapsing them.
 
 Spatial compositing provides better performance, and scales nicer with other
 optimisations such as region of interest due to compact regions produced by the
-spatial sorting. In \cite{EBAHMP:12} we applied this algorithm to mesh-based
-rendering with transparency and presented performance benefits over
-depth-sorted compositing.
+spatial sorting. Normally used for volume rendering, we have applied spatial
+sort-last rendering and compositing to polygonal data, by sorting the data
+spatially and applying clipping planes to generate perfectly convex rendering
+subsets.
+
+\begin{wrapfigure}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{results/dbSpatial}
+ {\caption{\label{rDBSpatial}Spatial versus Depth-Sorted Sort-Last Rendering Performance}}
+\end{wrapfigure}
+
+\fig{rDBSpatial} shows the difference between spatial and depth-sorted
+sort-last rendering in RTNeuron (\sref{sRTNeuron}). Due to complexities in the
+application data model, and the disadvantageous geometrical structure of
+neurons, the spatial mode in RTNeuron scales less well then the round-robin
+allocation used for the depth-sorted mode. Still, due to the significantly
+reduced compositing load of this mode, both due to a smaller region of interest
+and no depth buffer transfers, spatial sort-last rendering has a significantly
+better framerate. The exact experiment setup can be found in \cite{EBAHMP:12}.
 
 Contrary to most other implementations, parallel compositing algorithms in
 Equalizer are not hardcoded, but rather configured explicitly in the
@@ -1708,17 +1726,34 @@ frame, the compositing code respects this parameter to place the pixel data on
 the right position. The usage of ROI for load balancing is described in
 \sref{sLoadEqualizer}.
 
+\begin{wrapfigure}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{results/roiSF}
+ {\caption{\label{rROISF}Region of Interest for Sort-First Rendering Performance}}
+\end{wrapfigure}
+
+Applying ROI for sort-first rendering provides a small improvement for the
+rendering performance, as shown in \fig{rROISF} from \cite{EBAHMP:12}. As the
+number of resources increases, the ROI becomes more important since the
+relative amount of time spent in compositing increases as the rendering load
+decreases. With ROI enabled we observed performance improvements between
+5-20\%, reaching 60~Hz when using 33 GPUs. Without ROI, the framerate peaked at
+less than 50~Hz when using 27 GPUs.
+
+\begin{wrapfigure}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{results/roiSL}
+ {\caption{\label{rROISL}Region of Interest for Sort-Last Rendering Performance}}
+\end{wrapfigure}
+
+For sort-last rendering performance, ROI is crucial. In our experiments in
+\cite{EBAHMP:12}, we used a polygonal renderer which uses relatively compact
+regions during sort-last decomposition, while still using depth-sorted
+compositing. This is a relatively common use case for sort-last rendering. In
+this mode, we can observe significant speedups with ROI (up to 4x), as shown in
+\fig{fROISL}.
+
 In \cite{MEP:10}, this application-provided ROI was extended with an algorithm
 which automatically computes the ROI by analyzing the framebuffer to maximize
 the amount of blank framebuffer omitted during compositing.
-
-In \cite{EBAHMP:12} we show that using ROI can quadruple the rendering
-performance for the costly compositing step in sort-last rendering. This is
-especially the case when the application rendering code uses a spatially
-compact subset during sort-last decomposition. For sort-first rendering, the
-ROI allows the algorithm to scale to a higher number of resources before
-synchronization and compositing overhead eats up any potential speedup gained
-from the task decomposition.
 
 \section{Asynchronous Compositing}
 
@@ -2774,7 +2809,7 @@ interactive raytracing, both based on CPUs and GPUs. For CPU-based raytracing,
 often Linux-based rendering clients are used with a Windows-based application
 node.
 
-\section{RTNeuron}
+\section{RTNeuron}\label{sRTNeuron}
 
 \begin{wrapfigure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/RTNeuron}
