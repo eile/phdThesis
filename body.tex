@@ -1749,7 +1749,7 @@ For sort-last rendering performance, ROI is crucial. In our experiments in
 regions during sort-last decomposition, while still using depth-sorted
 compositing. This is a relatively common use case for sort-last rendering. In
 this mode, we can observe significant speedups with ROI (up to 4x), as shown in
-\fig{fROISL}.
+\fig{rROISL}.
 
 In \cite{MEP:10}, this application-provided ROI was extended with an algorithm
 which automatically computes the ROI by analyzing the framebuffer to maximize
@@ -1795,9 +1795,14 @@ one rendering thread and one download thread is used for each GPU, as well as
 one transmit thread per process. The download threads are created lazy, when
 needed.
 
+\begin{wrapfigure}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{results/async}
+ {\caption{\label{rAsync}Asynchronous Compositing Sort-First Rendering Performance}}
+\end{wrapfigure}
+
 Asynchronous compositing is, together with ROI, one of the most influential
-optimizations for scalable rendering. We have shown in \cite{EBAHMP:12} that
-when being mostly rendering bound, pipelining the readback with the rendering
+optimizations for scalable rendering. For sort-first rendering, shown in
+\fig{rAsync} from \cite{EBAHMP:12}, pipelining the readback with the rendering
 yields a performance again of about 10\%. At higher framerates, when the
 rendering time of a single resource decreases, asynchronous readback has even a
 higher impact, of over 25\% for large node counts.
@@ -1879,6 +1884,36 @@ All RLE compressors perform a data decomposition on the input image, and
 parallelize the compression of data chunks across multiple threads. This
 parallel execution improves the performance by saturating multiple memory
 channels compared to a single-threaded implementation.
+
+\begin{wrapfigure}{O}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{results/rle}
+  \caption{Image compression performance in Sort-First Polygonal Rendering}
+  \label{rRLE}
+\end{wrapfigure}
+
+\fig{rRLE} summarizes the compression results from \cite{MEP:10}. We have
+chosen sort-first rendering, since this highlights the results for the RLE
+compressor which is optimized for color image data. This benchmark did run a
+visualization cluster with Gigabit Ethernet at a resolution of $1280\times
+1024$ pixels. It rendered the David statuette at 1mm resolution, which resulted
+in a rendering time of about 28 ms on a single GPU. The theoretical maximum
+line shows the upper limit for sort-first compositing with uncompressed image
+data and no rendering time. It decreases since the destination channel
+contributes to the sort-first rendering, and does not require a pixel transfer.
+With an increasing number of remote source channels, its size decreases,
+requiring more pixels to be transferred.
+
+The graph shows how the various incremental improvements add up to significant performance gains. Even in a relatively difficult scenario with a fast rendering time and, by modern standards, slow network interconnect, we were able to more than double the performance to above 60~Hz.
+
+The basic 8-byte RLE Compressor performs just minimally better than no compression. Both stay relatively close the theoretical maximum, but can't quite reach it due to load imbalances and non-zero rendering time. The swizzling preconditioner can significantly reduce the compositing time, and even improve the overall framerate.
+
+The YUV is compressor is an on-GPU compression plugin which performs a
+colorspace conversion and lossy chroma subsampling. It can be combined with the
+CPU-based RLE compressor, which then interleaves and compresses the Y, U and V
+channels, resulting in major performance improvements. Both compression steps
+have virtually no computational overhead, and are memory bandwidth bound. Since
+the YUV compressor runs on the GPU, it reduces the costly GPU to CPU transfer
+time over the PCI Express link.
 
 \subsection{GPU Transfer and CPU Compression Plugins}
 
