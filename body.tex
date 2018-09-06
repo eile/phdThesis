@@ -2209,7 +2209,7 @@ compound \\
 	\fbox{\box0}
 	\end{minipage}
    }
-\caption{A dual-GPU, dual-display cross-segment load-balancing setup}
+\caption{A dual-GPU, dual-display cross-segment load balancing setup}
 \label{fViewEqualizer}
 \end{figure}
 
@@ -2247,9 +2247,44 @@ assign work proportionally to the usage, with no rendering task for $0$ usage.
 Cross-segment load balancing thus allows for optimal resource usage of multiple
 GPUs used for driving the display segments themselves, as well as any additional
 source GPUs for rendering. It combines multi-display parallel rendering with
-scalable rendering for optimal performance. \cite{EEP:11} provides experimental
-results for a six-monitor tiled display wall with up to 12 source GPUs, where
-CSLB can more than double the framerate over a static resource assignment.
+scalable rendering for optimal performance.
+
+\begin{wrapfigure}{O}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{results/cslbFPS}
+  \caption{\label{rCSLBFPS}Cross-Segment Load Balancing Performance}
+\end{wrapfigure}
+
+\cite{EEP:11} provides experimental results for a six-monitor tiled display
+wall with up to 12 source GPUs. \fig{rCSLBFPS} provides an overview for the
+achievable performance improvements. The first two configurations use a static
+assignment of two GPUs to one output channel, where the first one statically
+assigns one half to each GPU, and the second uses a sort-first load balancer to
+dynamically split the segment. Already this 2D load-balancing improves the
+framerate by almost 50\%.
+
+The remaining configurations add a view equalizer on top of the per-segment 2D
+load equalizer. The configuration assigns up to 4, 6, 8, 10 or all GPUs to each
+segment, that is, any segment may use up to $n$ GPUs, and the GPUs are shared
+across multiple segments. While theoretically the all-to-all ($12:6\times 12$)
+configuration should provide the best performance, mispredictions of the
+equalizers lead to a sweet spot of GPU sharing between segments. In our $12:6$
+setup, assigning up to six GPUs per segment almost doubles the performance over
+the state-of-the-art sort-first load balanced setup.
+
+\fig{rCSLB} shows the rendering time over a fixed camera path rendering 540
+frames. For the static assignment, two GPU were responsible for each of the six
+outputs of the tiled display wall used. For the CSLB graph, all GPUs were
+dynamically reassigned each frame to the six output channels, depending on the
+current load distribution. Except for the few camera positions where the model
+is distributed evenly over all outputs, CSLB easily outperforms the fixed
+assignment.
+
+\begin{figure}[h!t]
+  \centering
+  \includegraphics[width=\textwidth]{results/cslb}
+  \caption{Cross-Segment Load Balancing for six Displays and 12 GPUs compared to a static two-to-one six Display Sort-First Rendering.}
+  \label{rCSLB}
+\end{figure}
 
 A strength of this algorithm lies in its flexibility. On one hand, it can
 perform dynamic resource assignment not only for a planar display system as
@@ -2261,7 +2296,6 @@ potentially overlapping, set of GPUs which may contribute to its rendering.
 \cite{EEP:11} shows in its experiments that there is a sweet spot of the number
 of resources per channel.
 
-\clearpage
 \section{Dynamic Frame Resolution}
 
 The DFR equalizer (\fig{fdfr}) provides a functionality similar to dynamic
