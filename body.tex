@@ -1968,6 +1968,8 @@ compression for interactive parallel rendering.
 
 \chapter{Load Balancing}\label{sLoadBalancing}
 
+\section{Overview}
+
 Load balancing changes the resource assignment per source channel based on the
 resource load. Static load balancing, shown in \fig{floadbalancing} top,
 performs this assignment during initialization. Dynamic load balancing can
@@ -2430,6 +2432,8 @@ resource usage by not needlessly rendering the same view multiple times.
 
 \chapter{Data Distribution and Synchronization}\label{sCollage}
 
+\section{Overview}
+
 Most research in parallel rendering ignores the problem of managing application
 state in a distributed rendering session. For basic parallel rendering research
 this problem is trivially to solve, whereas in real-world applications it often
@@ -2445,8 +2449,6 @@ applications built on Equalizer. This {\em Collage} network library is an
 independent open source project. In the following sections we highlight core
 features and show how they are different from other distribution mechanisms,
 e.g., the MPI library.
-
-\section{Requirements}
 
 The Collage network library was conceived with the requirements of a dynamic
 parallel rendering system in mind. Some of the features implemented by Collage
