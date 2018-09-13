@@ -2084,17 +2084,6 @@ sensitive to cache alignments, which can again be exploited by chosing the
 corresponding boundary.
 \end{compactdesc}
 
-In \cite{ESP:18} we have shown that the simpler \textsf{tree\_equalizer}
-outperforms the load-grid-driven \textsf{load\_equalizer} in most cases, except
-for sort-first volume rendering where the load in the region of interest is
-relatively uniform. This result is counterintuitive since the
-\textsf{load\_equalizer} operates with more information and should be able to
-produce better results. It seems to confirm that simple algorithms often
-outperform theoretically better, but more complex implementations. The
-decoupling of the load balancing algorithm from the rest of the system enabled
-by the compound architecture opens the possibility for more research in this
-area.
-
 \subsection{Dynamic Work Packages}
 
 Load-balancing can be classified into explicit and implicit approaches, where
@@ -2134,15 +2123,37 @@ database ranges of a configurable size and enqueues them at the beginning of
 each frame. This active equalizer is the central component of the tile and chunk
 compounds introduced in \sref{sTile}.
 
-In~\cite{SPEP:16}, we have shown that the \textsf{tile\_equalizer} often
-outperforms \textsf{tree\_equalizer}. This suggests that the underlying implicit
-load balancing of task queues can be superior to the explicit methods of
-\textsf{load\_equalizer} and \textsf{tree\_equalizer} in high load situations,
-where the additional overhead of tile generation and distribution is more
-justified. The relatively simple nature of our benchmark application's rendering
-algorithms is also favoring work packages, since they have a near-zero static
-overhead per rendering pass.
 
+\subsection{Results}
+
+\fig{rCompounds} shows the performance of static and load-balanced sort-first
+and sort-last rendering. The experiment setup is described in cite{ESP:18}.
+
+\begin{figure}[h!t]
+  \includegraphics[width=\textwidth]{results/compounds}
+  \caption{\label{rCompounds}Sort-First and Sort-Last Scalability}
+\end{figure}
+
+The results show that, as expected, load balancing improves the performance
+over a static task decomposition significantly. The simpler
+\textsf{tree\_equalizer} outperforms the load-grid-driven
+\textsf{load\_equalizer} in most cases, except for sort-first volume rendering
+where the load in the region of interest is relatively uniform. This result is
+counterintuitive since the \textsf{load\_equalizer} operates with more
+information and should be able to produce better results. It seems to confirm
+that simple algorithms often outperform theoretically better, but more complex
+implementations. The decoupling of the load balancing algorithm from the rest
+of the system enabled by the compound architecture opens the possibility for
+more research in this area.
+
+The \textsf{tile\_equalizer} often outperforms \textsf{tree\_equalizer}. This
+suggests that the underlying implicit load balancing of task queues can be
+superior to the explicit methods of \textsf{load\_equalizer} and
+\textsf{tree\_equalizer} in high load situations, where the additional overhead
+of tile generation and distribution is more justified. The relatively simple
+nature of our benchmark application's rendering algorithms is also favoring
+work packages, since they have a near-zero static overhead per rendering pass.
+\cite{SPEP:16} contains additional experiments.
 
 \section{Cross-Segment Load Balancing}
 
