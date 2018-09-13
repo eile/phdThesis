@@ -552,6 +552,36 @@ frame instead of no latency in a sort-first configuration.
  {\caption{\label{fSyncAsync}Synchronous and Asynchronous Execution}}
 \end{figure}
 
+\begin{wrapfigure}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{results/cr}
+ {\caption{\label{rCR}Performance of driving a Tiled Display Wall}}
+\end{wrapfigure}
+
+Compared to interception approaches such as used by Chromium, our asynchronous
+programming model can inherintly provide better performance. \fig{rCR} tests
+the rendering performance for driving a simple tiled display wall configuration
+with a static model, rotating about its vertical axis, placed such that it
+nicely covers the different screens.
+
+A standard tile-sort Chromium configuration is compared to a simple Equalizer
+display wall setup, where in each case a single GPU and node are responsible
+for driving the attached display. The polygonal model is rendered using eqPly
+and uses display lists for the static geometry. Using display lists allows
+Chromium to send geometry and texture data once to the rendering nodes
+(retained mode rendering) and display them repeatedly using
+\textsf{glCallLists()}, which is inexpensive in terms of network overhead. THis
+setup is favorable for Chromium because the display lists have to be
+transmitted only once over the network, and only simple display calls will be
+processed and distributed by Chromium for each rendered frame.
+
+Chromium initially increases performance when adding nodes, but it quickly
+stagnates and even decreases when more nodes are added. In contrast, Equalizer
+continually improves performance with more added nodes and only exhibits a
+smooth drop-off in speedup, due to the expected synchronization and network
+overhead as the rendered data gets negligible in size per node. This
+performance difference is also due to the fact that Equalizer can benefit from
+distributed parallel view frustum culling.
+
 
 \subsection{Programming Interface}
 
@@ -2254,30 +2284,31 @@ scalable rendering for optimal performance.
   \caption{\label{rCSLBFPS}Cross-Segment Load Balancing Performance}
 \end{wrapfigure}
 
-\cite{EEP:11} provides experimental results for a six-monitor tiled display
-wall with up to 12 source GPUs. \fig{rCSLBFPS} provides an overview for the
-achievable performance improvements. The first two configurations use a static
-assignment of two GPUs to one output channel, where the first one statically
-assigns one half to each GPU, and the second uses a sort-first load balancer to
-dynamically split the segment. Already this 2D load-balancing improves the
-framerate by almost 50\%.
+\cite{EEP:11} provide experimental results for a six-monitor tiled display wall
+with up to 12 source GPUs. \fig{rCSLBFPS} shows an overview for the achievable
+performance improvements. The first two configurations use a static assignment
+of two GPUs to one output channel, where the first one statically assigns one
+half to each GPU, and the second uses a sort-first load balancer to dynamically
+split the segment between the two GPUs. Already this 2D load-balancing improves
+the framerate by almost 50\%.
 
 The remaining configurations add a view equalizer on top of the per-segment 2D
 load equalizer. The configuration assigns up to 4, 6, 8, 10 or all GPUs to each
 segment, that is, any segment may use up to $n$ GPUs, and the GPUs are shared
-across multiple segments. While theoretically the all-to-all ($12:6\times 12$)
-configuration should provide the best performance, mispredictions of the
-equalizers lead to a sweet spot of GPU sharing between segments. In our $12:6$
-setup, assigning up to six GPUs per segment almost doubles the performance over
-the state-of-the-art sort-first load balanced setup.
+evenly across multiple segments. While theoretically the all-to-all
+($12:6\times 12$) configuration should provide the best performance,
+mispredictions of the equalizers lead to a sweet spot of GPU sharing between
+segments. In our $12:6$ setup, assigning up to six GPUs per segment almost
+doubles the performance over the state-of-the-art sort-first load balanced
+setup.
 
 \fig{rCSLB} shows the rendering time over a fixed camera path rendering 540
-frames. For the static assignment, two GPU were responsible for each of the six
-outputs of the tiled display wall used. For the CSLB graph, all GPUs were
-dynamically reassigned each frame to the six output channels, depending on the
-current load distribution. Except for the few camera positions where the model
-is distributed evenly over all outputs, CSLB easily outperforms the fixed
-assignment.
+frames. For the static assignment, two GPUs are responsible for each of the six
+outputs of the tiled display wall used. For the CSLB graph, up to eight GPUs
+were dynamically reassigned each frame to each of the six output channels,
+depending on the current load distribution. Except for the few camera positions
+where the model is distributed evenly over all outputs, CSLB easily outperforms
+the fixed assignment.
 
 \begin{figure}[h!t]
   \centering

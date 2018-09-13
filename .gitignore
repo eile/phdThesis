@@ -10,6 +10,7 @@
 *.fls
 *.dvi
 *.lot
+*.nlo
 *.fdb_latexmk
 .DS_Store
 Icon?
