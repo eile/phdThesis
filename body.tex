@@ -469,6 +469,25 @@ more data or use a more demanding rendering algorithm for higher visual quality.
 Occasionally both needs coincide, for example for the analysis for large data
 sets on high fidelity visualization systems.
 
+Parallel rendering has similarities to other distributed computing domains such
+as cloud computing and high-performance computing (HPC): It aims to accelerate
+the completion of a task by parallelizing a time-consuming algorithm, or to
+allow to compute a larger problem by employing multiple resources. Certain
+aspects are shared across these distributed computing domains, such as the need
+to load balance the tasks executed in parallel, to minimize synchronization and
+communication overheads, as well as to find a task decomposition which allows
+to produce correct results.
+
+Scalable rendering however has one significant additional constraint: serving
+an interactive use case. Depending on the application domain and visualization
+system, typically a framerate between 10~Hz and 120~Hz is required to allow
+useful user interaction. This, in turn, translates to a budget of 8~ms to
+100~ms to decompose the task to render a frame, perform rendering in parallel,
+and to composite and display the result. In comparison, cloud computing and
+HPC typically have turnaround times of seconds to hours. Consequently, many
+algorithms for parallel rendering need to rather compute a suboptimal solution,
+but do so in at most a few milliseconds.
+
 Fundamentally, there are two approaches to enable applications to use multiple
 GPUs: transparent interception at the graphics API (typically OpenGL) or
 extending the application to support parallel rendering natively. The first
@@ -1352,7 +1371,8 @@ framerate of a rendering task by decomposing it over multiple rendering
 resources. Parallel rendering includes other use cases, for example to use
 multiple GPUs to drive individual displays of a tiled display wall.
 
-Parallel rendering research has put a lot of focus on two of the three
+
+Scalable rendering research has put a lot of focus on two of the three
 architectures classified by \cite{Molnar92}: sort-first and sort-last rendering.
 Sort-middle rendering is still largely confined to hardware implementations due
 to its high communication cost of sorting and distributing fragments to
