@@ -2082,6 +2082,13 @@ position, e.g., screen door transparency, which can be eliminated by aligning
 the boundary to the pixel repetition. Furthermore, some rendering algorithms are
 sensitive to cache alignments, which can again be exploited by chosing the
 corresponding boundary.
+
+\item[Usage] is a per-child normalized resource utilization coefficient. The
+equalizer will assign proportional work to this resource, and deactivate it if
+the usage is 0. This parameter is primarily used by the cross-segment load
+balancer to reassing resources between destination channels, but can also be
+used to configure heterogeneous GPU resources more efficiently.
+
 \end{compactdesc}
 
 \subsection{Dynamic Work Packages}
@@ -2145,6 +2152,34 @@ that simple algorithms often outperform theoretically better, but more complex
 implementations. The decoupling of the load balancing algorithm from the rest
 of the system enabled by the compound architecture opens the possibility for
 more research in this area.
+
+\fig{rEqualizers} provides a more detailed analysis of the different
+equalizers. Using volume rendering, we measure the performance of decomposition
+modes under heterogeneous load, which was easily achievable by varying the
+number of volume samples used for each fragment (1-7) while rendering. This
+allowed for a consistent linear scaling of rendering load, which was randomly
+varied either per frame or per node. Such a linear scaling of load per node
+corresponds to a scaling of resources, e.g., doubling the rendering load on a
+specific node corresponds to halving its available rendering resources. To the
+system this node would then contribute the value 0.5 in terms of normalized
+compute resources.
+
+\begin{figure}[h!t]
+  \includegraphics[width=\textwidth]{results/equalizers}
+  \caption{\label{rEqualizers}Sort-First and Sort-Last Equalizer Behaviour}
+\end{figure}
+
+\fig{rEqualizers} (left) gives an impression of how individual modes perform on
+heterogeneous systems. In this case the tree equalizer performs best, as it
+allows us to a priori define how much usage it should make of individual nodes,
+i.e., bias the allocation of rendering time in accordance with the (simulated)
+compute resources. \fig{rEqualizers} (right), on the other hand, illustrates
+how the decomposition modes perform on a system where compute resources
+fluctuate randomly every frame, as can arguably be the case for shared
+rendering nodes in virtualized enviroments. For this scenario tile equalizer
+seems best suited, as it performs load balancing implicitly and does not assume
+coherence of available resources between frames. The simpler tree equalizer
+outperforms the load equalizer in this experiment.
 
 The \textsf{tile\_equalizer} often outperforms \textsf{tree\_equalizer}. This
 suggests that the underlying implicit load balancing of task queues can be
