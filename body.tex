@@ -450,12 +450,13 @@ author contributed the foundations for using region of interest for compositing,
 and the fast RLE compression with optimised data preconditioning.
 
 \cite{EBAHMP:12} introduces many algorithmic optimizations for modern
-visualization clusters, ranging from asynchronous compositing, thread and memory
-placement on NUMA architectures, region of interest, and an analysis of
+visualization clusters, ranging from asynchronous compositing, thread and
+memory placement on NUMA architectures, region of interest, and an analysis of
 real-world application performance. We show that careful system design and
 detailed optimizations are necessary to achieve scalability on larger
 visualization clusters. For this publication, the author contributed the
-algorithms, large parts of the implementation, and some experimental analysis.
+algorithms, large parts of the implementation in Equalizer, and some
+experimental analysis.
 
 \section{Load Balancing}
 
@@ -1660,17 +1661,18 @@ processes during the stereo switch.
 
 \section{Overview}
 
-Compositing is collecting and combining partial results from multiple resources
-during scalable rendering onto one or more destination channel. While
+Compositing collects and combines partial results from multiple resources
+during scalable rendering onto one or more destination channels. While
 significant characteristics of the decomposition step, discussed in the
 previous chapter, are dependent on the application rendering code, compositing
-is largely a generic problem and can be optimised by a parallel rendering
-framework. Consequently, this area of parallel rendering research has received
-significant attention. By integrating many state-of-the art optimizations into
-our parallel rendering framework we provide a generic solution which scales
-well on modern visualization cluster architectures. Furthermore, we present new
-optimizations for NUMA-aware thread scheduling, insight into spatial sort-last
-polygonal rendering, and image compression algorithms.
+is largely a generic problem and can be implemented and optimised in a parallel
+rendering framework. Consequently, this area of parallel rendering research has
+received significant attention. By integrating many state-of-the art
+optimizations into our parallel rendering framework we provide a generic
+solution which scales well on modern visualization cluster architectures.
+Furthermore, we present new optimizations for NUMA-aware thread scheduling,
+insight into spatial sort-last polygonal rendering, and image compression
+algorithms for high-speed interconnects.
 
 \section{Parallel Compositing\label{sparcomp}}
 
@@ -1687,18 +1689,19 @@ compositing.
 
 For sort-last rendering, there are two approaches to combine the partial
 results: $z$-sorting using the depth buffer, and spatial rendering
-decomposition with back-to-front compositing.
+decomposition with ordered compositing.
 
 The first algorithm uses both the color and depth buffer, and assigns the final
 pixel to the color of the source with the front-most depth buffer values. It
 requires no spatial ordering of the data during rendering. It does not
-correctly composite pixels with transparent geometry. Due to the use of the
-depth buffer, it is also more expensive since more pixel data needs to be
-processed. Furthermore, depth buffer readback tends to slower, and compression
-algorithms for depth buffer data tend not to perform as wall as color buffer
-compression. Depth-sorted compositing is often used for polygonal data, as
-shown in \fig{fDepth} since these applications often do not sort their geometry
-onto convex spatial regions.
+correctly composite pixels with transparent geometry, since no guarantee of the
+blending order can be made. Due to the use of the depth buffer, it is also more
+expensive since more pixel data needs to be processed. Furthermore, depth
+buffer readback tends to slower, and compression algorithms for depth buffer
+data tend not to perform as well as color buffer compression. Depth-sorted
+compositing is often used for polygonal data, as shown in \fig{fDepth} since
+these applications often do not sort their geometry onto convex spatial
+regions.
 
 \begin{figure}[h!t]\center
   \subfigure[]{
@@ -1725,14 +1728,15 @@ multiple samples are collapsed into a single pixel. Pixels where samples are
 generated from different geometries are problematic, since the averaging
 operations blends them with incomplete information during sort-last rendering.
 A fully correct algorithm would need to composite all fragments from all
-sources before collapsing them.
+sources before collapsing them, or to operate on the full-size multisample
+buffer.
 
-Spatial compositing provides better performance, and scales nicer with other
-optimisations such as region of interest due to compact regions produced by the
-spatial sorting. Normally used for volume rendering, we have applied spatial
-sort-last rendering and compositing to polygonal data, by sorting the data
-spatially and applying clipping planes to generate perfectly convex rendering
-subsets.
+Spatial compositing provides better performance, and provides better
+scalability for other optimisations such as region of interest and load
+balancing due to compact regions produced by the spatial sorting. Normally used
+for volume rendering, we have applied spatial sort-last rendering and
+compositing to polygonal data, by sorting the data spatially and using clipping
+planes to generate perfectly convex rendering subsets.
 
 \begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/dbSpatial}
@@ -1755,32 +1759,36 @@ connected output and input frames. Output and input frames are connected by
 name; they do not need to follow the compound hierarchy, and a single output
 frame may be consumed by multiple input frames. Output frame parameters
 configure a subset of the rendering (viewport and framebuffer attachments), and
-are read back after rendering and assembly.
+are read back after rendering and assembly. Besides this, every step of the
+compositing pipeline is implemented in Equalizer and transparent for the
+application developer. Some steps may be replaced with application code, for
+example to order frames during compositing.
+
+Two commonly used parallel compositing algorithms are direct send and binary
+swap. Both distribute the compositing task equally over all available
+resources, and then collect the composited tiles on the destination channel.
+
+Direct send, shown in \fig{fDirectSend}, uses one assemble operation on each
+resource to fully composite a single tile. Binary swap, shown in \fig{fBS},
+exchanges pixels between pairs of nodes using a binary compositing tree which
+gradually assembles a tile on each resource. Both use a sort-first-like
+assembly operation to collect the fully assembled tiles on the destination
+channel. 2-3 swap \cite{Yu:2008:MPV:1413370.1413419} is an extension to binary
+swap, which overcomes the power-of-two source channel requirement by exchanging
+compositions between groups of two or three nodes in the compositing tree.
 
 \begin{figure}[h!t]\center
  \includegraphics[width=0.9\columnwidth]{images/binarySwap}
  {\caption{\label{fBS}Binary swap sort-last compositing}}
 \end{figure}
 
-Two commonly used parallel compositing algorithms are direct send and binary
-swap. Both distribute the compositing task equally over all available
-resources, and then collect the composited tiles on the destination channel.
-
-Direct send, shown in \fig{fDirectSend}, uses one operation on each resource to
-fully composite a single tile. Binary swap, shown in \fig{fBS}, exchanges
-pixels between pairs of nodes using a binary compositing tree which gradually
-assembles a tile on each resource. Both use a sort-first-like assembly
-operation to collect the fully assembled tiles on the destination channel. 2-3
-swap \cite{Yu:2008:MPV:1413370.1413419} is an extension to binary swap, which
-overcomes the power-of-two source channel requirement by exchanging
-compositions between groups of two or three nodes in the compositing tree.
-
 In \cite{EP:07} we have shown that on commodity clusters, direct send
 compositing provides better performance over binary swap commonly used on HPC
 systems. While it uses more messages in total, direct send has fewer
 synchronization points than binary swap. Furthermore, due to the early assembly
-optimization, direct send can handle imbalances between nodes better since a
-late channel has a smaller penalty for the overall execution time.
+optimization (\sref{sEarlyAss}), direct send can handle imbalances between
+nodes better since a late channel has a smaller penalty for the overall
+execution time.
 
 
 \section{Region of Interest}
@@ -2021,6 +2029,19 @@ threads concurrently to the rendering threads.
 The implementation of these steps in plugins provides a clean separation and
 interface for users and researchers interested in experimenting with image
 compression for interactive parallel rendering.
+
+\section{Out-of-Order Assembly}\label{sEarlyAss}
+
+Early assembly provides better pipelining when the frame assembly order is not
+important, for example for sort-first rendering and sort-last rendering with
+$z$-compositing. Our default compositing code uses a signal on all input
+frames, which is triggered for each input frame arrival. The compositing code
+then picks and composites this image, assembling images early, out of order as
+they become available. This decreases the time to solution, since the assemble
+operation finishes once the last frame arrives, plus the time to assemble this
+last frame. In-order assembly would have a statistical probability of
+$\frac{n}{2}$ frames to assemble after the last frame arrives (unless other
+contraints make the arrival not fully random or network-constrained).
 
 \chapter{Load Balancing}\label{sLoadBalancing}
 
