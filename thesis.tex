@@ -21,6 +21,7 @@
 \usepackage{pbox}
 \usepackage{tabularx}
 \usepackage{wrapfig}
+\usepackage{newfloat}
 \usepackage{csvsimple}
 \usepackage{paralist}
 \usepackage{multibib}
@@ -31,6 +32,7 @@
 \definecolor{red}{rgb}{1,0,0}
 \newcommand{\fix}[1]{\textbf{\color{red}{#1}}}
 \newcommand{\fig}[1]{Figure~\ref{#1}}
+\newcommand{\bench}[1]{Benchmark~\ref{#1}}
 \newcommand{\cref}[1]{Chapter~\ref{#1}}
 \newcommand{\sref}[1]{Section~\ref{#1}}
 \newcommand{\aref}[1]{Appendix~\ref{#1}}
@@ -39,6 +41,15 @@
 \def\quad{\hspace*{1em}}
 \def\qquad{\hspace*{2em}}
 \hyphenation{Chro-mium cul-ling}
+
+\DeclareFloatingEnvironment[
+  fileext=lor,
+  listname={List of Benchmarks},
+  name=Benchmark,
+  placement=tp,
+  %within=section,% activate it if you want
+  %chapterlistsgaps=on,% only meaningful when chapters exist
+]{benchmark}
 
 \newcites{conf}{Conference Publications}
 \newcites{journal}{Journal Articles}

@@ -607,13 +607,13 @@ frame instead of no latency in a sort-first configuration.
  {\caption{\label{fSyncAsync}Synchronous and Asynchronous Execution}}
 \end{figure}
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/cr}
- {\caption{\label{rCR}Performance of driving a Tiled Display Wall}}
-\end{wrapfigure}
+ {\caption{\label{rCR}Driving a Tiled Display Wall}}
+\end{wrapfloat}
 
 Compared to interception approaches such as used by Chromium, our asynchronous
-programming model can inherintly provide better performance. \fig{rCR} tests
+programming model can inherintly provide better performance. \bench{rCR} tests
 the rendering performance for driving a simple tiled display wall configuration
 with a static model, rotating about its vertical axis, placed such that it
 nicely covers the different screens.
@@ -650,10 +650,10 @@ This parallel rendering interface is significantly different from Chromium
 \cite{HHNFAKK:02} and more similar to VRJuggler \cite{BJHMBC:01} or OpenGL
 Multipipe SDK \cite{BRE:05}.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/processes}
  {\caption{\label{fProcessing}Parallel Rendering Entities}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 To separate the responsibilities in a parallel rendering application, different
 entities are responsible for different aspects of the runtime system: the
@@ -784,10 +784,10 @@ on another processor has a performance penalty for both bandwidth and latency,
 and accessing a GPU or network interface from a remote processor is slower than
 a local access.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/numaNode.pdf}
  {\caption{\label{fNumaNode}Examplary Dual-Socket NUMA Node}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 \fig{fNumaNode} shows one such NUMA visualization node, used in the experiments
 of \cite{EBAHMP:12}. It has two CPU sockets with six cores each, three GPUs
@@ -812,10 +812,10 @@ to the respective GPU.
 
 \end{compactitem}
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/numaThreads.pdf}
  {\caption{\label{fNumaThreads}Thread Placement on a Dual-Socket NUMA Node}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 \fig{fNumaThreads} shows the thread placement for the example node used in
 \fig{fNumaNode}. The threads are placed to all cores of the respective
@@ -831,15 +831,15 @@ executing the rendering code, therefore placing the CPU-side buffers onto the
 same socket as the corresponding GPU. Similarly, network buffers are allocated
 and used from the one of the node threads.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/affinity.pdf}
  {\caption{\label{rNuma}Influence of Thread Affinity on Rendering Performance}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 We tested the influence of thread placement by explicitly placing the threads
 either on the correct or incorrect processor. We found that this leads to a
 performance improvement of more than 6\% in real-world rendering loads, as
-shown in \fig{rNuma}. This benchmark uses the aforementioned cluster nodes, and
+shown in \bench{rNuma}. This benchmark uses the aforementioned cluster nodes, and
 renders polygonal data using sort-first scalable rendering. The exact
 experiment setup is described in \cite{EBAHMP:12}. While this is a relatively
 small influence, it becomes more important with higher framerates as the
@@ -917,10 +917,10 @@ surfaces, e.g., a display wall, configure a frustum for the respective canvas.
 For non-planar surfaces, the frustum will be configured on each display
 segment.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/frusta.pdf}
  {\caption{\label{fFrusta}Wall and Projection Parameters}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 The frustum can be specified as a wall or projection description in the global
 reference system shared with the head-tracking matrix of the application. A
@@ -947,10 +947,10 @@ channel to which the display device is connected. To synchronize the video
 output, a canvas swap barrier or a swap barrier on each segment synchronize the
 respective window buffer swaps.
 
-\begin{wrapfigure}{O}{.382\textwidth}
+\begin{wrapfloat}{figure}{O}{.382\textwidth}
   \includegraphics[width=.382\textwidth]{images/canvas.pdf}
   {\caption{\label{fCanvas}A Canvas using four Segments}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 A segment covers a two-dimensional region of its parent canvas, configured by
 the segment viewport. The viewport is in normalized coordinates relative to the
@@ -982,10 +982,10 @@ rendering, e.g., to compare two models side-by-side on a canvas. If the view
 does not specify a frustum, it will use the sub-frustum resulting from the
 covered area on the canvas.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/layout.png}
  {\caption{\label{fLayout}Layout with four Views}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 A view might have an observer, in which case its frustum is tracked by this
 observer. \fig{fLayout} shows an example layout using four views on a single
@@ -1225,10 +1225,10 @@ its neighbors, and then $z$-composites its own tile. This yields one complete
 tile on each channel, of which two color tiles are then assembled on the
 destination channel.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/directSendCompound}
   {\caption{\label{fDirectSendCmp}Direct Send Compound}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 The corresponding compound tree is shown schematically in \fig{fDirectSendCmp}.
 Each of the three channels has a child compound to execute the rendering and
@@ -1450,10 +1450,10 @@ use case.
 
 \subsection{Stereo}
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/Stereo}
  {\caption{\label{fStereo}Anaglyphic Stereo Compound}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 Stereo, or eye decomposition, is a specialized version of sort-first rendering.
 Two GPUs get assigned each one of the eye passes during stereo rendering. For
@@ -1558,9 +1558,9 @@ tile compounds.
 
 \section{Time-Multiplex}
 
-\begin{wrapfigure}{O}{.382\textwidth}
+\begin{wrapfloat}{figure}{O}{.382\textwidth}
 \includegraphics[width=.382\textwidth]{images/DPlex}
-{\caption{\label{fDPlex}Time-Multiplex Compound}} \end{wrapfigure}
+{\caption{\label{fDPlex}Time-Multiplex Compound}} \end{wrapfloat}
 
 Time-multiplexing distributes full frames over the available resources, such
 that each resource only renders a subset of the visible frames (\fig{fDPlex}).
@@ -1734,12 +1734,12 @@ sort-last rendering and compositing to polygonal data, by sorting the data
 spatially and applying clipping planes to generate perfectly convex rendering
 subsets.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/dbSpatial}
- {\caption{\label{rDBSpatial}Spatial versus Depth-Sorted Sort-Last Rendering Performance}}
-\end{wrapfigure}
+ {\caption{\label{rDBSpatial}Spatial versus Depth-Sorted Sort-Last Rendering}}
+\end{wrapfloat}
 
-\fig{rDBSpatial} shows the difference between spatial and depth-sorted
+\bench{rDBSpatial} shows the difference between spatial and depth-sorted
 sort-last rendering in RTNeuron (\sref{sRTNeuron}). Due to complexities in the
 application data model, and the disadvantageous geometrical structure of
 neurons, the spatial mode in RTNeuron scales less well then the round-robin
@@ -1812,30 +1812,30 @@ frame, the compositing code respects this parameter to place the pixel data on
 the right position. The usage of ROI for load balancing is described in
 \sref{sLoadEqualizer}.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/roiSF}
- {\caption{\label{rROISF}Region of Interest for Sort-First Rendering Performance}}
-\end{wrapfigure}
+ {\caption{\label{rROISF}Region of Interest for Sort-First Rendering}}
+\end{wrapfloat}
 
 Applying ROI for sort-first rendering provides a small improvement for the
-rendering performance, as shown in \fig{rROISF} from \cite{EBAHMP:12}. As the
+rendering performance, as shown in \bench{rROISF} from \cite{EBAHMP:12}. As the
 number of resources increases, the ROI becomes more important since the
 relative amount of time spent in compositing increases as the rendering load
 decreases. With ROI enabled we observed performance improvements between
 5-20\%, reaching 60~Hz when using 33 GPUs. Without ROI, the framerate peaked at
 less than 50~Hz when using 27 GPUs.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/roiSL}
- {\caption{\label{rROISL}Region of Interest for Sort-Last Rendering Performance}}
-\end{wrapfigure}
+ {\caption{\label{rROISL}Region of Interest for Sort-Last Rendering}}
+\end{wrapfloat}
 
 For sort-last rendering performance, ROI is crucial. In our experiments in
 \cite{EBAHMP:12}, we used a polygonal renderer which uses relatively compact
 regions during sort-last decomposition, while still using depth-sorted
 compositing. This is a relatively common use case for sort-last rendering. In
 this mode, we can observe significant speedups with ROI (up to 4x), as shown in
-\fig{rROISL}.
+\bench{rROISL}.
 
 In \cite{MEP:10}, this application-provided ROI was extended with an algorithm
 which automatically computes the ROI by analyzing the framebuffer to maximize
@@ -1881,14 +1881,14 @@ one rendering thread and one download thread is used for each GPU, as well as
 one transmit thread per process. The download threads are created lazy, when
 needed.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/async}
- {\caption{\label{rAsync}Asynchronous Compositing Sort-First Rendering Performance}}
-\end{wrapfigure}
+ {\caption{\label{rAsync}Asynchronous Compositing Sort-First Rendering}}
+\end{wrapfloat}
 
 Asynchronous compositing is, together with ROI, one of the most influential
 optimizations for scalable rendering. For sort-first rendering, shown in
-\fig{rAsync} from \cite{EBAHMP:12}, pipelining the readback with the rendering
+\bench{rAsync} from \cite{EBAHMP:12}, pipelining the readback with the rendering
 yields a performance again of about 10\%. At higher framerates, when the
 rendering time of a single resource decreases, asynchronous readback has even a
 higher impact, of over 25\% for large node counts.
@@ -1940,11 +1940,11 @@ This per-component RLE improves the compression rate from 10\% to about 25\%
 since individual color components change less often than full pixels (based on
 results from \cite{MEP:10}).
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/RLE}
   \caption{32 bit, 64 bit and per-component RLE compression schemes}
   \label{fRLE}
-\end{wrapfigure}
+\end{wrapfloat}
 
 The second improvement is {\em bit-swizzling} of color values before
 per-component compression. This swizzling step is a data pre-conditioner, which
@@ -1971,13 +1971,13 @@ parallelize the compression of data chunks across multiple threads. This
 parallel execution improves the performance by saturating multiple memory
 channels compared to a single-threaded implementation.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{results/rle}
-  \caption{Image compression performance in Sort-First Polygonal Rendering}
+  \caption{Image Compression in Sort-First Polygonal Rendering}
   \label{rRLE}
-\end{wrapfigure}
+\end{wrapfloat}
 
-\fig{rRLE} summarizes the compression results from \cite{MEP:10}. We have
+\bench{rRLE} summarizes the compression results from \cite{MEP:10}. We have
 chosen sort-first rendering, since this highlights the results for the RLE
 compressor which is optimized for color image data. This benchmark did run a
 visualization cluster with Gigabit Ethernet at a resolution of $1280\times
@@ -2061,10 +2061,10 @@ visualization systems.
 
 \section{Sort-First and Sort-Last Load Balancing}\label{sLoadEqualizer}
 
-\begin{wrapfigure}{O}{.382\textwidth}
+\begin{wrapfloat}{figure}{O}{.382\textwidth}
   \includegraphics[width=.382\textwidth]{images/loadeq}
   \caption{\label{floadeq}load Balancing}
-\end{wrapfigure}
+\end{wrapfloat}
 
 Sort-first (\fig{floadeq}) and sort-last load balancing are the most obvious
 optimizations for these parallel rendering modes. Our load equalizers are fully
@@ -2093,11 +2093,11 @@ tree, first decomposed into horizontal tiles and then each horizontal tile into
 vertical sub-tiles. Our binary split tree provides more compact tiles for larger
 cluster configurations.
 
-\begin{wrapfigure}{I}{.382\textwidth}
+\begin{wrapfloat}{figure}{I}{.382\textwidth}
   \includegraphics[width=.382\textwidth]{images/roi}
   \caption{Load distribution areas with (top) and without (bottom) using region of interest information.}
   \label{fROI}
-\end{wrapfigure}
+\end{wrapfloat}
 
 The load balancer has to operate on the assumption that the load is uniform
 within one load grid tile. This leads naturally to estimation errors, since in
@@ -2191,13 +2191,13 @@ compounds introduced in \sref{sTile}.
 
 \subsection{Results}
 
-\fig{rCompounds} shows the performance of static and load balanced sort-first
+\bench{rCompounds} shows the performance of static and load balanced sort-first
 and sort-last rendering. The experiment setup is described in cite{ESP:18}.
 
-\begin{figure}[h!t]
+\begin{benchmark}[h!t]
   \includegraphics[width=\textwidth]{results/compounds}
   \caption{\label{rCompounds}Sort-First and Sort-Last Scalability}
-\end{figure}
+\end{benchmark}
 
 The results show that, as expected, load balancing improves the performance
 over a static task decomposition significantly. The simpler
@@ -2211,7 +2211,7 @@ implementations. The decoupling of the load balancing algorithm from the rest
 of the system enabled by the compound architecture opens the possibility for
 more research in this area.
 
-\fig{rEqualizers} provides a more detailed analysis of the different
+\bench{rEqualizers} provides a more detailed analysis of the different
 equalizers. Using volume rendering, we measure the performance of decomposition
 modes under heterogeneous load, which was easily achievable by varying the
 number of volume samples used for each fragment (1-7) while rendering. This
@@ -2222,16 +2222,16 @@ specific node corresponds to halving its available rendering resources. To the
 system this node would then contribute the value 0.5 in terms of normalized
 compute resources.
 
-\begin{figure}[h!t]
+\begin{benchmark}[h!t]
   \includegraphics[width=\textwidth]{results/equalizers}
   \caption{\label{rEqualizers}Sort-First and Sort-Last Equalizer Behaviour}
-\end{figure}
+\end{benchmark}
 
-\fig{rEqualizers} (left) gives an impression of how individual modes perform on
+\bench{rEqualizers} (left) gives an impression of how individual modes perform on
 heterogeneous systems. In this case the tree equalizer performs best, as it
 allows us to a priori define how much usage it should make of individual nodes,
 i.e., bias the allocation of rendering time in accordance with the (simulated)
-compute resources. \fig{rEqualizers} (right), on the other hand, illustrates
+compute resources. \bench{rEqualizers} (right), on the other hand, illustrates
 how the decomposition modes perform on a system where compute resources
 fluctuate randomly every frame, as can arguably be the case for shared
 rendering nodes in virtualized enviroments. For this scenario tile equalizer
@@ -2383,13 +2383,13 @@ GPUs used for driving the display segments themselves, as well as any additional
 source GPUs for rendering. It combines multi-display parallel rendering with
 scalable rendering for optimal performance.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{results/cslbFPS}
-  \caption{\label{rCSLBFPS}Cross-Segment Load Balancing Performance}
-\end{wrapfigure}
+  \caption{\label{rCSLBFPS}Cross-Segment Load Balancing}
+\end{wrapfloat}
 
 \cite{EEP:11} provide experimental results for a six-monitor tiled display wall
-with up to 12 source GPUs. \fig{rCSLBFPS} shows an overview for the achievable
+with up to 12 source GPUs. \bench{rCSLBFPS} shows an overview for the achievable
 performance improvements. The first two configurations use a static assignment
 of two GPUs to one output channel, where the first one statically assigns one
 half to each GPU, and the second uses a sort-first load balancer to dynamically
@@ -2406,7 +2406,7 @@ segments. In our $12:6$ setup, assigning up to six GPUs per segment almost
 doubles the performance over the state-of-the-art sort-first load balanced
 setup.
 
-\fig{rCSLB} shows the rendering time over a fixed camera path rendering 540
+\bench{rCSLB} shows the rendering time over a fixed camera path rendering 540
 frames. For the static assignment, two GPUs are responsible for each of the six
 outputs of the tiled display wall used. For the CSLB graph, up to eight GPUs
 were dynamically reassigned each frame to each of the six output channels,
@@ -2414,12 +2414,12 @@ depending on the current load distribution. Except for the few camera positions
 where the model is distributed evenly over all outputs, CSLB easily outperforms
 the fixed assignment.
 
-\begin{figure}[h!t]
+\begin{benchmark}[h!t]
   \centering
   \includegraphics[width=\textwidth]{results/cslb}
-  \caption{Cross-Segment Load Balancing for six Displays and 12 GPUs compared to a static two-to-one six Display Sort-First Rendering.}
+  \caption{Cross-Segment Load Balancing for six Displays and 12 GPUs compared to a static two-to-one six Display Sort-First Rendering}
   \label{rCSLB}
-\end{figure}
+\end{benchmark}
 
 A strength of this algorithm lies in its flexibility. On one hand, it can
 perform dynamic resource assignment not only for a planar display system as
@@ -2439,10 +2439,10 @@ adapting the rendering resolution of a fill-limited application. While the
 aforementioned uses a now-obsolete hardware implementation, our implementation
 is purely in software.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/dfr}
   \caption{\label{fdfr}Dynamic Frame Resolution}
-\end{wrapfigure}
+\end{wrapfloat}
 
 Dynamic frame resolution (DFR) works by rendering into a source channel
 (typically on a FBO) separate to the destination channel, and then scaling the
@@ -2472,10 +2472,10 @@ performance penalty, but it greatly improves the perceived rendering quality for
 users in DPlex compounds.
 
 \section{Monitoring}
-\begin{wrapfigure}{R}{.382\textwidth}
+\begin{wrapfloat}{figure}{R}{.382\textwidth}
   \includegraphics[width=.382\textwidth]{images/monitoreq}
   \caption{\label{fmonitor}Monitoring}
-\end{wrapfigure}
+\end{wrapfloat}
 The monitor equalizer (\fig{fmonitor}, \fig{fLayout}) allows to reuse the
 rendering on another channel, typically for monitoring a larger setup on a
 control workstation. Output frames on the display channels are connected to
@@ -2792,15 +2792,15 @@ instance if too many unsynchronized versions exist. This is useful to limit the
 amount of memory consumed by slave instance, and too prohibit run-away
 conditions of the master instance.
 
-\begin{figure}[h!t]\center
+\begin{benchmark}[h!t]\center
 \includegraphics[height=.245\textwidth]{images/benchmark_eqPly2}\hfil
 \includegraphics[height=.245\textwidth]{images/spikes512}\hfil
 \includegraphics[height=.245\textwidth]{images/beechnut}\vspace{1em}\\
   \includegraphics[width=\textwidth]{results/mapping}
-  \caption{\label{rMapping}Object Mapping and Synchronization Performance}
-\end{figure}
+  \caption{\label{rMapping}Object Mapping and Synchronization}
+\end{benchmark}
 
-\fig{rMapping} analyses the performance how data distribution and
+\bench{rMapping} analyses the performance how data distribution and
 synchronization performs in real-world applications. We extracted the existing
 data distribution code from a mesh renderer (eqPly) and a volume renderer
 (Livre) into a benchmark application to measure the time to initially map all
@@ -2861,7 +2861,7 @@ Due to the larger object size, uncompressed transmission is slightly faster
 compared to the Spike data set at 700MB/s, and compressed transmission does not
 improve the mapping performance, likely due to increased memory pressure caused
 by the data size. The comparison of the various compression engines is
-consistent with the benchmarks in \fig{rCompressorDetail}; RLE, Snappy and the
+consistent with the benchmarks in \bench{rCompressorDetail}; RLE, Snappy and the
 LZ variants are very close to each other, and ZSTD1 can provide better
 performance after four nodes due to the better compression ratio.
 
@@ -2898,25 +2898,25 @@ decompression using data decomposition. This compression is generic and
 lossless, implemented transparently for the application. Applications can also
 use data-specific compression.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
 \includegraphics[width=.618\textwidth]{results/compressor.pdf}
   {\caption{\label{rCompress}Compression Performance for Binary Data}}
-\end{wrapfigure}
+\end{wrapfloat}
 
-\fig{rCompress} shows the compression ratio and speed for generic binary data from \cite{ESP:18}. While the structure of the transmitted data varies with each application, this micro-bench\-mark gives a reasonable estimation of the expected performance. In our context of interactive distributed rendering applications, it is important to use the right tradeoff between spending time and resources for data compression, and the gained network transmission time due data reduction.
+\bench{rCompress} shows the compression ratio and speed for generic binary data from \cite{ESP:18}. While the structure of the transmitted data varies with each application, this micro-bench\-mark gives a reasonable estimation of the expected performance. In our context of interactive distributed rendering applications, it is important to use the right tradeoff between spending time and resources for data compression, and the gained network transmission time due data reduction.
 
 On modern CPUs (the benchmark was executed on a 12-core node), modern
 compression libraries provide performance benefits even on fast interconnects
 such as 10 Gb/s Ethernet. In particular, the modern Snappy and ZStandard
 libraries deliver impressive performance.
 
-\begin{figure}[h!t]\center
+\begin{benchmark}[h!t]\center
   \includegraphics[width=\textwidth]{results/compressorDetail}
-  \caption{\label{rCompressorDetail}Data compression for the PLY data and raw volumes shown in \fig{rMapping}}
-\end{figure}
+  \caption{\label{rCompressorDetail}Data Compression for the PLY Data and Raw Volumes from \bench{rMapping}}
+\end{benchmark}
 
 In \cite{ESP:18}, we also evaluated the compression performance for more
-concrete application data. The results are shown in \fig{rCompressorDetail}.
+concrete application data. The results are shown in \bench{rCompressorDetail}.
 Polygonal data is difficult to compress with a generic lossless compressor, due
 to the floating point format used for the vertices. A data-specific compressor
 aware of the data semantics can provide much better results. Volume data on the
@@ -2949,12 +2949,12 @@ multicast session, and more than one slave instance is mapped, \textsf{Collage}
 automatically uses the multicast connection to send the new version
 information.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{results/network}
   {\caption{\label{rNetwork}Synchronization Performance over different Network Protocols}}
-\end{wrapfigure}
+\end{wrapfloat}
 
-\fig{rNetwork} compares data distribution speed using different network
+\bench{rNetwork} compares data distribution speed using different network
 protocols. In this benchmark, data synchronization time of the Spike volume
 data set is measured. Buffering is enabled, and compression is disabled to
 focus on the raw network performance. For the benchmark, eight physical nodes
@@ -3092,10 +3092,10 @@ to illustrate the variety of use cases supported by our framework.
 
 \section{Livre}
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/livre}
   {\caption{\label{fLivre}Livre running on a 4x3 tiled display wall}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 Livre (Large-scale Interactive Volume Rendering Engine) is a GPU ray-casting
 parallel 4D volume renderer, implementing state-of-the-art view-dependent
@@ -3122,10 +3122,10 @@ delivering multi-GPU and distributed execution, is based on \textsf{Equalizer}
 and \textsf{Collage}, and has driven many of the features implemented in
 Equalizer.
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/DeltaGen}
   {\caption{\label{fDeltaGen}RTT Deltagen rendering mixing OpenGL rendering and raytracing (for the head light)}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 RTT Scale uses a master-slave execution mode, were a single Deltagen instance
 can go into ``Scale mode'' at any time by launching an \textsf{Equalizer}
@@ -3148,10 +3148,10 @@ node.
 
 \section{RTNeuron}\label{sRTNeuron}
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/RTNeuron}
   {\caption{\label{fRTNeuron}RTNeuron running in a six-sided CAVE}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 RTNeuron \cite{HBBES:13} is a scalable real-time rendering tool for the
 visualization of neuronal simulations based on cable models. It is based on
@@ -3166,10 +3166,10 @@ independent transparency.
 
 \section{RASTeR}
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/raster}
   {\caption{\label{fRaster}RASTeR running on a 3x2 tiled display wall}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 RASTeR~\cite{BGP:09} is an out-of-core and view-dependent real-time
 multiresolution terrain rendering approach using a patch-based restricted
@@ -3186,10 +3186,10 @@ frame.
 
 \section{Bino}
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/bino}
   {\caption{\label{fBino}Bino video player on a semi-cylindrical multi-projector wall}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 Bino is a stereoscopic 3D video player capable of running on very large display
 systems. Originally written for the immersive semi-cylindrical projection
@@ -3200,10 +3200,10 @@ therefore providing a scalable solution to video playback.
 
 \section{Omegalib}
 
-\begin{wrapfigure}{O}{.618\textwidth}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/omegalib}
   {\caption{\label{fOmegalib}An Omegalib application running in the Cave2}}
-\end{wrapfigure}
+\end{wrapfloat}
 
 Omegalib \cite{Omegalib} is a software framework built on top of Equalizer that
 facilitates application development for hybrid reality environments such as the

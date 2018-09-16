@@ -5,6 +5,7 @@
 *.out
 *.log
 *.lof
+*.lor
 *.blg
 *.bbl
 *.fls
