@@ -22,7 +22,7 @@ large-scale data is continuously generated at a growing rate from sensor and
 scanning systems, as well as from data collections and numerical simulations in
 a number of science and technology domains.
 
-\begin{figure}[ht]
+\begin{figure}[h!t]
  \includegraphics[height=4.7cm]{images/slices}\hfil%
  \includegraphics[height=4.7cm]{images/cave2}\\%
  \includegraphics[height=4.95cm]{images/cave}\hfil%
@@ -71,7 +71,38 @@ degree of parallelism, as well as generic applicability of high-performance
 interactive visualization methods and systems are recognized among the major
 current and future challenges.
 
-\section{Interactive Visualization}
+\section{Challenges}
+
+The motivation to visualize more data more efficiently through increased
+display fidelity and improved rendering performance creates a new set of
+research challenges. The key goal is to improve the rendering performance of
+existing and new visualization applications to enable users to explore more
+data. This goal can be broken down in more concrete challenges, starting with
+formalizing and implementing the architecture of a parallel rendering
+framework, which allows to decompose the problem into more manageable tasks.
+
+These sub-challenges to build a better scalable parallel rendering application
+can be identified as finding better task decompositions, decreasing the cost
+for the result composition, reducing the latency of the overall system, and
+minimizing synchronization between the parallel execution threads.
+
+When starting from a given rendering problem, the first task of a parallel
+rendering system is to decompose (parallelize) this task into independent
+sub-tasks, each rendered by a separate resource in parallel. While the basics
+of this decomposition has been researched extensively, there are architectural
+challenges to make these decompositions easily available in a generic and
+structured manner. When it comes to load balancing these tasks for an optimal
+parallelization, many challenges are still unaddressed when it comes to modern
+visualization cluster sizes using tens to hundreds of GPUs, and increasingly
+affordable high-fidelity visualization systems with tens of displays and
+hundreds of millions of pixels.
+
+With the scaling up the amount of resources employed to accelerate the
+rendering task, the task of combining the partial results from each resource
+becomes more challenging. In particular for sort-last rendering, where the
+amount data to composite grows linearly with the amount of parallel resources
+used, keeping the compositing time within the available budget is a non-trivial
+problem.
 
 Interactive visualization poses an unique set of challenges. Its goal is to
 present a believable alternate universe to the visual system of the user. This
@@ -95,6 +126,11 @@ careful with synchronization and pipelining of operations to minimize latency.
 In addition, an interactive application has different requirements when it
 comes to resource allocation compared to other large-scale distributed
 computing domains.
+
+Last, but not least, a significant challenge is how to make all this research
+available to the large data scientists with the actual needs and use cases for
+parallel rendering.
+
 
 \section{Parallel Rendering}
 
