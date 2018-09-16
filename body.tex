@@ -418,7 +418,7 @@ gradually provide higher level abstractions. On the low level, a network
 library for distributed abstractions provides the substrate for Equalizer and
 applications. Within each library, a clear separation of responsibilities
 allows to combine existing algorithms easily. For example, an advanced feature
-such as cross-segment load-balancing relies on per-segment load-balancers, and
+such as cross-segment load balancing relies on per-segment load balancers, and
 both load balancers reconfigure the underlying compound tree each frame.
 
 \end{compactdesc}
@@ -462,21 +462,21 @@ algorithms, large parts of the implementation, and some experimental analysis.
 Optimal resource usage in larger visualization clusters relies on an even
 distribution of work over the available resources. This load balancing problem
 requires real-time algorithms based on imperfect knowledge of the system
-behavior. In our architecture, load-balancing acts by modifying compound tree
+behavior. In our architecture, load balancing acts by modifying compound tree
 parameters at runtime. For example, a sort-first load balancer adapts the
 sub-viewports assigned to each resource at runtime. These so-called
 \textsf{equalizers} are a component hooked into the compound tree, which makes
 their use and implementation independent of the rest of the framework.
 
-Sort-first load-balancing has been researched previously, while we also
-introduce sort-last load-balancing based on the same principles. In
+Sort-first load balancing has been researched previously, while we also
+introduce sort-last load balancing based on the same principles. In
 \cite{EMP:09} and \cite{ESP:18} we provide experimental results on the
 effectiveness of our implementations. In the latter publication, we compare two
-different reactive load-balancing algorithms and show that theoretically
+different reactive load balancing algorithms and show that theoretically
 superior algorithms do not necessarily provide better performance in realistic
 scenarios.
 
-\cite{EEP:11} introduces a novel algorithm for load-balancing an arbitrary set
+\cite{EEP:11} introduces a novel algorithm for load balancing an arbitrary set
 of rendering resources for driving visualization installations with many output
 displays, such as tiled display walls or multi-projector systems. The author
 contributed the algorithm and implementation for this publication.
@@ -1340,7 +1340,7 @@ application threads are busy. Nodes still answering this command are considered
 alive for a longer period, after which they are considered failed, likely due
 to an infinite loop in the application code. Failed nodes are removed from the
 configuration, and their associated compounds are deactivated. In the case of
-load-balanced source channels, the load equalizer will simply reassign the work
+load balanced source channels, the load equalizer will simply reassign the work
 to other source channels. For static configurations, the source channel
 contribution will be missing from the final image. For destination channels,
 the corresponding output display will disappear from the configuration.
@@ -1427,7 +1427,7 @@ decompose the final view spatially or temporally, while computing complete
 pixels on each source channel. Stereo compounds decompose per eye pass, DPlex
 compounds temporally, pixel and subpixel compounds use equal spatial
 decompositions. Finally, tile and chunk compounds implement implicit
-load-balancing for sort-first and sort-last rendering using queueing of work
+load balancing for sort-first and sort-last rendering using queueing of work
 items.
 
 This wide set of decomposition modes for scalable rendering, embedded in our
@@ -1481,7 +1481,7 @@ well suited for fill-limited applications which are not geometry bound, for
 example direct volume rendering. Source channels cannot reduce geometry load
 through view frustum culling, since each source channel has almost the same
 frustum. However, the fragment load on all source channels is reduced linearly
-and well load-balanced due to the interleaved distribution of pixels. This
+and well load balanced due to the interleaved distribution of pixels. This
 functionality is transparent to \textsf{Equalizer} applications, and the
 default compositing uses the stencil buffer to blit pixels onto the destination
 channel.
@@ -1514,7 +1514,7 @@ Subpixel compounds (\fig{fSubpixel}) are similar to pixel compounds, but they
 decompose the work for a single pixel, for example with Monte-Carlo ray
 tracing, FSAA or depth of field rendering. The default compositing algorithm
 uses accumulation and averaging of all computed fragments for a pixel. Like
-Pixel compounds, this mode is naturally load-balanced on the fragment
+Pixel compounds, this mode is naturally load balanced on the fragment
 processing stage but cannot scale geometry processing. This feature is not
 fully transparent to the application, since it decomposes rendering algorithms
 which render multiple samples per pixel. Applications needs to adapt their
@@ -1534,7 +1534,7 @@ decompose the scene into a predefined set of fixed-size image tiles. These
 tasks, or work packages, are queued and processed by all source channels by
 polling a server-central queue. Prefetching ensures that the task communication
 overlaps with rendering. As shown in~\cite{SPEP:16}, work packages can provide
-better performance due to being implicitly load-balanced, as long as there is
+better performance due to being implicitly load balanced, as long as there is
 an insignificant overhead for the render task setup. This mode is transparent
 to \textsf{Equalizer} applications. We have used a tile compound to scale an
 interactive ray tracing application to hundreds of rendering nodes using RTT
@@ -1549,7 +1549,7 @@ challenging part for this decomposition mode. It is often addressed using
 parallel compositing, which we discuss in \sref{sparcomp}.
 
 Equalizer does support classical sort-last rendering with or without
-load-balancing, where each resource renders one part of the applications
+load balancing, where each resource renders one part of the applications
 database. Furthermore, we also implement chunk compounds, which are similar to
 tile compounds (\sref{sTile}), with which they share a lot of the
 infrastructure. Chunk compounds also produce work packages, although using a
@@ -1572,7 +1572,7 @@ increases the framerate almost linearly, it does not decrease the latency
 between user input and the corresponding output. Consequently, this
 decomposition mode is mostly useful for non-interactive movie generation.
 
-DPlex is very well load-balanced, since most applications observe a strong
+DPlex is very well load balanced, since most applications observe a strong
 frame-to-frame coherence with respect to the rendering load. This decomposition
 mode has the pecularity that small imbalances tend to accumulate such that the
 concurrent frames all finish simultaneously. To provide a smooth framerate, if
@@ -2030,11 +2030,11 @@ Load balancing changes the resource assignment per source channel based on the
 resource load. Static load balancing, shown in \fig{floadbalancing} top,
 performs this assignment during initialization. Dynamic load balancing can
 either be reactive or predictive (middle and bottom of \fig{floadbalancing}).
-Reactive load-balancing utilizes statistics from previous frames to predict
-future load distribution. Predictive load-balancing uses an
+Reactive load balancing utilizes statistics from previous frames to predict
+future load distribution. Predictive load balancing uses an
 application-provided load estimation (also called cost function) to estimate
 the load distribution of the current frame. Both approaches reassign resources
-dynamically, typically for each rendered frame. Implicitely load-balanced
+dynamically, typically for each rendered frame. Implicitely load balanced
 algorithms achieve a good load balance by other means, for example through work
 stealing between resources.
 
@@ -2055,7 +2055,7 @@ eponym for the \textsf{Equalizer} project name.
 In this section we present various {\em equalizer} implementations: two
 variants for reactive load balancing for sort-first and sort-last rendering,
 implicitely load balanced work packages for sort-last and sort-first rendering,
-cross-segment load-balancing for multi-display installations, constant frame
+cross-segment load balancing for multi-display installations, constant frame
 rate rendering using dynamic frame resolution, and monitoring of large-scale
 visualization systems.
 
@@ -2063,7 +2063,7 @@ visualization systems.
 
 \begin{wrapfigure}{O}{.382\textwidth}
   \includegraphics[width=.382\textwidth]{images/loadeq}
-  \caption{\label{floadeq}Load-Balancing}
+  \caption{\label{floadeq}load Balancing}
 \end{wrapfigure}
 
 Sort-first (\fig{floadeq}) and sort-last load balancing are the most obvious
@@ -2105,7 +2105,7 @@ reality the load is not uniformly distributed, e.g., it tends to increase
 towards the center of the screen in \fig{fROI}. We reuse the region of interest
 (ROI) from compositing of each source channel to automatically refine the load
 grid as shown \fig{fROI}, top. In cases where the rendered data projects only
-to a limited screen area, this ROI refinement provides the load-balancer with a
+to a limited screen area, this ROI refinement provides the load balancer with a
 more accurate load estimation leading to a better load prediction.
 
 The \textsf{tree\_equalizer} uses the same binary kD-tree structure as the
@@ -2151,18 +2151,18 @@ used to configure heterogeneous GPU resources more efficiently.
 
 \subsection{Dynamic Work Packages}
 
-Load-balancing can be classified into explicit and implicit approaches, where
+load balancing can be classified into explicit and implicit approaches, where
 explicit methods centrally compute a task decomposition up-front, before a new
 frame is rendered, while implicit methods decompose the workload into task
 units that can dynamically be assigned to the resources during rendering, based
-on the work progress of the individual resources. Explicit load-balancing
+on the work progress of the individual resources. Explicit load balancing
 typically assigns a single task to each resource to minimize static per-task
 costs. The aforementioned equalizers implement explicit reactive load
 balancing.
 
-Implicit load-balancing generally uses a finer granularity of many more tasks
+Implicit load balancing generally uses a finer granularity of many more tasks
 than resources to minimize the load imbalance due to a fixed coarse task
-granularity. Implicit load-balancing uses central task distribution or
+granularity. Implicit load balancing uses central task distribution or
 distributed task stealing between resources. Implicit algorithms are more
 commonly used for off-line raytracing compared to real-time rasterization
 algorithms due to the practically non-existent per-tile cost in raytracing.
@@ -2191,7 +2191,7 @@ compounds introduced in \sref{sTile}.
 
 \subsection{Results}
 
-\fig{rCompounds} shows the performance of static and load-balanced sort-first
+\fig{rCompounds} shows the performance of static and load balanced sort-first
 and sort-last rendering. The experiment setup is described in cite{ESP:18}.
 
 \begin{figure}[h!t]
@@ -2201,7 +2201,7 @@ and sort-last rendering. The experiment setup is described in cite{ESP:18}.
 
 The results show that, as expected, load balancing improves the performance
 over a static task decomposition significantly. The simpler
-\textsf{tree\_equalizer} outperforms the load-grid-driven
+\textsf{tree\_equalizer} outperforms the load grid-driven
 \textsf{load\_equalizer} in most cases, except for sort-first volume rendering
 where the load in the region of interest is relatively uniform. This result is
 counterintuitive since the \textsf{load\_equalizer} operates with more
@@ -2259,7 +2259,7 @@ shown in \fig{fvieweq}.
 
 \begin{figure}[h!t]
   \includegraphics[width=\textwidth]{images/vieweq}
-  \caption{\label{fvieweq}Six-to-two Cross-Segment Load-Balancing}
+  \caption{\label{fvieweq}Six-to-two Cross-Segment load Balancing}
 \end{figure}
 
 The $m$ output channels typically each drive a display or projector of a
@@ -2276,10 +2276,10 @@ the pool of graphics resources.
 CSLB also does not require a planar display surface, that is, the algorithm
 works equally for tiled display walls and immersive installations.
 
-Dynamic resource assignment is performed through load-balancing components that
+Dynamic resource assignment is performed through load balancing components that
 exploit statistical data from previous frames for the decision of optimal GPU
 usage for each segment as well as optimal distribution of workload among them.
-The algorithm can easily be extended to use predictive load-balancing based on
+The algorithm can easily be extended to use predictive load balancing based on
 a load estimation given the application.
 
 CSLB is implemented in Equalizer as two layers of hierarchically organized
@@ -2393,7 +2393,7 @@ with up to 12 source GPUs. \fig{rCSLBFPS} shows an overview for the achievable
 performance improvements. The first two configurations use a static assignment
 of two GPUs to one output channel, where the first one statically assigns one
 half to each GPU, and the second uses a sort-first load balancer to dynamically
-split the segment between the two GPUs. Already this 2D load-balancing improves
+split the segment between the two GPUs. Already this 2D load balancing improves
 the framerate by almost 50\%.
 
 The remaining configurations add a view equalizer on top of the per-segment 2D
@@ -3173,7 +3173,7 @@ independent transparency.
 
 RASTeR~\cite{BGP:09} is an out-of-core and view-dependent real-time
 multiresolution terrain rendering approach using a patch-based restricted
-quadtree triangulation. For load-balanced parallel rendering~\cite{GMBP:10} it
+quadtree triangulation. For load balanced parallel rendering~\cite{GMBP:10} it
 exploits fast hierarchical view-frustum culling of the level-of-detail (LOD)
 quadtree for sort-first decomposition, and uniform distribution of the visible
 LOD triangle patches for sort-last decomposition. The latter is enabled by a
@@ -3231,7 +3231,7 @@ Based on the analysis of Cavelib, practical experience in implementing and
 deploying OpenGL Multipipe SDK, we have been in the unique position to succeed
 in this task. The base framework allowed us to take parallel rendering research
 to a new level, by enabling the easy implementation of new decomposition
-algorithms, many improvements for result composition, novel load-balancing
+algorithms, many improvements for result composition, novel load balancing
 schemes, and numerous whole system optimizations, all of which are much harder
 without such a framework and associated applications. This is not only
 supported by the contributions of this thesis, but by other publications and
@@ -3241,7 +3241,7 @@ other laboratories, e.g., the Electronic Visualization Laboratory at the
 University of Illinois at Chicago for Cave2 research.
 
 Beyond the core system design, we have incorporated many new parallel rendering
-algorithms in our framework. Most notably, cross-segment load-balancing
+algorithms in our framework. Most notably, cross-segment load balancing
 provides a novel approach to better assign multiple rendering resources to
 multi-display systems. It maximizes rendering locality for the display GPUs and
 is not limited to planar displays as most other approaches.
@@ -3249,7 +3249,7 @@ is not limited to planar displays as most other approaches.
 Having a fully-featured rendering framework and real-world applications enabled
 us to implement many algorithmic improvements and optimizations, and evaluate
 them in a holistic and realistic setup. This work advances parallel rendering
-with new decomposition modes, compositing algorithms, better load-balancing and
+with new decomposition modes, compositing algorithms, better load balancing and
 an asynchronous rendering pipeline. Last, but not least, a network library for
 distributed, interactive visualization applications greatly facilitates the
 task to distribute and synchronize application state in a parallel rendering
