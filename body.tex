@@ -948,8 +948,8 @@ channel to which the display device is connected. To synchronize the video
 output, a canvas swap barrier or a swap barrier on each segment synchronize the
 respective window buffer swaps.
 
-\begin{wrapfloat}{figure}{O}{.382\textwidth}
-  \includegraphics[width=.382\textwidth]{images/canvas.pdf}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/canvas.pdf}
   {\caption{\label{fCanvas}A Canvas using four Segments}}
 \end{wrapfloat}
 
@@ -1559,8 +1559,8 @@ tile compounds.
 
 \section{Time-Multiplex}
 
-\begin{wrapfloat}{figure}{O}{.382\textwidth}
-\includegraphics[width=.382\textwidth]{images/DPlex}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+\includegraphics[width=.618\textwidth]{images/DPlex}
 {\caption{\label{fDPlex}Time-Multiplex Compound}} \end{wrapfloat}
 
 Time-multiplexing distributes full frames over the available resources, such
@@ -2047,31 +2047,31 @@ contraints make the arrival not fully random or network-constrained).
 
 \section{Overview}
 
-Load balancing changes the resource assignment per source channel based on the
-resource load. Static load balancing, shown in \fig{floadbalancing} top,
-performs this assignment during initialization. Dynamic load balancing can
-either be reactive or predictive (middle and bottom of \fig{floadbalancing}).
-Reactive load balancing utilizes statistics from previous frames to predict
-future load distribution. Predictive load balancing uses an
-application-provided load estimation (also called cost function) to estimate
-the load distribution of the current frame. Both approaches reassign resources
-dynamically, typically for each rendered frame. Implicitely load balanced
-algorithms achieve a good load balance by other means, for example through work
-stealing between resources.
+Load balancing is the resource assignment per source channel based on resource
+load, with the goal of optimizing resource utilization. Static load balancing,
+shown in \fig{floadbalancing} top, performs this assignment during
+initialization. Dynamic load balancing can either be reactive or predictive
+(middle and bottom of \fig{floadbalancing}). Reactive load balancing utilizes
+statistics from previous frames to predict future load distribution. Predictive
+load balancing uses an application-provided load estimation (also called cost
+function) to estimate the load distribution of the current frame. Both
+approaches reassign resources dynamically, typically for each rendered frame.
+Implicitely load balanced algorithms achieve a good load balance by other
+means, for example through work stealing between resources.
 
 \begin{figure}[h!t]
   \includegraphics[width=\textwidth]{images/loadBalancing}
   \caption{\label{floadbalancing}Static, Reactive and Predictive Load Balancing}
 \end{figure}
 
-Load balancing in Equalizer is implemented in {\em Equalizers}. Equalizers are
-an addition to compound trees. They modify parameters of their respective
-compound subtree at runtime to dynamically optimize the resource usage, by each
-tuning one aspect of the decomposition or recomposition. Due to their nature,
-they are transparent to application developers, but might have
-application-accessible parameters to tune their behavior. Resource equalization
-is the critical component for scalable parallel rendering, and therefore the
-eponym for the \textsf{Equalizer} project name.
+Load balancing is implemented by {\em Equalizers}. Equalizers are an addition
+to compound trees. They modify parameters of their respective compound subtree
+at runtime to dynamically optimize the resource usage, by each tuning one
+aspect of the decomposition or recomposition. Due to their nature, they are
+transparent to application developers, but might have application-accessible
+parameters to tune their behavior. Resource equalization is the critical
+component for scalable parallel rendering, and therefore the eponym for the
+\textsf{Equalizer} project name.
 
 In this section we present various {\em equalizer} implementations: two
 variants for reactive load balancing for sort-first and sort-last rendering,
@@ -2082,9 +2082,9 @@ visualization systems.
 
 \section{Sort-First and Sort-Last Load Balancing}\label{sLoadEqualizer}
 
-\begin{wrapfloat}{figure}{O}{.382\textwidth}
-  \includegraphics[width=.382\textwidth]{images/loadeq}
-  \caption{\label{floadeq}load Balancing}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/loadeq}
+  \caption{\label{floadeq}Load Balancing}
 \end{wrapfloat}
 
 Sort-first (\fig{floadeq}) and sort-last load balancing are the most obvious
@@ -2097,11 +2097,11 @@ Equalizer implements two different algorithms, a \textsf{load\_equalizer} and a
 depending on the type of rendering load.
 
 Both equalizers extract their load metrics from statistics collected by the
-rendering clients, these statistics are sent asynchronously from the clients to
-the server, where the equalizers subscribe to them for operation. At the
-beginning of each frame, the server triggers all equalizers on all compound
-trees, which allows them to set new decomposition parameters before the
-rendering tasks are computed.
+rendering clients, which are sent asynchronously from the clients to the
+server, where the equalizers subscribe to them for operation. At the beginning
+of each frame, the server triggers all equalizers on all compound trees, which
+enables them to set new decomposition parameters before the rendering tasks are
+computed.
 
 The \textsf{load\_equalizer} builds a model of the rendering load in screen
 space or data space. It stores a 2D (for sort-first) or 1D (for sort-last) grid
@@ -2114,9 +2114,9 @@ tree, first decomposed into horizontal tiles and then each horizontal tile into
 vertical sub-tiles. Our binary split tree provides more compact tiles for larger
 cluster configurations.
 
-\begin{wrapfloat}{figure}{I}{.382\textwidth}
-  \includegraphics[width=.382\textwidth]{images/roi}
-  \caption{Load distribution areas with (top) and without (bottom) using region of interest information.}
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/roi}
+  \caption{Load cost area map with (top) and without (bottom) using region of interest information.}
   \label{fROI}
 \end{wrapfloat}
 
@@ -2127,7 +2127,8 @@ towards the center of the screen in \fig{fROI}. We reuse the region of interest
 (ROI) from compositing of each source channel to automatically refine the load
 grid as shown \fig{fROI}, top. In cases where the rendered data projects only
 to a limited screen area, this ROI refinement provides the load balancer with a
-more accurate load estimation leading to a better load prediction.
+more accurate load estimation leading to a better load prediction during the
+balancing step.
 
 The \textsf{tree\_equalizer} uses the same binary kD-tree structure as the
 \textsf{load\_equalizer} for recursive load balancing. It computes the
@@ -2136,9 +2137,10 @@ this to allocate an equal render time to each subtree. It makes no assumption
 of the load distribution in 2D or 1D space, it only tries to correct the
 imbalance in render time.
 
-Both equalizers implement tuneable parameters allowing application developers to
-optimize the load balancing based on the characteristics of their rendering
-algorithm:
+Both equalizers implement tuneable parameters allowing application developers
+to optimize the load balancing based on the characteristics of their rendering
+algorithm. These parameters are accessible through an API from the application
+main thread:
 
 \begin{compactdesc}
 \item[Split Mode] configures the tile layout: horizontal or vertical stripes,
@@ -2210,16 +2212,10 @@ each frame. This active equalizer is the central component of the tile and chunk
 compounds introduced in \sref{sTile}.
 
 
-\subsection{Results}
+\subsection{Benchmarks}
 
 \bench{rCompounds} shows the performance of static and load balanced sort-first
-and sort-last rendering. The experiment setup is described in cite{ESP:18}.
-
-\begin{benchmark}[h!t]
-  \includegraphics[width=\textwidth]{results/compounds}
-  \caption{\label{rCompounds}Sort-First and Sort-Last Scalability}
-\end{benchmark}
-
+and sort-last rendering. The experiment setup is described in \cite{ESP:18}.
 The results show that, as expected, load balancing improves the performance
 over a static task decomposition significantly. The simpler
 \textsf{tree\_equalizer} outperforms the load grid-driven
@@ -2231,6 +2227,11 @@ that simple algorithms often outperform theoretically better, but more complex
 implementations. The decoupling of the load balancing algorithm from the rest
 of the system enabled by the compound architecture opens the possibility for
 more research in this area.
+
+\begin{benchmark}[h!t]
+  \includegraphics[width=\textwidth]{results/compounds}
+  \caption{\label{rCompounds}Sort-First and Sort-Last Scalability}
+\end{benchmark}
 
 \bench{rEqualizers} provides a more detailed analysis of the different
 equalizers. Using volume rendering, we measure the performance of decomposition
@@ -2387,16 +2388,16 @@ rendering tasks, e.g., to update itself and to contribute to another display.
 Furthermore, it gives priority to the source compound using the same channel as
 the output channel of each segment, thus minimizing pixel transfers.
 
-The rendered data, viewing configuration and user interaction will at runtime
-produce different rendering loads for each segment of a multi-display system. As
-the slowest segment will determine the overall performance of the system, it is
-important to dynamically adjust load among segments. The {\sf view\_equalizer}
-analyzes the load of all segments based on past frame rendering statistics and
-adapts resource usage for each segment. For each rendered frame, the {\sf
+The rendered data, algorithm and camera will produce different rendering load
+over time for each segment of a multi-display system. Since the slowest segment
+determines the overall performance of the system, it is important to
+dynamically adjust load among segments. The {\sf view\_equalizer} analyzes the
+load of all segments based on past frame rendering statistics and adapts
+resource usage for each segment. For each rendered frame, the {\sf
 view\_equalizer} sets the usage of each leaf source channel compound, to
 activate or deactivate it for rendering on the given destination channel. This
-usage setting is picked up by the per-segment load balancers, which will only
-assign work proportionally to the usage, with no rendering task for $0$ usage.
+usage is picked up by the per-segment load balancers, which will assign work
+proportionally to the usage, with no rendering task for $0$ usage.
 \cite{EEP:11} provides a detailed description of the algorithm.
 
 Cross-segment load balancing thus allows for optimal resource usage of multiple
@@ -2410,12 +2411,12 @@ scalable rendering for optimal performance.
 \end{wrapfloat}
 
 \cite{EEP:11} provide experimental results for a six-monitor tiled display wall
-with up to 12 source GPUs. \bench{rCSLBFPS} shows an overview for the achievable
+driven by 12 source GPUs. \bench{rCSLBFPS} shows an overview for the achievable
 performance improvements. The first two configurations use a static assignment
 of two GPUs to one output channel, where the first one statically assigns one
-half to each GPU, and the second uses a sort-first load balancer to dynamically
-split the segment between the two GPUs. Already this 2D load balancing improves
-the framerate by almost 50\%.
+half to each GPU, and the second uses a load balancer to dynamically split the
+segment between the two GPUs. Already this 2D load balancing improves the
+framerate by almost 50\%.
 
 The remaining configurations add a view equalizer on top of the per-segment 2D
 load equalizer. The configuration assigns up to 4, 6, 8, 10 or all GPUs to each
@@ -2427,13 +2428,12 @@ segments. In our $12:6$ setup, assigning up to six GPUs per segment almost
 doubles the performance over the state-of-the-art sort-first load balanced
 setup.
 
-\bench{rCSLB} shows the rendering time over a fixed camera path rendering 540
-frames. For the static assignment, two GPUs are responsible for each of the six
-outputs of the tiled display wall used. For the CSLB graph, up to eight GPUs
-were dynamically reassigned each frame to each of the six output channels,
-depending on the current load distribution. Except for the few camera positions
-where the model is distributed evenly over all outputs, CSLB easily outperforms
-the fixed assignment.
+\bench{rCSLB} shows the rendering time over a fixed camera path of 540 frames.
+In the static case, two GPUs are responsible for each of the six outputs of the
+tiled display wall used. For the CSLB graph, up to eight GPUs were dynamically
+reassigned each frame to each of the six output channels, depending on the
+current load distribution. Except for a few camera positions where the model is
+positioned evenly over all outputs, CSLB outperforms the fixed assignment.
 
 \begin{benchmark}[h!t]
   \centering
@@ -2454,16 +2454,16 @@ of resources per channel.
 
 \section{Dynamic Frame Resolution}
 
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/dfr}
+  \caption{\label{fdfr}Dynamic Frame Resolution}
+\end{wrapfloat}
+
 The DFR equalizer (\fig{fdfr}) provides a functionality similar to dynamic
 video resizing \cite{MBDM:97}, that is, it maintains a constant framerate by
 adapting the rendering resolution of a fill-limited application. While the
 aforementioned uses a now-obsolete hardware implementation, our implementation
 is purely in software.
-
-\begin{wrapfloat}{figure}{O}{.618\textwidth}
-  \includegraphics[width=.618\textwidth]{images/dfr}
-  \caption{\label{fdfr}Dynamic Frame Resolution}
-\end{wrapfloat}
 
 Dynamic frame resolution (DFR) works by rendering into a source channel
 (typically on a FBO) separate to the destination channel, and then scaling the
@@ -2493,18 +2493,20 @@ performance penalty, but it greatly improves the perceived rendering quality for
 users in DPlex compounds.
 
 \section{Monitoring}
-\begin{wrapfloat}{figure}{R}{.382\textwidth}
-  \includegraphics[width=.382\textwidth]{images/monitoreq}
+
+\begin{wrapfloat}{figure}{R}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/monitoreq}
   \caption{\label{fmonitor}Monitoring}
 \end{wrapfloat}
-The monitor equalizer (\fig{fmonitor}, \fig{fLayout}) allows to reuse the
-rendering on another channel, typically for monitoring a larger setup on a
-control workstation. Output frames on the display channels are connected to
-input frames on a single monitoring channel. The monitor equalizer changes the
-scaling factor and offset between the output and input, so that the monitor
-channel has the same, but typically downscaled view, as the originating
-segments. While this is not strictly a scalable rendering feature, it optimizes
-resource usage by not needlessly rendering the same view multiple times.
+
+The monitor equalizer (\fig{fmonitor}) allows to reuse the rendering on another
+channel, typically for monitoring a larger setup on a control workstation.
+Output frames on the display channels are connected to input frames on a single
+monitoring channel. The monitor equalizer changes the scaling factor and offset
+between the output and input, so that the monitor channel has the same, but
+typically downscaled view, as the originating segments. While this is not
+strictly a scalable rendering feature, it optimizes resource usage by not
+needlessly rendering the same view multiple times.
 
 
 \chapter{Data Distribution and Synchronization}\label{sCollage}
