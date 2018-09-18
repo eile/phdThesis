@@ -2474,11 +2474,11 @@ the source to destination transfer. If the performance and source channel
 resolutions allow, this will not only subsample, but also supersample the
 destination channel to reduce aliasing artefacts.
 
-As with all other features, it can be combined with other scalability features,
-e.g., sort-first rendering. It is also notable that it does not need any
-additional code in the core compound logic, it simply exploits existing
-functionality such as texture-based compositing frames and frame zoom with
-dynamic per-frame adjustments.
+DFR can be combined with other scalability features, e.g., sort-first
+rendering. It is also notable that it does not need any additional code in the
+core compound logic, it simply exploits existing functionality such as
+texture-based compositing frames and frame zoom with dynamic per-frame
+adjustments.
 
 \section{Frame Rate Equalizer}\label{sFramerateEq}
 
@@ -2499,14 +2499,14 @@ users in DPlex compounds.
   \caption{\label{fmonitor}Monitoring}
 \end{wrapfloat}
 
-The monitor equalizer (\fig{fmonitor}) allows to reuse the rendering on another
-channel, typically for monitoring a larger setup on a control workstation.
-Output frames on the display channels are connected to input frames on a single
-monitoring channel. The monitor equalizer changes the scaling factor and offset
-between the output and input, so that the monitor channel has the same, but
-typically downscaled view, as the originating segments. While this is not
-strictly a scalable rendering feature, it optimizes resource usage by not
-needlessly rendering the same view multiple times.
+The monitor equalizer (\fig{fmonitor}) allows to reuse the rendering from one
+or more channels on another channel, typically for monitoring a larger display
+setup on a control workstation. Output frames on the display channels are
+connected to input frames on the monitoring channel. The monitor equalizer
+changes the scaling factor and offset between the output and input, so that the
+monitor channel has the same, but typically downscaled view, as the originating
+segments. While this is not strictly a scalable rendering feature, it optimizes
+resource usage by not needlessly rendering the same view multiple times. It reuses the zoom parameter of compositing frames, and adapts this every time one of the channels is resized.
 
 
 \chapter{Data Distribution and Synchronization}\label{sCollage}
