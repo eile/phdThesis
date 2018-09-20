@@ -1293,21 +1293,26 @@ frames. These parameters are used in conjunction with compound tasks for
 parallel compositing, and advanced features such as monitoring and dynamic frame
 resolution introduced later.
 
-\fig{fDirectSend} shows the pixel flow of direct send composting for a three-way
+\fig{fDirectSend} shows the pixel flow of direct send compositing for a three-way
 sort-last decomposition, where the destination channel also contributes to the
 rendering. In the first step, each channel exchanges two color+depth tiles with
 its neighbors, and then $z$-composites its own tile. This yields one complete
 tile on each channel, of which two color tiles are then assembled on the
-destination channel.
+destination channel, whereas the third tile is already in place.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/directSendCompound}
   {\caption{\label{fDirectSendCmp}Direct Send Compound}}
 \end{wrapfloat}
 
+\begin{figure}[h!t]
+  \includegraphics[width=\textwidth]{images/directSend}
+  {\caption{\label{fDirectSend}Direct Send Compositing}}
+\end{figure}
+
 The corresponding compound tree is shown schematically in \fig{fDirectSendCmp}.
 Each of the three channels has a child compound to execute the rendering and
-read back to incomplete tiles for sort-last compositing. These three leaf
+read back two incomplete tiles for sort-last compositing. These three leaf
 compounds represent the first step in the left-hand diagram. One level up, each
 channel receives two tiles and assembles them onto its partially rendered
 result, creating a complete tile. For the two source-only channels, a final
@@ -1322,12 +1327,8 @@ suffices that the application honors the \textsf{range} parameter of the render
 context to decompose its rendering. All other tasks, in particular the parallel
 compositing and pixel transfers, are fully handled by Equalizer. Applications
 which require ordered compositing, for example volume rendering, overwrite the
-assemble callback to reorder the input frames correctly.
-
-\begin{figure}[h!t]
-  \includegraphics[width=\textwidth]{images/directSend}
-  {\caption{\label{fDirectSend}Direct Send Compositing}}
-\end{figure}
+assemble callback to reorder the input frames correctly, before passing them on
+to the compositing code.
 
 The abstraction through frames is flexible, but still allows many architectural
 optimizations:
@@ -1351,12 +1352,14 @@ the same GPU. Using textures as pixel buffers allows minimal overhead for the
 output to input frame transfer.
 \end{compactdesc}
 
+In \cref{sCompositing} we provide detailed information on our compositing advances.
+
 \section{Load Balancing}
 
 Compounds in itself only provide a static configuration of the parallel
 rendering setup. \textsf{Equalizers} are algorithms which hook into a compound
 and modify parameters of their respective subtree at runtime to dynamically
-optimize the resource usage. Each equalizer foucuses on tuning one aspect of
+optimize the resource usage. Each equalizer focuses on tuning one aspect of
 the decomposition, allowing them to be composited in a configuration. Due to
 their nature, they are transparent to application developers, but might have
 application-accessible parameters to tune their behavior. Resource equalization
@@ -1375,7 +1378,7 @@ equalizers.
 
 \section{Runtime Reconfiguration}
 
-Supported by the distribution execution layer, introduced in the next section,
+Supported by the distributed execution layer, introduced in the next section,
 Equalizer implements dynamic reconfiguration of a running visualization
 application. This functionality is used by runtime layout switches and runtime
 reliability.
@@ -1472,6 +1475,7 @@ version to the slaves. Syncing the map on the slaves will synchronize all mapped
 instances to the new version recorded in the object map. This effective design
 allows data distribution with minimal application logic.
 
+\cref{sCollage} contains more information on our network library.
 
 \chapter{Scalable Rendering}\label{sScalable}
 
