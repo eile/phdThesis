@@ -370,9 +370,8 @@ Equalizer applications.
 
 \chapter{Contributions}
 
-In this chapter we summarise the main contributions of this thesis. For each
-section, we list the relevant publications and specify the contributions of the
-author.
+This chapter summarises the main contributions of this thesis. In each section,
+we list the relevant publications and specify the contributions of the author.
 
 \section{Parallel Rendering Architecture}
 
@@ -437,9 +436,11 @@ both load balancers reconfigure the underlying compound tree each frame.
 parallel rendering frameworks. Any algorithmic, implementation and
 architectural contributions in these publications are contributed by the
 author, while experimental results have significant contributions from the
-secondary authors. \cite{BRE:05} provides in many ways the foundation for
-Equalizer, to which the author was a contributor for the implementation of a
-parallel rendering framework for shared memory systems.
+secondary authors.
+
+\cite{BRE:05} provides in many ways the foundation for Equalizer, to which the
+author was a contributor for the implementation of a parallel rendering
+framework for shared memory systems.
 
 \section{Scalable Rendering}
 
@@ -448,8 +449,8 @@ algorithms, introduced in \cite{EMP:09} and \cite{ESP:18}. A particular focus
 was given to reduce the cost of the costly compositing step for sort-last
 rendering.
 
-In \cite{EP:07}, we provide an analysis of parallel compositing algorithms in an
-early version of our parallel rendering framework, and show that direct send
+\cite{EP:07} provides an analysis of parallel compositing algorithms in an
+early version of our parallel rendering framework, and we show that direct send
 compositing has advantages on commodity visualization clusters. The
 implementation, algorithm and experimental analysis in this paper are
 contributed by the author.
@@ -479,13 +480,11 @@ adapts the sub-viewports assigned to each resource at runtime. These so-called
 \textsf{equalizers} are a component hooked into the compound tree, which makes
 their use and implementation independent of the rest of the framework.
 
-Sort-first load balancing has been researched previously, while we also
-introduce sort-last load balancing based on the same principles. In
-\cite{EMP:09} and \cite{ESP:18} we provide experimental results on the
-effectiveness of our implementations. In the latter publication, we compare two
-different reactive load balancing algorithms and show that theoretically
-superior algorithms do not necessarily provide better performance in realistic
-scenarios.
+\cite{EMP:09} and \cite{ESP:18} provide experimental results on the
+effectiveness of our sort-first and sort-last load balancing implementations.
+In the latter publication, we compare two different reactive load balancing
+algorithms and show that theoretically superior algorithms do not necessarily
+provide better performance in realistic scenarios.
 
 \cite{EEP:11} introduces a novel algorithm for load balancing an arbitrary set
 of rendering resources for driving visualization installations with many output
@@ -625,15 +624,15 @@ with a static model, rotating about its vertical axis, placed such that it
 nicely covers the different screens.
 
 A standard tile-sort Chromium configuration is compared to a simple Equalizer
-display wall setup, where in each case a single GPU and node are responsible
-for driving the attached display. The polygonal model is rendered using eqPly
-and uses display lists for the static geometry. Using display lists allows
-Chromium to send geometry and texture data once to the rendering nodes
-(retained mode rendering) and display them repeatedly using
-\textsf{glCallLists()}, which is inexpensive in terms of network overhead. This
-setup is favourable for Chromium because the display lists have to be
-transmitted only once over the network, and only simple display calls will be
-processed and distributed by Chromium for each rendered frame.
+display wall setup, where in each case a single GPU and node is responsible for
+driving the attached display. The polygonal model is rendered using eqPly and
+uses display lists for the static geometry. Using display lists allows Chromium
+to send geometry and texture data once to the rendering nodes (retained mode
+rendering) and display them repeatedly using \textsf{glCallLists()}, which is
+inexpensive in terms of network overhead. This setup is favourable for Chromium
+because the display lists have to be transmitted only once over the network,
+and only simple display calls will be processed and distributed by Chromium for
+each rendered frame.
 
 \begin{figure}[h!t]\center
  \includegraphics[width=\textwidth]{images/syncAsync}
@@ -681,18 +680,20 @@ completeness.
 \subsection{Application}
 
 The main application thread in Equalizer drives the rendering, that is, it
-carries out the main rendering loop, but does not actually execute any
-rendering. Depending on the configuration, the application process often hosts
-one or more render client threads. These render client threads are identical in
-behaviour and implementation to render threads on render client nodes. When a
-configuration has no additional nodes besides the application node, all
-application code is executed in the same process, and no network data
-distribution has to be implemented. The main rendering loop is quite simple:
-The application requests a new frame to be rendered, synchronises on the
-completion of a frame and processes events received from the render clients. It
-may perform idle processing between the start and synchronisation of a frame.
-\fig{FIG_execution} shows a simplified execution model of an Equalizer
-application.
+carries out the main event loop, but does not actually execute any rendering.
+Depending on the configuration, the application process often hosts one or more
+render client threads. These render client threads are identical in behaviour
+and implementation to render threads on render client nodes. When a
+configuration has no additional nodes besides the application node, we have a
+single-process, multi-threaded rendering application: all application code is
+executed in the same process, and no network data distribution has to be
+implemented.
+
+The main rendering loop is quite simple: The application requests a new frame
+to be rendered, synchronises on the completion of a frame and processes events
+received from the render clients. It may perform idle processing between the
+start and synchronisation of a frame. \fig{FIG_execution} shows a simplified
+execution model of an Equalizer application.
 
 
 \subsection{Server}
@@ -705,28 +706,25 @@ tasks for a frame, and synchronising the completion of tasks.
 
 \subsection{Render Client}
 
-During initialization of the server, the application provides a rendering
-client executable. The rendering client is often, especially for simple
-applications, the same executable as the application. However, in more
-sophisticated implementations the rendering client can be another executable
-which only contains the application-specific rendering code. The server deploys
-this rendering client on all nodes specified in the configuration. Render
-clients may run on a different architecture or operating system from the main
-application, the underlying network library ensures type safety and endian
-ordering.
+During initialization, the application provides a rendering client executable.
+The rendering client is often, especially for simple applications, the same
+executable as the application. However, in more sophisticated implementations
+the rendering client can be another executable which only contains the
+application-specific rendering code. The server deploys this rendering client
+on all nodes specified in the configuration. Render clients may run on a
+different architecture or operating system from the main application, the
+underlying network library ensures type safety and endian ordering.
 
-In contrast to the application process, the rendering client does not have a
-main loop and is completely controlled by the Equalizer framework based on
-application commands. A render client consists of the following threads: the
-node main thread, one network receive thread, one thread for each graphics card
-(GPU) to execute rendering tasks, and potentially one thread for asynchronous
-compositing per GPU. If a configuration also uses the application node for
-rendering, then the application process uses one or more render threads,
-consistent with render client processes.
-
-The Equalizer client library implements the main loop, which receives network
-events, processes them, and invokes the necessary task methods provided by the
-developer.
+In contrast to the application process, the rendering client main loop is
+completely controlled by the Equalizer framework based on application commands.
+A render client consists of the following threads: the node main thread, one
+network receive thread, one thread for each graphics card (GPU) to execute
+rendering tasks, and potentially one thread for asynchronous compositing per
+GPU. If a configuration also uses the application node for rendering, then the
+application process uses one or more render threads, consistent with render
+client processes. The Equalizer client library implements the main loop, which
+receives network commands, processes them, and invokes the necessary task
+methods provided by the developer.
 
 The task methods clear the frame buffer as necessary, execute the OpenGL
 rendering commands as well as readback, and assemble partial frame results for
