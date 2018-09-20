@@ -36,15 +36,15 @@ a number of science and technology domains.
 Display technology has made significant progress in the last decade.
 High-resolution screens and tiled display walls are now affordabe for most
 organizations and are getting deployed at an increasing rate. This increased
-resolution and display size helps with understanding the data, but with the
-quadratic increase in pixels to be rendered, it increases the pressure on
-rendering algorithms to deliver interactive framerates. Such large-scale
-visualization systems are often driven by multiple GPUs and workstations,
-making it natural, and most times necessary, to drive them using parallel and
-distributed applications.
+resolution and display size helps with understanding the data through higher
+fidelity, but with the quadratic increase in pixels to be rendered, it
+increases the pressure on rendering algorithms to deliver interactive
+framerates. Such large-scale visualization systems are often driven by multiple
+GPUs and workstations, making it natural, and most times necessary, to drive
+them using parallel and distributed applications.
 
 However, not only applications are becoming more and more data-driven, but also
-the technology used to tackle these kinds of problems is rapidly witnessing a
+the technology used to tackle these kinds of problems has been witnessing a
 paradigm shift towards massively parallel on-chip and distributed parallel
 cluster solutions. On one hand, parallelism within a system has increased
 massively, with tenths of CPU cores, thousands of GPU cores and multiple CPUs
@@ -777,13 +777,13 @@ consistent behaviour.
 \subsection{NUMA Aware Thread Scheduling}
 
 Non-Unified Memory Access (NUMA) is a common hardware architecture for
-high-performance visualization clusters. Modern multi-socket visualization
-nodes use a NUMA architecture, where each CPU socket has a number of
-locally-attached memory buses, GPU and network devices, and CPU sockets are
-linked with an interconnect to each other. Accessing a memory address located
-on another processor has a performance penalty for both bandwidth and latency,
-and accessing a GPU or network interface from a remote processor is slower than
-a local access.
+high-performance visualization clusters. Modern multi-socket render nodes use a
+NUMA architecture, where each CPU socket has a number of locally-attached
+memory buses, GPU and network devices, and CPU sockets are linked with an
+interconnect to each other. Accessing a memory address located on another
+processor has a performance penalty for both bandwidth and latency, and
+accessing a GPU or network interface from a remote processor is slower than a
+local access.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/numaNode.pdf}
@@ -796,12 +796,12 @@ connected to the two sockets, and two network cards (10 Gigabit Ethernet and
 InfiniBand) connected to one socket.
 
 In our parallel rendering system, a number of threads are used to drive a
-single process in the cluster: one main thread (main), one rendering thread for
-each GPU (draw) and one to finish the download operation during asynchronous
-downloads (read), one thread for receiving network data (recv), one auxilary
-command processing thread (cmd), and one thread for image transmission to other
-nodes (xmit). We have implemented automatic thread placement by extending and
-using the hwloc library in Equalizer using the following rules:
+single process in the cluster: the main thread (main), one rendering thread for
+each GPU (draw) and one thread to finish asynchronous downloads (read), one
+thread for receiving network data (recv), one command processing thread (cmd),
+and one thread for image transmission to other nodes (xmit). We have
+implemented automatic thread placement by extending and using the hwloc library
+in Equalizer using the following rules:
 
 \begin{compactitem}
 
@@ -834,7 +834,7 @@ and used from the one of the node threads.
 
 \begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/affinity.pdf}
- {\caption{\label{rNuma}Influence of Thread Affinity on Rendering Performance}}
+ {\caption{\label{rNuma}Thread Affinity on NUMA hardware}}
 \end{wrapfloat}
 
 We tested the influence of thread placement by explicitly placing the threads
@@ -1194,6 +1194,80 @@ Applications can switch each view between mono and stereo rendering at runtime,
 and run both monoscopic and stereoscopic views concurrently. This switch does
 potentially involve the start and stop of resources and processes for passive
 stereo or stereo-dependent task decompositions.
+
+\section{Tiled Display Walls}
+
+Simulations performed on today’s high performance supercomputers produce
+massive amounts of data, which are often too expensive to move to another
+system. Tiled display walls have proven to help understanding complex data due
+to their size, resolution and collaborative usage. Often the two systems are
+not located in the same facility due to power constraints or other factors.
+
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/tide}
+  {\caption{\label{fTide}Tiled Display Wall showing remote rendering of the Equalizer-based RTNeuron Application}}
+\end{wrapfloat}
+
+Software for driving tiled display walls has converged on the collaborative
+aspect of these installations. Sage, Sage 2, DisplayCluster and, to a certain
+extent, Omegalib, implement a multi-window enviroment around a shared
+framebuffer concept. DisplayCluster provides a dynamic, desktop-like windowing
+system with built-in media viewing capability that supports ultra
+high-resolution imagery and video content, as well as remote streaming allowing
+arbitrary applications from remote sources to be shown. \fig{fTide} shows our
+evolution of DisplayCluster called Tide~\cite{tide} running on a 24~megapixel,
+$4\times 3$ tiled display wall.
+
+Streaming to a Tide wall is implemented using the Deflect~\cite{deflect} client
+library. The application provides an image buffer to Deflect, which is
+compressed using libTurboJPEG, and sent asynchronously and in parallel by the
+stream library. Multiple stream sources from multiple processes can provide
+content to a single window on the wall, enabling parallel streaming for
+parallel rendering applications. The stream library also implements an event
+model, where an application can register itself to receive keyboard, mouse and
+window management events from the display wall.
+
+We integrated the stream library into Equalizer to send the framebuffer of each
+destination channel to DisplayCluster, using a direct FBO download (if
+possible) or a texture download. The compression and sending uses asynchronous
+transmission, pipelining compression and streaming with rendering. Received
+events from DisplayCluster are converted and forwarded to Equalizer’s event
+system. This integration allows all Equalizer applications to benefit from
+streaming without any code changes, it is configured simply by specifying the
+DisplayCluster hostname on all views to be streamed.
+
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/tideSetup}
+  {\caption{\label{fTideSetup}Remote Streaming Scenario}}
+\end{wrapfloat}
+
+We evaluated the overall system performance using the Blue Brain Project setup
+shown in \fig{fTideSetup}. The supercomputer and data is located in a remote
+supercomputing center in Lugano, whereas the tiled display wall is at the
+project's main office in Lausanne. Both locations are linked using a high-speed
+WAN link. The HPC installation has a colocated visualization cluster for remote
+rendering scenarios.
+
+\begin{benchmark}[ht]\center
+  \includegraphics[width=\columnwidth]{results/tide}
+  \caption{\label{rTide}Remote RTNeuron - Tide Parallel Rendering}
+\end{benchmark}
+
+\bench{rTide} shows the performance of streaming RTNeuron rendering from the
+Lugano cluster to the remote 24 Megapixel wall. We tested three resolutions
+($1920\times 1080$, $3840\times 2160$ and $7680\times 3240$), and four
+different tile sizes ($256^2$, $512^2$, $1024^2$ and $1920\times 1080$). Due to a
+configuration issue, the WAN link delivered only 1 GBit/s throughput during the
+benchmark test. RTNeuron is an Equalizer-based application used in the Blue
+Brain Project to analyse results from detailed simulations of neuronal
+simulations.
+
+The results show that interactive framerates are available even at the full
+native resolution, that a $512^2$ tile size is the best option found, and that
+95\% compression delivers the best performance in most cases. Based on the
+experiments we settled on a $512^2$ tile size and 100\% compression quality to
+avoid artifacts as the default settings in Equalizer.
+
 
 \section{Compositing}
 
