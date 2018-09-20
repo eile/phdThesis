@@ -26,7 +26,7 @@ a number of science and technology domains.
  \includegraphics[height=4.7cm]{images/slices}\hfil%
  \includegraphics[height=4.7cm]{images/cave2}\\%
  \includegraphics[height=4.95cm]{images/cave}\hfil%
- \includegraphics[height=4.95cm]{images/tide}%
+ \includegraphics[height=4.95cm]{images/tide.jpg}%
  \caption{\label{FIG_teaser}Large Data Visualization: Large data visualization of a
   brain simulation, molecular visualization in the Cave$^2$, exploration of EM
   stack reconstructions in a Cave, collaborative data analysis on a tiled
@@ -151,15 +151,24 @@ system or a distributed cluster. The early fundamental concepts have been laid
 down in \cite{MCEF:94} and \cite{Crockett:97} (\fig{fSorts}). A number of
 domain specific parallel rendering algorithms and special purpose hardware
 solutions have been proposed in the past, however, only few generic parallel
-rendering frameworks have been developed. We will focus on sort-last and
-sort-first rendering, since sort-middle architectures are only feasible in a
-hardware implementation due to the large amount of fragments processed and
-transferred in the sorting stage.
+rendering frameworks have been developed.
 
 \begin{figure}[h!t]\center
  \includegraphics[width=\textwidth]{images/all_sorts}%
  \caption{Sort-last, sort-middle and sort-first parallel rendering\label{fSorts}}
 \end{figure}
+
+Sort-last rendering decomposes the rendering task at the data level, that is,
+each resource renders a part of the data, and in the end partial fragments from
+each resource are composited to form a final results. Sort-middle rendering
+also decomposes the rendering at the data level, but collects and sorts the
+unshaded primitives before or after rasterization, and then performs the
+fragment shading on the sorted data. Sort-first rendering decomposes the
+rendering task in screen space, and the application needs either to be
+fill-rate bound or have efficient view frustum culling to scale the rendering
+performance. We will focus on sort-last and sort-first rendering, since
+sort-middle architectures are only feasible in a hardware implementation due to
+the large amount of data processed and transferred in the sorting stage.
 
 
 \subsection{Domain Specific solutions}
@@ -185,7 +194,7 @@ sort-first parallel rendering solutions.
 \subsection{Special Purpose Architectures}
 
 Historically, high-performance real-time rendering systems have relied on an
-integrated proprietary system architecture, such as the early SGI graphics supercomputers. These special purpose solutions have become a niche product as their
+integrated proprietary system architecture, such as the early SGI graphics supercomputers. Special purpose solutions have become a niche product as their
 graphics performance does not keep up with off-the-shelf workstation graphics
 hardware and scalability of clusters.
 
@@ -603,11 +612,6 @@ the load distribution, resulting in an improved framerate. We have observed a
 speedup of 15\% on a five-node rendering cluster when using a latency of one
 frame instead of no latency in a sort-first configuration.
 
-\begin{figure}[ht!]\center
- \includegraphics[width=\textwidth]{images/syncAsync}
- {\caption{\label{fSyncAsync}Synchronous and Asynchronous Execution}}
-\end{figure}
-
 \begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/cr}
  {\caption{\label{rCR}Driving a Tiled Display Wall}}
@@ -629,6 +633,11 @@ Chromium to send geometry and texture data once to the rendering nodes
 setup is favorable for Chromium because the display lists have to be
 transmitted only once over the network, and only simple display calls will be
 processed and distributed by Chromium for each rendered frame.
+
+\begin{figure}[h!t]\center
+ \includegraphics[width=\textwidth]{images/syncAsync}
+ {\caption{\label{fSyncAsync}Synchronous and Asynchronous Execution}}
+\end{figure}
 
 Chromium initially increases performance when adding nodes, but it quickly
 stagnates and even decreases when more nodes are added. In contrast, Equalizer
