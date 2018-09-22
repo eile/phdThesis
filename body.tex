@@ -650,7 +650,7 @@ parallel view frustum culling.
 
 \subsection{Programming Interface}
 
-Equalizer provides a framework to facilitate the development of distributed and
+Equalizer implements a framework to facilitate the development of distributed and
 multi-threaded parallel rendering applications. The programming interface is
 based on a set of C++ classes, modelled closely to the resource hierarchy of a
 graphics rendering system. The application subclasses these objects and
@@ -670,7 +670,9 @@ entities are responsible for different aspects of the runtime system: the
 application process to drive a rendering session, the server to control the
 parallel rendering configuration, render clients to execute the rendering
 tasks, and an administrative API to reconfigure the rendering session at
-runtime. All processes are communicate with each other through a common network library (Collage) and a client library implementing the Equalizer API.
+runtime. All processes are communicate with each other through a common network
+library (Collage) and a client library implementing the Equalizer API, as shown
+in \fig{fProcessing}.
 
 The administrative API can connect to a server, and modify some aspects of the
 resource hierarchy, e.g., to create new output channels. Its description is
@@ -716,11 +718,11 @@ different architecture or operating system from the main application, the
 underlying network library ensures type safety and endian ordering.
 
 In contrast to the application process, the rendering client main loop is
-completely controlled by the Equalizer framework based on application commands.
-A render client consists of the following threads: the node main thread, one
-network receive thread, one thread for each graphics card (GPU) to execute
-rendering tasks, and potentially one thread for asynchronous compositing per
-GPU. If a configuration also uses the application node for rendering, then the
+completely controlled by Equalizer, based on application commands. A render
+client consists of the following threads: the node main thread, one network
+receive thread, one thread for each graphics card (GPU) to execute rendering
+tasks, and potentially one thread for asynchronous compositing per GPU. If a
+configuration also uses the application node for rendering, then the
 application process uses one or more render threads, consistent with render
 client processes. The Equalizer client library implements the main loop, which
 receives network commands, processes them, and invokes the necessary task
@@ -771,16 +773,15 @@ application state.
 
 \subsubsection{Event Handling}
 
-Event handling routes events from the source (the window in the rendering
-thread) gradually to the the application main thread for consumption. At each
-step, events can be observed, transformed or dropped. Events are received from
-the operating system in the rendering thread, transformed there into a generic
-representation, and sent over the network to the application. The application
-processes them in the main loop and modifies its internal state accordingly.
-This follows the natural data flow for most windowing systems, and has natural
-semantics for thread safe event handling. For Qt, which centralises the event
-dispatch, Equalizer will reroute events to the render threads to ensure
-consistent behaviour.
+Event handling routes events from the source window in the rendering thread to
+the the application main thread for consumption. At each step, events can be
+observed, transformed or dropped. Events are received from the operating system
+in the rendering thread, transformed there into a generic representation, and
+sent to the application main thread. The application processes them in the main
+loop and modifies its internal state accordingly. This follows the natural data
+flow for most windowing systems, and has natural semantics for thread safe
+event handling. For Qt, Equalizer internally dispatches events from the process
+main thread to the render threads to ensure consistent behaviour.
 
 \subsection{NUMA Aware Thread Scheduling}
 
@@ -823,22 +824,21 @@ to the respective GPU.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/numaThreads.pdf}
- {\caption{\label{fNumaThreads}Thread Placement on a Dual-Socket NUMA Node}}
+ {\caption{\label{fNumaThreads}Thread Placement on a NUMA Node}}
 \end{wrapfloat}
 
-\fig{fNumaThreads} shows the thread placement for the example node used in
-\fig{fNumaNode}. The threads are placed to all cores of the respective
-processor, and the ratio of cores to threads varies with the used hardware and
-software configuration. Furthermore, many of the threads do not occupy a full
-core at runtime, especially the node threads which are mostly idle on a
-rendering client.
+\fig{fNumaThreads} shows the thread placement for the node used in
+\fig{fNumaNode}. Threads are bound to all cores of the respective socket, and
+the ratio of cores to threads varies with the used hardware and software
+configuration. Many of the threads do not occupy a full core at runtime,
+especially node threads are mostly idle on a rendering client.
 
-When using the default memory placement strategy, memory is allocated on the
-processor where it is accessed first (first-touch NUMA allocation). In
-Equalizer, all GPU-specific memory allocations are done by the render threads
-executing the rendering code, therefore placing the CPU-side buffers onto the
-same socket as the corresponding GPU. Similarly, network buffers are allocated
-and used from the one of the node threads.
+When using the default \textsf{first-touch} memory placement strategy, memory
+is allocated on the processor where it is accessed first. In Equalizer, all
+GPU-specific memory allocations are done by the render threads executing the
+rendering code, therefore placing the CPU-side buffers onto the same socket as
+the corresponding GPU. Similarly, network buffers are allocated and used from
+the one of the node threads.
 
 \begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/affinity.pdf}
@@ -846,14 +846,17 @@ and used from the one of the node threads.
 \end{wrapfloat}
 
 We tested the influence of thread placement by explicitly placing the threads
-either on the correct or incorrect processor. We found that this leads to a
-performance improvement of more than 6\% in real-world rendering loads, as
-shown in \bench{rNuma}. This benchmark uses the aforementioned cluster nodes, and
-renders polygonal data using sort-first scalable rendering. The exact
-experiment setup is described in \cite{EBAHMP:12}. While this is a relatively
-small influence, it becomes more important with higher frame rates as the
-relative draw time decreases, and the memory-intensive compositing step
-increases.
+either on the correct or incorrect processor. A low-level memory bandwidth test
+shows a $2\times$ performance difference between these two settings. We found
+that this leads to a performance improvement of more than 6\% in real-world
+rendering loads, as shown in \bench{rNuma}. This benchmark uses the
+aforementioned cluster nodes, and renders polygonal data using sort-first
+scalable rendering. The exact experiment setup is described in
+\cite{EBAHMP:12}. While this is a relatively small influence, it becomes more
+important with higher frame rates as the relative draw time decreases, and the
+memory-intensive compositing step increases. Thread placement is therefore one
+of the components to achieve scalability on larger visualization clusters with
+NUMA nodes.
 
 
 \section{Configuration}
@@ -1004,7 +1007,7 @@ activated. This configuration generates eight destination channels.
 
 \begin{figure}[t]\center
  \includegraphics[width=\textwidth]{images/wallLayout.jpg}
- {\caption{\label{fDisplay}Tiled Display Wall using a six-segment canvas with a two-view layout}}
+ {\caption{\label{fDisplay}Tiled Display Wall using one Canvas with six Segments and a Layout with two Views}}
 \end{figure}
 
 An \textsf{observer} represents an actor looking at multiple views. It has a

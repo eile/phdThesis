@@ -243,7 +243,7 @@ EqualizerServer}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{14.173257, 127.559}, {85.039398000000006, 28.346499999999999}}</string>
+			<string>{{14.173257, 113.38577173614502}, {85.039398000000006, 28.346499999999999}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FontInfo</key>
@@ -325,7 +325,7 @@ EqualizerServer}</string>
 				<key>Pad</key>
 				<real>3</real>
 				<key>Text</key>
-				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf200
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
@@ -338,7 +338,7 @@ EqualizerServer}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{28.346568999999999, 141.73199}, {85.039398000000006, 28.346499999999999}}</string>
+			<string>{{28.346568999999999, 127.55876173614502}, {85.039398000000006, 28.346499999999999}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FontInfo</key>
@@ -420,7 +420,7 @@ EqualizerServer}</string>
 				<key>Pad</key>
 				<real>3</real>
 				<key>Text</key>
-				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf200
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
@@ -433,7 +433,7 @@ EqualizerServer}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{42.519866999999998, 155.90601000000001}, {85.039398000000006, 28.346499999999999}}</string>
+			<string>{{42.519866999999998, 141.73278173614503}, {85.039398000000006, 28.346499999999999}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FontInfo</key>
@@ -515,7 +515,7 @@ EqualizerServer}</string>
 				<key>Pad</key>
 				<real>3</real>
 				<key>Text</key>
-				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf200
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
@@ -528,7 +528,7 @@ EqualizerServer}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{276.39338855243221, 94.330679767347334}, {46, 14}}</string>
+			<string>{{276.39325919839752, 79.309629535266907}, {46, 14}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -554,7 +554,7 @@ EqualizerServer}</string>
 				<integer>2</integer>
 			</dict>
 			<key>Rotation</key>
-			<real>270.14283491418792</real>
+			<real>270.22959164685585</real>
 			<key>Style</key>
 			<dict>
 				<key>shadow</key>
@@ -571,7 +571,7 @@ EqualizerServer}</string>
 			<key>Text</key>
 			<dict>
 				<key>Text</key>
-				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf400
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
@@ -596,10 +596,10 @@ EqualizerServer}</string>
 			<integer>1092</integer>
 			<key>Points</key>
 			<array>
-				<string>{283.46441944408525, 170.07872}</string>
-				<string>{297.63779826385496, 141.73229173614502}</string>
-				<string>{297.63785826385498, 57.097277263854977}</string>
-				<string>{283.68550230483385, 28.794916686258027}</string>
+				<string>{283.68803028196277, 141.28505189687664}</string>
+				<string>{297.63794409686932, 113.38585437469482}</string>
+				<string>{297.63800409686934, 57.097296430114739}</string>
+				<string>{283.46441944408525, 28.346450000000004}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -628,7 +628,7 @@ EqualizerServer}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{184.2519820949488, 127.55899999999998}, {99.212583182150823, 14.173279000000001}}</string>
+			<string>{{184.2519820949488, 99.212543472290022}, {99.212583182150823, 14.173279000000001}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FontInfo</key>
@@ -710,7 +710,7 @@ EqualizerServer}</string>
 				<key>Pad</key>
 				<real>3</real>
 				<key>Text</key>
-				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf400
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
@@ -723,7 +723,7 @@ EqualizerServer}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{184.25200542823109, 155.90547000000001}, {99.212414015854151, 28.346499999999999}}</string>
+			<string>{{184.25200542823109, 127.55901347229005}, {99.212414015854151, 28.346499999999999}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FontInfo</key>
@@ -805,7 +805,7 @@ EqualizerServer}</string>
 				<key>Pad</key>
 				<real>3</real>
 				<key>Text</key>
-				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf400
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
@@ -818,7 +818,7 @@ EqualizerServer}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{184.25200542823109, 141.73227}, {99.212414015854151, 14.173218}}</string>
+			<string>{{184.25200542823109, 113.38581347229004}, {99.212414015854151, 14.173218}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FontInfo</key>
@@ -898,7 +898,7 @@ EqualizerServer}</string>
 				<key>Pad</key>
 				<real>0.0</real>
 				<key>Text</key>
-				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf400
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
@@ -1007,7 +1007,7 @@ EqualizerAdmin}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{14.173054846984874, 99.212547110839836}, {85.039542999999995, 14.173279000000001}}</string>
+			<string>{{14.173054846984874, 85.039318846984855}, {85.039542999999995, 14.173279000000001}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FontInfo</key>
@@ -1082,7 +1082,7 @@ EqualizerAdmin}</string>
 				<key>Pad</key>
 				<real>3</real>
 				<key>Text</key>
-				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf200
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
@@ -1095,7 +1095,7 @@ EqualizerAdmin}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{14.17322826385498, 113.38583637469482}, {85.039398000000006, 14.173218}}</string>
+			<string>{{14.17322826385498, 99.212608110839838}, {85.039398000000006, 14.173218}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FontInfo</key>
@@ -1168,7 +1168,7 @@ EqualizerAdmin}</string>
 				<key>Pad</key>
 				<real>3</real>
 				<key>Text</key>
-				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf200
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
@@ -1468,7 +1468,7 @@ libEqualizer.so}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{124.93907154438159, 63.162567002485275}, {47, 14}}</string>
+			<string>{{124.93907224272681, 56.224375520713124}, {47, 14}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -1494,7 +1494,7 @@ libEqualizer.so}</string>
 				<integer>2</integer>
 			</dict>
 			<key>Rotation</key>
-			<real>310.57802317777919</real>
+			<real>315.75779061459923</real>
 			<key>Style</key>
 			<dict>
 				<key>shadow</key>
@@ -1511,7 +1511,7 @@ libEqualizer.so}</string>
 			<key>Text</key>
 			<dict>
 				<key>Text</key>
-				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf400
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
@@ -1537,7 +1537,7 @@ libEqualizer.so}</string>
 			<key>Points</key>
 			<array>
 				<string>{184.25200542823109, 28.346450000000004}</string>
-				<string>{111.09390106869868, 113.76776347015476}</string>
+				<string>{111.09390106869868, 99.594535206299781}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -1755,7 +1755,7 @@ libEqualizer.so}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{28.346456527709961, 127.5590646385498}, {85.039398000000006, 14.173217999999991}}</string>
+			<string>{{28.346456527709961, 113.38583637469482}, {85.039398000000006, 14.173217999999991}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FontInfo</key>
@@ -1837,7 +1837,7 @@ libEqualizer.so}</string>
 				<key>Pad</key>
 				<real>3</real>
 				<key>Text</key>
-				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf200
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
@@ -1851,7 +1851,7 @@ libEqualizer.so}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{42.519656374694812, 141.73229290240479}, {85.039398000000006, 14.173218}}</string>
+			<string>{{42.519656374694812, 127.55906463854981}, {85.039398000000006, 14.173218}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FontInfo</key>
@@ -1924,7 +1924,7 @@ libEqualizer.so}</string>
 				<key>Pad</key>
 				<real>3</real>
 				<key>Text</key>
-				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf200
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
@@ -1938,7 +1938,7 @@ libEqualizer.so}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{28.346283110839856, 113.38577537469482}, {85.039542999999995, 14.173279000000001}}</string>
+			<string>{{28.346283110839856, 99.212547110839836}, {85.039542999999995, 14.173279000000001}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FontInfo</key>
@@ -2020,7 +2020,7 @@ libEqualizer.so}</string>
 				<key>Pad</key>
 				<real>3</real>
 				<key>Text</key>
-				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf200
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
@@ -2033,7 +2033,7 @@ libEqualizer.so}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{42.519511374694837, 127.5590036385498}, {85.039542999999995, 14.173279000000001}}</string>
+			<string>{{42.519511374694837, 113.38577537469482}, {85.039542999999995, 14.173279000000001}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FontInfo</key>
@@ -2108,7 +2108,7 @@ libEqualizer.so}</string>
 				<key>Pad</key>
 				<real>3</real>
 				<key>Text</key>
-				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf200
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
@@ -2174,7 +2174,7 @@ libEqualizer.so}</string>
 	<key>MasterSheets</key>
 	<array/>
 	<key>ModificationDate</key>
-	<string>2018-07-14 09:59:11 +0000</string>
+	<string>2018-09-22 12:56:37 +0000</string>
 	<key>Modifier</key>
 	<string>Stefan Eilemann</string>
 	<key>NotesVisible</key>
