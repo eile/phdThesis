@@ -133,11 +133,14 @@ parallel rendering.
 \section{Parallel Rendering}
 
 Parallel rendering utilises multiple rendering units (GPUs), potentially on
-different computers, to generate images for one or more output displays. The
-goal is to increase the output resolution, rendering performance or rendering
-quality. Traditionally the focus has been on the first two goals, often in
-isolation to each other, e.g., algorithms and implementations for Cave systems
-tend to be different from scalable rendering for large data visualization.
+different computers, to generate images for one or more output displays.
+Scalable rendering is the subset of parallel rendering which uses multiple
+resources to accelerate the rendering of one or more outputs. The goal of
+parallel rendering is to increase the output resolution, rendering performance
+or rendering quality. Traditionally the focus has been on the first two goals,
+often in isolation to each other, e.g., algorithms and implementations for Cave
+systems tend to be different from scalable rendering for large data
+visualization.
 
 The main performance indicator for Large Data Interactive Rendering is the
 performance of the rendering algorithm, that is, the framerate with which the
@@ -262,7 +265,7 @@ streaming OpenGL commands through a network of nodes, often initiated from a
 single source. This has also been observed in \cite{SWNH:03}. The problem comes
 in when the OpenGL stream is large in size, due to not only containing OpenGL
 calls but also geometry and image data. Only if the geometry and textures are
-mostly static and can be kept in GPU memory on the graphics card, no
+mostly static and can be kept in GPU memory on the graphic card, no
 significant bottleneck can be expected as then the OpenGL stream is composed of
 a relatively small number of rendering instructions. However, as it is typical
 in real-world visualization applications, display and object settings are
@@ -720,7 +723,7 @@ underlying network library ensures type safety and endian ordering.
 In contrast to the application process, the rendering client main loop is
 completely controlled by Equalizer, based on application commands. A render
 client consists of the following threads: the node main thread, one network
-receive thread, one thread for each graphics card (GPU) to execute rendering
+receive thread, one thread for each graphic card (GPU) to execute rendering
 tasks, and potentially one thread for asynchronous compositing per GPU. If a
 configuration also uses the application node for rendering, then the
 application process uses one or more render threads, consistent with render
@@ -861,47 +864,50 @@ NUMA nodes.
 
 \section{Configuration}
 
-A configuration consists of the declaration of the rendering (hardware)
-resources, the physical and logical  description of the projection system, and
-the description on how the  aforementioned resources are used for parallel and
-scalable rendering.
+A configuration consists of the declaration of the rendering resources, the
+physical and logical description of the projection system, and the
+configuration on how the aforementioned resources are used for parallel and
+scalable rendering. A configuration is an instantiated class hierarchy in
+memory used by the server to compute rendering tasks, and has a serialized text
+file format to read and write configuration files.
 
 The rendering resources are represented in a hierarchical tree structure
 which corresponds to the physical and logical resources found in a 3D
-rendering environment: nodes (computers), pipes (graphics cards),
+rendering environment: nodes (computers), pipes (graphic cards),
 windows, and channels (2D rendering area in a window).
 
 Physical layouts of display systems are configured using canvases with
-segments, which represent 2D rendering areas composed of multiple
-displays or projectors. Logical layouts are applied to canvases and
-define views on a canvas. Observers observe multiple views and represent a head-tracked user in a visualization application.
+segments, which represent 2D rendering areas composed of multiple displays or
+projectors. Logical layouts are applied to canvases and define the views on a
+canvas. Observers observe multiple views and represent a head-tracked user in a
+visualization application.
 
 Scalable resource usage is configured using a compound tree, which is a
-hierarchical representation of the rendering decomposition and
+hierarchical representation of the rendering decomposition and result
 recomposition across the resources.
 
 \subsection{Rendering Resources}
 
-The first part of the configuration is a hierarchical structure of
-nodes-pipes-win\-dows-channels describing the rendering resources. The developer
-will use instances of these classes to implement application logic and manage
-data.
+The first part of the configuration is a hierarchical structure of node
+$\rightarrow$ pipes $\rightarrow$ win\-dows $\rightarrow$ channels describing
+the rendering resources. The developer will use instances of these classes to
+implement application logic and manage data.
 
 The \textsf{node} is the representation of a single computer in a cluster. One operating
 system process of the render client executable will be used for each node. Each
 configuration might also use an application node, in which case the application
-process is also used for rendering. All node-specific task methods are executed
-from the main thread.
+process is also used for rendering.
 
-The \textsf{pipe} is the abstraction of a graphics card (GPU), and uses an
+The \textsf{pipe} is the abstraction of a graphic card (GPU), and uses an
 operating system thread for rendering. All pipe, window and channel task methods
 are executed from the pipe thread. The pipe maintains the information about the
 GPU to be used by the windows for rendering.
 
 The \textsf{window} encapsulates a drawable and an OpenGL context. The drawable
-can be an on-screen window or an off-screen pbuffer or framebuffer object (FBO).
-Windows on the same pipe share their OpenGL rendering resources. They execute
-their rendering tasks sequentially on the pipe's execution thread.
+can be an on-screen window or an off-screen pbuffer or framebuffer object
+(FBO). Windows on the same pipe share their OpenGL rendering resources. They
+execute their rendering tasks sequentially on the pipe's execution thread, in
+the order they are defined in the configuration.
 
 The \textsf{channel} is the abstraction of an OpenGL viewport within its parent
 window. It is the entity executing the actual rendering. The channel's
@@ -915,19 +921,22 @@ Matrox TripleHead2Go.
 \subsection{Display Resources}
 
 Display resources are the second part of a configuration. They describe the
-physical display setup (canvases-segments), logical display (layouts-views) and
-head tracking of users within the visualization installation (observers).
+physical display setup (canvases $\rightarrow$ segments), logical display
+(layouts $\rightarrow$ views) and head tracking of users within the
+visualization installation (observers).
 
 A \textsf{canvas} represents one physical projection surface, e.g., a
-PowerWall, a curved screen or an immersive installation. Canvases provide a
-convenient way to configure projection surfaces. They group a set of segments
-(displays or projectors) into a 2D projection surface. A canvas uses layouts,
-which describe logical views. Typically, a desktop window uses one canvas, one
-segment, one layout and one view. One configuration might drive multiple
-canvases, for example a projection wall with an operator station. Planar
-surfaces, e.g., a display wall, configure a frustum for the respective canvas.
-For non-planar surfaces, the frustum will be configured on each display
-segment.
+PowerWall, a curved screen, an immersive installation, or a window on a
+workstation. Canvases provide a convenient way to configure projection
+surfaces. They group a set of segments (displays or projectors) into a 2D
+projection surface. A canvas uses layouts, which describe logical views.
+Typically, a desktop window uses one canvas, one segment, one layout and one
+view. One configuration might drive multiple canvases, for example a projection
+wall with an operator station. Planar surfaces, e.g., a display wall, configure
+a frustum for the respective canvas. For non-planar surfaces, the frustum will
+be configured on each display segment. The application rendering code has
+access to the 2D area being updated, for example to draw 2D menus on top of the
+3D rendering.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/frusta.pdf}
@@ -935,29 +944,32 @@ segment.
 \end{wrapfloat}
 
 The frustum can be specified as a wall or projection description in the global
-reference system shared with the head-tracking matrix of the application. A
-wall is completely defined by the bottom-left, bottom-right and top-left
+reference system, which is shared with the head-tracking matrix of the
+application. A wall is defined by the bottom-left, bottom-right and top-left
 coordinates relative to the origin. A projection is defined by the position and
 head-pitch-roll orientation of the projector, as well as the horizontal and
-vertical field-of-view and distance of the projection wall. \fig{fFrusta}
+vertical field-of-view and distance to the projection wall. \fig{fFrusta}
 illustrates the wall and projection frustum parameters. All size units are in
 meters.
 
 A canvas consists of one or more segments. A planar canvas typically has a
-frustum description, which is inherited by the segments. Non-planar frusta are
-configured using the segment frusta. These frusta typically describe a
-physically correct display setup for Virtual Reality installations.
+frustum description, which initializes the segment frustum based on the 2D area
+covered by it. Non-planar frusta are configured by overriding the default
+segment frusta. These frusta typically describe a physically correct display
+setup for Virtual Reality installations.
 
 A canvas has one or more layouts. One of the layouts is the active layout, that
 is, this set of views is currently used for rendering. It is possible to
 specify \textsf{OFF} as a layout, which deactivates the canvas. It is possible
-to use the same layout on different canvases.
+to use the same layout on different canvases, for example to mirror a display
+wall layout on a control station window.
 
 A \textsf{segment} represents one output channel of the canvas, e.g., a
 projector or a display. A segment has an output channel, which references the
 channel to which the display device is connected. To synchronise the video
-output, a canvas swap barrier or a swap barrier on each segment synchronise the
-respective window buffer swaps.
+output, a swap barrier is configured to synchronise the respective window
+buffer swaps. Swap barriers can use a network-based software synchronisation or
+hardware synchronisation based on NVidia's G-Sync hardware.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/canvas.pdf}
@@ -970,49 +982,50 @@ canvas. Segments might overlap (edge-blended projectors) or have gaps between
 each other (display walls, \fig{fCanvas}\footnote{Dataset courtesy of VolVis
 distribution of SUNY Stony Brook, NY, USA.}). The viewport is used to configure
 the segment's default frustum from the canvas frustum description, and to place
-layout views correctly.
+logical views correctly.
 
 A \textsf{layout} is the grouping of logical views. It is used by one or more
 canvases. For all given layout/canvas combinations, Equalizer creates
-destination channels when the configuration file is loaded. These destination
-channels are later referenced by compounds to configure scalable rendering.
+destination channels when the configuration is loaded. These destination
+channels may later be referenced by compounds to configure scalable rendering.
 Layouts can be switched at runtime by the application. Switching a layout will
 activate different destination channels for rendering.
 
 A \textsf{view} is a logical view of the application data, in the sense used by
-the Model-View-Controller pattern. It can be a scene, viewing mode, viewing
-position, or any other representation of the application's data. The view
-object is accessible to the application thread and all render threads
+the Model-View-Controller pattern. It can configure a scene, viewing mode,
+viewing position, or any other representation of the application's data. The
+view object is accessible to the application thread and all render threads
 contributing to its rendering. This allows the application to manage
-view-specific data by attaching it as a distributed object to the view.
+view-specific data by attaching it as a distributed object to the view, which
+will be synchronized from the application main thread to the render clients at the beginning of each frame.
 
-A view has a fractional viewport relative to its layout. A layout is often
-fully covered by its views, but this is not a requirement. Each view can have a
-frustum description. The view's frustum overrides frusta specified at the
-canvas or segment level. This is typically used for non-physically correct
-rendering, e.g., to compare two models side-by-side on a canvas. If the view
-does not specify a frustum, it will use the sub-frustum resulting from the
-covered area on the canvas.
+A view has a fractional viewport relative to its layout. A layout is normally
+fully covered by its views. Each view can have a frustum description. The
+view's logical frustum overrides physical frusta specified at the canvas or
+segment level. This is typically used for non-physically correct rendering,
+e.g., to compare two models side-by-side on a canvas. If the view does not
+specify a frustum, it will use the sub-frustum resulting from the covered area
+on the canvas. A view might reference an observer, in which case its frustum is
+head-tracked.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/layout.png}
  {\caption{\label{fLayout}Layout with four Views}}
 \end{wrapfloat}
 
-A view might have an observer, in which case its frustum is tracked by this
-observer. \fig{fLayout} shows an example layout using four views on a single
-segment. \fig{fDisplay} shows a real-world setup of a single canvas with six
-segments using underlap for the display bezels, with a two-view layout
-activated. This configuration generates eight destination channels.
+\fig{fLayout} shows an example layout using four views on a single segment.
+\fig{fDisplay} shows a real-world setup of a single canvas with six segments
+using underlap for the display bezels, with a two-view layout. This
+configuration generates eight destination channels.
 
 \begin{figure}[t]\center
  \includegraphics[width=\textwidth]{images/wallLayout.jpg}
  {\caption{\label{fDisplay}Tiled Display Wall using one Canvas with six Segments and a Layout with two Views}}
 \end{figure}
 
-An \textsf{observer} represents an actor looking at multiple views. It has a
-head matrix, defining its position and orientation within the world, an eye
-separation and focus distance parameters. Typically, a configuration has one
+An \textsf{observer} represents an actor looking at one or multiple views. It
+has a head matrix, defining its position and orientation within the world, eye
+offsets and focus distance parameters. Typically, a configuration has one
 observer. Configurations with multiple observers are used if multiple,
 head-tracked users are in the same configuration session, e.g., a non-tracked
 control host with two tracked head-mounted displays.
@@ -1021,25 +1034,25 @@ control host with two tracked head-mounted displays.
 
 Compound trees describe how multiple rendering resources are combined to
 produce the desired output, especially how multiple GPUs are aggregated to
-increase rendering performance. They are the core contribution enabling a
-flexible resource configuration. They are modified at runtime by
+increase rendering performance. They are one of the core innovations, enabling
+a flexible resource configuration. Compounds are modified at runtime by
 \textsf{equalizers} to implement dynamic behaviour, e.g., for load balancing.
 
 Compounds are a data structure to describe the execution of rendering tasks in
 the form of a tree. Each compound corresponds to some rendering tasks (clear,
 draw, assemble, readback) and references a channel from the resource
-description which executes the tasks in the given order. The allocation of
-channels on pipes and nodes determines which resources execute the task, and
-what can be executed in parallel. A compound may provide output frames from the
-readback task to others, and can request input frames from others for its own
-assembly task. Output frames are linked to input frames by name.
+description which executes the tasks. The allocation of channels on pipes and
+nodes determines which resources execute the task, and what can be executed in
+parallel. A compound may provide output frames from the readback task to
+others, and can request input frames from others for its own assembly task.
+Output frames are linked to input frames by name.
 
 Compound trees are a logical description of the rendering pipeline, and only
 reference the actual physical resources through their channels. This allows
-mapping a compound tree to different physical configurations by simply replacing
-the channel IDs. For example, one can test the functionality of a sort-last
-configuration by using channels of different windows on one local workstation
-before deploying it to multiple physical GPUs.
+mapping a compound tree to different physical configurations by simply
+replacing the channel references. For example, one can test the functionality
+of a sort-last configuration by using channels of different windows on a
+single-GPU workstation before deploying it to multiple physical GPUs.
 
 A simple leaf compound description for rendering a part of the data set, given
 by the data {\em range}, into a particular region of the {\em viewport} is
@@ -1111,12 +1124,15 @@ A more formal classification of compound entities is:
  \item [Root compound] is the top-level compound of a compound tree. It might
  also be a destination compound, or can be empty (not referencing a channel)
  when synchronising multiple destination channels.
- \item [Destination compound(s)] are the top-most compounds referencing a
- destination channel. This destination channel determines the rendering context
- for the whole subtree, that is, compounds and their channels lower in the
- hierarchy contribute to the rendering of the destination channel be executing
- part of the destination render context and providing output frames which will
- eventually be composited onto the destination channel.
+
+\item [Destination compound(s)] are the top-most compounds referencing a
+channel, which becomes the destination channel. This destination channel
+determines the rendering context for the whole subtree, that is, compounds and
+their channels lower in the hierarchy contribute to the rendering of the
+destination channel be executing part of the destination render context and
+providing output frames which will eventually be composited onto the
+destination channel.
+
  \item [Source compounds] are the leaf nodes in a compound tree. They typically
  use a different channel from the destination channel and configure scalability
  by overriding render context parameters. This decomposes the rendering of the
@@ -1125,7 +1141,7 @@ A more formal classification of compound entities is:
  \begin{compactdesc}
   \item[Decomposition] On each child compound the rendering task of that
   child can be limited by setting the \textsf{viewport}, \textsf{range},
-  \textsf{period} an  \textsf{phase}, \textsf{pixel}, \textsf{subpixel},
+  \textsf{period} and \textsf{phase}, \textsf{pixel}, \textsf{subpixel},
   \textsf{eye} or \textsf{zoom} as desired.
 
   \item[Compositing] Source compounds define an \textsf{output\_frame} to read
@@ -1157,7 +1173,7 @@ Head tracking is the minimal feature needed to support immersive installations.
 \textsf{Equalizer} does support multiple, independent tracked views through the
 observer abstraction. Built-in VRPN support enables the direct,
 application-transparent configuration of a VRPN tracker device. Alternatively,
-applications can provide a $4\times 4$ tracking matrix. Both CAVE-like tracking
+applications can provide a $4\times 4$ tracking matrix. Both CAVE-style tracking
 with fixed projection surfaces and HMD tracking with moving displays are
 implemented.
 
@@ -1185,19 +1201,18 @@ objects placed in front of the physical displays.
 \subsection{Asymmetric Eye Position}
 
 Traditional head tracking computes the left and right eye positions by using an
-interocular distance. However, human heads are not symmetric, and by measuring
-individual users a more precise frustum can be computed. \textsf{Equalizer}
-supports this through the optional configuration of individual 3D eye
-translations relative to the tracking matrix.
+interocular distance. However, since human heads are not symmetric, we support
+an optional configuration of individual, measured 3D eye translations relative
+to the tracking matrix.
 
 \subsection{Model Unit}
 
-This feature allows applications to specify a scaling factor between the model
-and the real world, to allow exploration of macroscopic or microscopic worlds
-in virtual reality. The unit is per view, allowing different scale factors
-within the same application. It scales both the specified projection surface as
-well as the eye position (and therefore eye separation) to achieve the
-necessary effect.
+This moduel unit allows applications to specify a scaling factor between the
+model and the real world, to allow exploration of macroscopic or microscopic
+worlds in virtual reality. The unit is per view, allowing different scale
+factors within the same application. It scales both the specified projection
+surface as well as the eye position (and therefore eye separation) to achieve
+the necessary effect.
 
 \subsection{Runtime Stereo Switch}
 
@@ -1233,19 +1248,19 @@ Streaming to a Tide wall is implemented using the Deflect~\cite{deflect} client
 library. The application provides an image buffer to Deflect, which is
 compressed using libjpeg-turbo, and sent asynchronously and in parallel by the
 stream library. Multiple stream sources from multiple processes can provide
-content to a single window on the wall, enabling parallel streaming for
-parallel rendering applications. The stream library also implements an event
-model, where an application can register itself to receive keyboard, mouse and
-window management events from the display wall.
+content to a single wall window, enabling parallel streaming for parallel
+rendering applications. Deflect also implements an event model, where the
+application registers to receive keyboard, mouse and window management events
+from the wall.
 
 We integrated the stream library into Equalizer to send the framebuffer of each
-destination channel to DisplayCluster, using a direct FBO download (if
-possible) or a texture download. The compression and sending uses asynchronous
-transmission, pipelining compression and streaming with rendering. Received
-events from DisplayCluster are converted and forwarded to Equalizer’s event
-system. This integration allows all Equalizer applications to benefit from
-streaming without any code changes, it is configured simply by specifying the
-DisplayCluster hostname on all views to be streamed.
+destination channel of a view to DisplayCluster, using a direct FBO download
+(if possible) or a texture download. We use asynchronous transmission to
+pipeline compression, streaming, and rendering. Received events from
+DisplayCluster are converted and forwarded to Equalizer’s event system. This
+integration allows all Equalizer applications to benefit from streaming without
+code changes, configured by specifying the DisplayCluster hostname on all views
+to be streamed.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/tideSetup}
@@ -1267,15 +1282,15 @@ rendering scenarios.
 \bench{rTide} shows the performance of streaming RTNeuron rendering from the
 Lugano cluster to the remote 24 Megapixel wall. We tested three resolutions
 ($1920\times 1080$, $3840\times 2160$ and $7680\times 3240$), and four
-different tile sizes ($256^2$, $512^2$, $1024^2$ and $1920\times 1080$). Due to a
-configuration issue, the WAN link delivered only 1 GBit/s throughput during the
-benchmark test. RTNeuron is an Equalizer-based application used in the Blue
+different tile sizes ($256^2$, $512^2$, $1024^2$ and $1920\times 1080$). Due to
+a configuration issue, the WAN link delivered only 1 GBit/s throughput during
+the benchmark. RTNeuron is an Equalizer-based application used in the Blue
 Brain Project to analyse results from detailed simulations of neuronal
 simulations.
 
 The results show that interactive frame rates are available even at the full
-native resolution, that a $512^2$ tile size is the best option found, and that
-95\% compression delivers the best performance in most cases. Based on the
+native resolution, that a $512^2$ tile size is the best option, and that 95\%
+compression delivers the best performance in most cases. Based on the
 experiments we settled on a $512^2$ tile size and 100\% compression quality to
 avoid artefacts as the default settings in Equalizer.
 
@@ -1304,6 +1319,11 @@ frames. These parameters are used in conjunction with compound tasks for
 parallel compositing, and advanced features such as monitoring and dynamic frame
 resolution introduced later.
 
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/directSend}
+  {\caption{\label{fDirectSend}Direct Send Compositing}}
+\end{wrapfloat}
+
 \fig{fDirectSend} shows the pixel flow of direct send compositing for a three-way
 sort-last decomposition, where the destination channel also contributes to the
 rendering. In the first step, each channel exchanges two color+depth tiles with
@@ -1315,11 +1335,6 @@ destination channel, whereas the third tile is already in place.
   \includegraphics[width=.618\textwidth]{images/directSendCompound}
   {\caption{\label{fDirectSendCmp}Direct Send Compound}}
 \end{wrapfloat}
-
-\begin{figure}[h!t]
-  \includegraphics[width=\textwidth]{images/directSend}
-  {\caption{\label{fDirectSend}Direct Send Compositing}}
-\end{figure}
 
 The corresponding compound tree is shown schematically in \fig{fDirectSendCmp}.
 Each of the three channels has a child compound to execute the rendering and
@@ -3382,12 +3397,15 @@ code for the Vulkan API. There remains a large amount of work to make parallel
 rendering more accessible. This may be addressed by simplified APIs on top of
 Equalizer, and through integrations with popular rendering toolkits. On the
 other hand, it should address operators and users of visualization systems
-through simplified configuration, monitoring and administration tools. In the
-same spirit, there is still a significant amount of research in automatically
-selecting the decomposition and recomposition algorithm as well as the
-resources to be used for a given application. This task becomes even more
-challenging when considering changes of the rendering load and algorithm during
-the runtime of an application.
+through simplified configuration, monitoring and administration tools.
+
+There is still a significant amount of research in automatically selecting the
+decomposition and recomposition algorithm as well as the resources to be used
+for a given application. This task becomes even more challenging when
+considering changes of the rendering load and algorithm during the runtime of
+an application. Furthermore, implementing load balancing to the compositing
+task is an area largely unexplored, in particular in combination with the state
+of the art optimisations.
 
 We foresee an increasing importance of interactive raytracing, which has its
 own set of challenges for parallel rendering. In particular for large data
