@@ -1519,13 +1519,13 @@ Sort-middle rendering is still largely confined to hardware implementations due
 to its high communication cost of sorting and distributing fragments to
 processing units.
 
-In this chapter, we present a wide set of new parallelization schemes which
-break out of this standard classification. For each mode, we present its
-algorithm and implementation, potential impact on the application code, as well
-as its strengths and weaknesses. Due to the flexible architecture of our
-parallel rendering system, these modes are largely usable with any Equalizer
-application and can be combined with all other modes. Equalizer also supports
-sort-first and sort-last rendering, not further mentioned in this chapter.
+In this chapter, we present new parallelization variants of sort-first
+rendering, and other decompositions which break out of this standard
+classification. For each mode, we introduce its algorithm and implementation,
+potential impact on the application code, as well as its strengths and
+weaknesses. Due to the flexible architecture of our parallel rendering system,
+these modes are largely usable with any Equalizer application and can be
+combined with all other modes.
 
 Most of these rendering modes are similar to sort-first rendering, in that they
 decompose the final view spatially or temporally, while computing complete
@@ -1539,8 +1539,8 @@ This wide set of decomposition modes for scalable rendering, embedded in our
 generalised compound structure, enables applications and researchers to
 decompose the rendering task in, as far as we know, any way possible for a
 rendering pipeline. To our knowledge no other implementation provides this
-breath and flexibility, and many of these algorithms appear for the first time
-in Equalizer.
+breath and flexibility, and some algorithms appear for the first time in
+Equalizer.
 
 \section{Sort-First}
 
@@ -1555,18 +1555,19 @@ use case.
 
 \subsection{Stereo}
 
-\begin{wrapfloat}{figure}{O}{.618\textwidth}
- \includegraphics[width=.618\textwidth]{images/Stereo}
- {\caption{\label{fStereo}Anaglyphic Stereo Compound}}
-\end{wrapfloat}
-
 Stereo, or eye decomposition, is a specialised version of sort-first rendering.
 Two GPUs get assigned each one of the eye passes during stereo rendering. For
 passive stereo, there is no compositing step needed, whereas for active and
 anaglyphic stereo the frame buffer for one eye pass has to be copied to the
 destination channel. Due to the strong similarity between both eye passes, this
-mode provides close to perfect load balance. \fig{fStereo} shows an anaglyphic
-stereo compound.
+mode provides close to perfect load balance.
+
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{images/Stereo}
+ {\caption{\label{fStereo}Anaglyphic Stereo Compound}}
+\end{wrapfloat}
+
+\fig{fStereo} shows an ana-gly-phic stereo compound.
 
 While many implementations provide passive or active stereo rendering and
 sometimes decomposition using two GPUs, our implementation within our flexible
@@ -1578,18 +1579,28 @@ scalable rendering mode. One can also easily set up an application with mixed
 rendering, e.g., to render a monoscopic view on a control workstation while
 rendering stereoscopic on a larger immersive installation.
 
+Stereo compounds are configured by restricting each source to a single eye
+pass. Typically, one of the channels also configures the \textsf{cyclop} eye
+pass, which gets activated when the view is switched to monoscopic rendering.
+
+
 \subsection{Pixel}
+
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{images/Pixel}
+ {\caption{\label{fPixel}Pixel Compound}}
+\end{wrapfloat}
 
 Pixel compounds (\fig{fPixel}) decompose the destination channel by
 interleaving pixels in image space. They are a variant of sort-first rendering
 well suited for fill-limited applications which are not geometry bound, for
 example direct volume rendering. Source channels cannot reduce geometry load
 through view frustum culling, since each source channel has almost the same
-frustum. However, the fragment load on all source channels is reduced linearly
-and well load balanced due to the interleaved distribution of pixels. This
-functionality is transparent to \textsf{Equalizer} applications, and the
-default compositing uses the stencil buffer to blit pixels onto the destination
-channel.
+frustum as the destination channel. However, the fragment load on all source
+channels is reduced linearly and well load balanced due to the interleaved
+distribution of pixels. This functionality is transparent to \textsf{Equalizer}
+applications, and the default compositing uses the stencil buffer to blit
+pixels onto the destination channel.
 
 Pixel compounds are configured by restricting each source compound with a pixel
 kernel. The kernel describes the size of the decomposition in 2D space, and the
@@ -1597,26 +1608,15 @@ kernel. The kernel describes the size of the decomposition in 2D space, and the
 enabling features by generalising the underlying algorithm rather then
 hardcoding them.
 
-\begin{figure}[t]\center
-  \subfigure[]{
- \includegraphics[width=.31\textwidth]{images/Pixel}
-    \label{fPixel}
-  }\hfil
-  \subfigure[]{
-    \includegraphics[width=.31\textwidth]{images/Subpixel}
-    \label{fSubpixel}
-  }\hfil
-  \subfigure[]{
-    \includegraphics[width=.31\textwidth]{images/tile}
-    \label{fTiles}
-  }
-  \caption{Pixel, Subpixel and Tile Compounds.}
-\end{figure}
-
 \subsection{Subpixel}
 
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{images/Subpixel}
+ {\caption{\label{fSubpixel}Subpixel Compound}}
+\end{wrapfloat}
+
 Subpixel compounds (\fig{fSubpixel}) are similar to pixel compounds, but they
-decompose the work for a single pixel, for example with Monte-Carlo ray
+decompose the work for a single pixel, for example during Monte-Carlo ray
 tracing, FSAA or depth of field rendering. The default compositing algorithm
 uses accumulation and averaging of all computed fragments for a pixel. Like
 Pixel compounds, this mode is naturally load balanced on the fragment
@@ -1626,24 +1626,42 @@ which render multiple samples per pixel. Applications needs to adapt their
 rendering code, for example to jitter or tilt the frustum based on the subpixel
 executed in the current rendering pass.
 
-Since subpixel compounds increase the amount of pixels to be composited
-linearly with the number of source channels, they can use the same parallel
-compositing algorithms as sort-last rendering. Since the compositing logic is
-decoupled from the task decomposition, it reuses the same code as sort-last
-parallel compositing except for the combination step on each GPU.
+Subpixel compounds increase the amount of pixels to be composited linearly with
+the number of source channels, they can use the same parallel compositing
+algorithms as sort-last rendering. Since the compositing logic is decoupled
+from the task decomposition, it reuses the same code as sort-last parallel
+compositing except for the combination step on each GPU.
+
+Subpixel compounds are configured on each source compound with a subpixel
+kernel. This kernel describes the number of contributing sources, and the
+offset for each source in this range.
 
 \subsection{Tiles \label{sTile}}
 
-Tile (\fig{fTiles}) decompositions are a variant of sort-first rendering. They
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{images/tile}
+ {\caption{\label{fTile}Tile Compound}}
+\end{wrapfloat}
+
+Tile (\fig{fTile}) decompositions are a variant of sort-first rendering. They
 decompose the scene into a predefined set of fixed-size image tiles. These
 tasks, or work packages, are queued and processed by all source channels by
 polling a server-central queue. Prefetching ensures that the task communication
-overlaps with rendering. As shown in~\cite{SPEP:16}, work packages can provide
-better performance due to being implicitly load balanced, as long as there is
-an insignificant overhead for the render task setup. This mode is transparent
-to \textsf{Equalizer} applications. We have used a tile compound to scale an
-interactive ray tracing application to hundreds of rendering nodes using RTT
-Deltagen.
+overlaps with rendering.
+
+As shown in~\cite{SPEP:16}, work packages can provide better performance due to
+being implicitly load balanced, as long as there is an insignificant overhead
+for the render task setup. This mode is transparent to \textsf{Equalizer}
+applications. We have used a tile compound to scale an interactive ray tracing
+application to hundreds of rendering nodes using RTT Deltagen.
+
+Tile compounds are configured using output and input queues. The destination
+channel has an output queue, which configures the tile size and represents the
+server-side end of the task queue. Each source compound has an input queue of
+the same name, which represents the client-side queue end polling tasks from
+the server. Output frames from tile sources are automatically configured with
+the current tile offset and size for correct assembly on the destination
+channel.
 
 \section{Sort-Last}
 
@@ -1895,6 +1913,43 @@ optimization (\sref{sEarlyAss}), direct send can handle imbalances between
 nodes better since a late channel has a smaller penalty for the overall
 execution time.
 
+\clearpage
+\section{Streaming Sort-Last Compositing}
+
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+\includegraphics[width=.618\textwidth]{images/DBStream}
+{\caption{\label{fDBStream}Streaming Sort-Last Compound}}
+\end{wrapfloat}
+
+Due to the asynchronous architecture of our framework, streaming sort-last
+compositing becomes a viable alternative to more involved parallel compositing
+algorithms in smaller sort-last configurations.
+
+
+\fig{fDBStream} shows a streaming sort-last compound. The output of one source
+channel is copied to the next channel in the chain, which then composites it on
+top of his own rendering, and streams the combined frame on to the next source.
+At the end of the chain, the destination channel completes the input frame by
+compositing it with his rendering.
+
+\begin{wrapfloat}{figure}{I}{.382\textwidth}
+\includegraphics[width=.382\textwidth]{images/DBStreamFlow}
+{\caption{\label{fDBStreamFlow}Streaming Sort-Last Data Flow}}
+\end{wrapfloat}
+
+Equalizer only synchronises the input to the output frames, therefore this
+configuration creates a pipelined configuration, where the compositing
+operations form the ``critical path'', that is, each channel has his draw pass
+delayed by the time taken by all preceding compositing operations, as shown in
+\fig{fDBStreamFlow}. This pipelining emerges naturally due to the
+synchronisation points introduced by the compositing configuration.
+
+The total system latency for sort-last stream compounds is $t_{draw} + (n -
+1)\times (t_{readback} + t_{assemble})$. Note that the readback and assemble
+times are usually an order of magnitude smaller than the render time, which
+makes this compound attractive for small-to-medium sized decompositions since
+it has minimal compositing overhead and less synchronization compared to
+parallel compositing algorithms.
 
 \section{Region of Interest}
 
