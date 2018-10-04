@@ -2680,17 +2680,17 @@ resource usage by not needlessly rendering the same view multiple times. It reus
 
 \section{Overview}
 
-Most research in parallel rendering ignores the problem of managing application
-state in a distributed rendering session. For basic parallel rendering research
-this problem is trivially to solve, whereas in real-world applications it often
-is one of the major challenges for using a distributed rendering cluster.
-Researching and improving the system behaviour of non-trivial applications is
-however critical for meaningful parallel rendering research, and therefore
-providing a distributed network library is a key component of a parallel
-rendering system.
+Most research in parallel rendering does not look into the problem of managing
+application state in a distributed rendering session. For basic parallel
+rendering research this problem is trivially to solve, whereas in real-world
+applications it often is one of the major challenges for using a distributed
+rendering cluster. Researching and improving the system behaviour of
+non-trivial applications is however critical for meaningful parallel rendering
+research, and therefore providing a distributed network library is a key
+component of a parallel rendering system.
 
-For this reason, we have spend a significant effort in researching, designing
-and implementing a distributed execution layer which is used by Equalizer and
+For this reason, we have spend significant effort in researching, designing and
+implementing a distributed execution layer which is used by Equalizer and
 applications built on Equalizer. This {\em Collage} network library is an
 independent open source project. In the following sections we highlight core
 features and show how they are different from other distribution mechanisms,
@@ -2698,8 +2698,8 @@ e.g., the MPI library.
 
 The Collage network library was conceived with the requirements of a dynamic
 parallel rendering system in mind. Some of the features implemented by Collage
-came about later, and are often layered on top of the basic primitives. The core
-requirements were:
+emerged with the growing complexity of Equalizer and its applications, and are
+often layered on top of the basic primitives. The core requirements are:
 
 \begin{compactdesc}
 
@@ -2723,16 +2723,18 @@ by both sides of a node pair (e.g. during parallel compositing), which requires
 a robust handshake protocol during connection establishment. For larger cluster
 installations, a fully connected peer-to-peer network would be suboptimal, for
 example on Windows operating systems there is a latency penalty once more than
-64 connections are needed due to low-level implementation details.
+64 connections are needed due to low-level implementation details. This feature
+also allowed us to implement runtime configuration switches involving a
+changing set of rendering resources.
 
 \item[Transport layer abstraction:] The actual network protocol is abstracted
 by an API defining byte-oriented stream semantics. While this choice of
 abstraction makes it harder for RDMA-based protocols to deliver full
 performance, it has proven useful in supporting a large set of transports, from
 standard Ethernet sockets, SDP for InfiniBand, native Verbs for Infiniband, UDT
-to even a fully-featured multicast-over-UDP implementation. In particular the
-ease of integration of multicast transport is strong evidence for the
-usefulness of this abstraction.
+to a fully-featured reliable multicast implementation. In particular the ease
+of integration of multicast transport is strong evidence for the usefulness of
+this abstraction.
 
 \item[Convenient to use for existing applications:] The history and code
 structure of visualization applications is often very different from other
@@ -2740,8 +2742,7 @@ distributed applications such as simulation codes. They have been developed for
 years for desktop systems, often are single-threaded and have data models and
 object hierarchies built for their domain-specific problems and algorithms. The
 network library needs to provide primitives which match this reality as closely
-as possible by providing a modern, object-oriented C++ API for data
-distribution.
+as possible by providing a modern, object-oriented C++ API.
 
 \end{compactdesc}
 
@@ -2802,15 +2803,16 @@ The connection set is used to select one connection which requires some action.
 This can be a connection request on a listening connection, pending data on a
 connected connection or the notification of a disconnect.
 
-The connection and connection set can be used by applications to implement other
-network-related functionality, e.g., to communicate with a sound server on a
-different machine. A \textsf{LocalNode} has a connection set and uses this to
-manage connections with other nodes.
+The connection and connection set can be used by applications to implement
+other network-related functionality, e.g., to communicate with a sound server
+on a different machine. They do not require a particular wire protocol. A
+\textsf{LocalNode} has a connection set and uses this to manage connections
+with other nodes.
 
 \subsection{Data Streams}
 
 Data streams implement serialization and buffering on top of connections. They
-use output and input stream operators (\textless\textless and
+use output and input stream operators (\textless\textless\ and
 \textgreater\textgreater) with function overloads to provide serialization for
 all common data types. The input stream will perform byte swapping if the
 endianness differs between the sending and receiving node. Applications can
@@ -2891,290 +2893,7 @@ bound function.
   {\caption{\label{fNetNode}Communication between two Nodes}}
 \end{figure}
 
-\section{Distributed, Versioned Objects}
-
-Adapting an existing application for parallel rendering requires the
-synchronisation of application data across the processes in the parallel
-rendering setup. Existing parallel rendering frameworks address this often
-poorly, at best they rely on MPI to distribute data. Real-world, interactive
-visualization applications are typically written in C++ and have complex data
-models and class hierarchies to represent their application state. As outlined
-in \cite{EMP:09}, the parallel rendering code in an \textsf{Equalizer}
-application only needs access to the data needed for rendering, as all
-application logic is centralised in the application main thread. We have
-encountered two main approaches to address this distribution: Using a shared
-filesystem for static data, or using data distribution for static and dynamic
-data. Distributed objects are not required to build \textsf{Equalizer}
-applications. While most developers choose to use this abstraction for
-convenience, we have seen applications using other means for data distribution,
-e.g., MPI.
-
-Distributed objects in \textsf{Collage} provide powerful, object-oriented data
-distribution for C++ objects. They facilitate the implementation of data
-distribution in a cluster environment. Distributed objects are created by
-subclassing from \textsf{co::Serializable} or \textsf{co::Object}. The
-application programmer implements serialization and deserialisation. Distributed
-objects can be static (immutable) or dynamic. Objects have a universally unique
-identifier (UUID) as cluster-wide address. A master-slave model is used to
-establish mapping and data synchronisation across processes. Typically, the
-application main loop registers a master instance and communicates the UUID to
-the render clients, which map their instance to the given identifier. The
-following object types are available:
-
-\begin{compactdesc}
-\item[Static] The object is not versioned nor buffered. The instance data is
-  serialised whenever a new slave instance is mapped. No additional data is
-  stored.
-\item[Unbuffered] The object is versioned and unbuffered. No data is stored, and
-  no previous versions can be mapped.
-\item[Instance] The object is versioned and buffered. The instance and delta
-  data are identical; that is, only instance data is serialised. Previous
-  instance data is saved to be able to map old versions.
-\item[Delta] The object is versioned and buffered. The delta data is typically
-  smaller than the instance data. The delta data is transmitted to slave
-  instances for synchronisation. Previous instance and delta data is saved to be
-  able to map and sync old versions.
-\end{compactdesc}
-
-Instance and delta objects have a memory overhead on the master instance to
-store past data. The number of old versions retained is configurable per
-object. For Equalizer applications, this overhead typically occurs on the
-application node holding the master instances, and is configured based on the
-configuration's latency. When using unbuffered objects, applications only
-observe inconsistent state during the initial mapping, when a too recent
-version is used by a render client. The push-based commit-sync logic eventually
-brings the object into a consistent state with respect to the rendered frame.
-
-Serialization is facilitated using output or input streams, which abstract the
-data transmission and are used like a \textsf{std::stream}. The data streams
-implement efficient buffering and compression, and automatically select the best
-connection for data transport. Custom data type serialisers can be implemented
-by providing the appropriate serialization functions. No pointers should be
-directly transmitted through the data streams. For pointers, the corresponding
-object is typically a distributed object as well, and its UUID and version are
-transmitted in place of a pointer.
-
-Dynamic objects are versioned, and on \textsf{commit} the delta data from the
-previous version is sent, if available using multicast, to all mapped slave
-instances. The data is queued on the remote node, and is applied when the
-application calls \textsf{sync} to synchronise the object to a new version. The
-\textsf{sync} method might block if a version has not yet been committed or is
-still in transmission. All versioned objects have the following characteristics:
-
-\begin{compactitem}
-
-\item The master instance of the object generates new versions for all slaves.
-These versions are continuous. It is possible to commit on slave instances, but
-special care has to be taken to handle possible conflicts during concurrent
-commits from multiple slave instances.
-
-\item Slave instance versions can only be advanced; that is,
-\textsf{sync(version)} with a version older than the current version will fail.
-
-\item Newly mapped slave instances are mapped to the oldest available version
-by default, or to the version specified when calling \textsf{mapObject}.
-
-\end{compactitem}
-
-Blocking commits allow to limit the number of outstanding, queued versions on
-the slave nodes. A token-based protocol will block the commit on the master
-instance if too many unsynchronised versions exist. This is useful to limit the
-amount of memory consumed by slave instance, and too prohibit run-away
-conditions of the master instance.
-
-\begin{benchmark}[h!t]\center
-\includegraphics[height=.245\textwidth]{images/benchmark_eqPly2}\hfil
-\includegraphics[height=.245\textwidth]{images/spikes512}\hfil
-\includegraphics[height=.245\textwidth]{images/beechnut}\vspace{1em}\\
-  \includegraphics[width=\textwidth]{results/mapping}
-  \caption{\label{rMapping}Object Mapping and synchronisation}
-\end{benchmark}
-
-\bench{rMapping} analyses the performance how data distribution and
-synchronisation performs in real-world applications. We extracted the existing
-data distribution code from a mesh renderer (eqPly) and a volume renderer
-(Livre) into a benchmark application to measure the time to initially map all
-the objects on the render client nodes, and to perform a commit-sync of the
-full data set after mapping has been established. All figures observe a
-noticeable measurement jitter due to other services running on the shared
-cluster during benchmarking. The details of the benchmark algorithm can be
-found in \cite{ESP:18}.
-
-We used three different data sets, and ran the benchmark on up to eight
-physical nodes, that is, after eight processes nodes start to run two processes
-per node, which share CPU, memory and network interface bandwidth but do run on
-separate GPUs. Object mapping is measured using the following settings:
-\textsf{none} distributes the raw, uncompressed, and unbuffered data,
-\textsf{compression} uses the Snappy compressor to compress and distribute
-unbuffered data, \textsf{buffered} reuses uncompressed, serialised data for
-mappings from multiple nodes, and \textsf{compression buffered} reuses the
-compressed buffer for multiple nodes.
-
-Unbuffered operations need to reserialise, and potentially recompress, the
-master object data for each slave node. Each slave instance needs to
-deserialise and decompress the data. During data synchronisation, the master
-commits the object data to all mapped slave instances simultaneously. This is a
-“push” operation, whereas the mapping is a slave-triggered “pull” operation.
-During commit, the buffers only have to be serialised and compressed once, and
-can then be sent directly to all mapped slave nodes. Slave nodes queue this
-data and consume it during synchronisation. In contrast, object mapping needs
-to wait for each slave node to request the mapping, and then may need to
-reserialise and compress the object data. We test the time to commit and sync
-the data using different compression engines discussed under optimisations
-below.
-
-The David statue at 2 mm resolution is organised in a k-d tree for rendering.
-Each node is a separate distributed object, which has two child node objects. A
-total of 1023 objects are distributed and synchronised. Due to limited
-compressibility of the data, the results are relatively similar. Compressing
-the data repeatedly for each client leads to decreased performance, since the
-compression overhead cannot be amortised by the decreased transmission time.
-Buffering data slightly improves performance by reducing the CPU and copy
-overhead. Combining compression and buffering leads to the best performance,
-although only by about 10\%. During synchronisation, data is pushed from the
-master process to all mapped slaves using a unicast connection to each slave.
-While the results are relatively close to each other, we can still observe how
-the tradeoff between compression ratio and speed influences overall
-performance. Better, slower compression algorithms lead to improved overall
-performance when amortised over many send operations.
-
-The volume data sets are distributed in a single object, serialising the raw
-volume buffer. The Spike volume data set has a significant compression ratio,
-which is reflected by the results. Compression for this data is beneficial for
-transmitting data over a 10 Gb/s link, even for a single slave process.
-Buffering has little benefit since the serialization of volume data is trivial.
-Buffered compression makes a significant difference, since the compression cost
-can be amortised over many nodes, reaching raw data transmission rates of 3.7
-GB/s with the default Snappy compressor and at best 4.4 GB/s with ZStandard at
-level 1. The distribution of the beechnut data set also behaves as expected.
-Due to the larger object size, uncompressed transmission is slightly faster
-compared to the Spike data set at 700MB/s, and compressed transmission does not
-improve the mapping performance, likely due to increased memory pressure caused
-by the data size. The comparison of the various compression engines is
-consistent with the benchmarks in \bench{rCompressorDetail}; RLE, Snappy and the
-LZ variants are very close to each other, and ZSTD1 can provide better
-performance after four nodes due to the better compression ratio.
-
-\subsubsection{Serializable}
-
-\label{sec:Serializable}The \textsf{Collage} Serializable implements one
-convenient usage pattern for object data distribution. The
-\textsf{co::Serializable} data distribution is based on the concept of dirty
-bits, allowing inheritance with data distribution. Dirty bits form a 64-bit
-mask which marks the parts of the object to be distributed during the next
-commit. Setters of the class mark the appropriate dirty bit.
-
-For serialization, the application developer implements \textsf{serialize} or
-\textsf{deserialize}, which are called with the bit mask specifying which data
-has to be transmitted or received. During a commit or sync, the current dirty
-bits are given, whereas during object mapping all dirty bits are passed to the
-serialization methods. A commit will clear the dirty mask after serialization.
-
-\subsubsection{Optimizations}
-
-The API presented in the previous section provides sufficient abstraction to
-implement various optimizations for faster mapping and synchronisation of data:
-compression, chunking, caching, preloading and multicast.
-
-\paragraph{Compression}
-The most obvious one is compression. Recently, many new compression algorithms
-have been developed which exploit modern CPU architectures and deliver
-compression rates well above one gigabyte per second. \textsf{Collage} uses the
-Pression library~\cite{pression}, which provides a unified interface for a
-number of compression libraries, such as FastLZ~\cite{jesperfast},
-Snappy~\cite{snappy} and ZStandard~\cite{zstd}. It also contains a custom,
-virtually zero-cost RLE compressor. Pression parallelises the compression and
-decompression using data decomposition. This compression is generic and
-lossless, implemented transparently for the application. Applications can also
-use data-specific compression.
-
-\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
-\includegraphics[width=.618\textwidth]{results/compressor.pdf}
-  {\caption{\label{rCompress}Compression Performance for Binary Data}}
-\end{wrapfloat}
-
-\bench{rCompress} shows the compression ratio and speed for generic binary data from \cite{ESP:18}. While the structure of the transmitted data varies with each application, this micro-bench\-mark gives a reasonable estimation of the expected performance. In our context of interactive distributed rendering applications, it is important to use the right tradeoff between spending time and resources for data compression, and the gained network transmission time due data reduction.
-
-On modern CPUs (the benchmark was executed on a 12-core node), modern
-compression libraries provide performance benefits even on fast interconnects
-such as 10 Gb/s Ethernet. In particular, the modern Snappy and ZStandard
-libraries deliver impressive performance.
-
-\begin{benchmark}[h!t]\center
-  \includegraphics[width=\textwidth]{results/compressorDetail}
-  \caption{\label{rCompressorDetail}Data Compression for the PLY Data and Raw Volumes from \bench{rMapping}}
-\end{benchmark}
-
-In \cite{ESP:18}, we also evaluated the compression performance for more
-concrete application data. The results are shown in \bench{rCompressorDetail}.
-Polygonal data is difficult to compress with a generic lossless compressor, due
-to the floating point format used for the vertices. A data-specific compressor
-aware of the data semantics can provide much better results. Volume data on the
-other hand has shown to be well compressible, with typical $2:1$ compression
-ratios at interactive speeds.
-
-\paragraph{Chunking}
-
-The data streaming interface implements chunking, which pipelines the
-serialization code with the network transmission. After a configurable number of
-bytes has been serialised to the internal buffer, it is transmitted and
-serialization continues. This is used both for the initial mapping data and for
-commit data.
-
-\paragraph{Caching and Preloading}
-
-Caching retains instance data of objects in a client-side cache, and reuses
-this data to accelerate mapping of objects. The instance cache is either filled
-by ``snooping'' on multicast transmissions or by an explicit preloading when
-the master objects are registered. The preloading sends instance data of
-recently registered master objects to all connected nodes during idle time of
-the corresponding node. These nodes simply enter the received data to their
-cache. Preloading uses multicast when available.
-
-\paragraph{Multicast}
-
-Due to the master-slave nature of data distribution, multicast is used to
-optimise the transmission time of data. If the contributing nodes share a
-multicast session, and more than one slave instance is mapped, \textsf{Collage}
-automatically uses the multicast connection to send the new version
-information.
-
-\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
-  \includegraphics[width=.618\textwidth]{results/network}
-  {\caption{\label{rNetwork}synchronisation Performance over different Network Protocols}}
-\end{wrapfloat}
-
-\bench{rNetwork} compares data distribution speed using different network
-protocols. In this benchmark, data synchronisation time of the Spike volume
-data set is measured. Buffering is enabled, and compression is disabled to
-focus on the raw network performance. For the benchmark, eight physical nodes
-are used, that is, after eight processes two client processes will run on some
-nodes, sharing CPU and network resources.
-
-TCP over the faster InfiniBand link outperforms the cheaper ten gigabit
-ethernet link by more than a factor of two. Unexpectedly, the native RDMA
-connection performs worse, even though it outperforms IPoIB in a simple
-peer-to-peer connection benchmark. This needs further investigation, but we
-suspect the abstraction of a byte stream connection chosen by Collage is not
-well suited for remote DMA semantics; that is, one needs to design the network
-API around zero-copy semantics with managed memory for modern high-speed
-transports. Both Infiniband connections show significant measurement jitter.
-
-RSP multicast performs as expected. Collage starts using multicast to commit
-new object versions when two or more clients are mapped, since the transmission
-to a single client is faster using unicast. RSP consistently outperforms
-unicast on the same physical interface and shows good scaling behaviour (2.5
-times slower on 16 vs 2 clients on ethernet, 1.8 times slower on InfiniBand).
-The scaling is significantly better when only one process per node is used. The
-increased transmission time with multiple clients is caused by a higher
-probability of packet loss, which increases significantly when using more than
-one process per node. Infiniband outperforms ethernet slightly, but is largely
-limited by the RSP implementation throughput of preparing and queueing the
-datagrams to and from the protocol thread, which we observed in profiling.
-
-
-%------------------------------------------------------------------------------
-\subsection{Reliable Stream Protocol}\label{sec:RSP}
+\section{Reliable Stream Protocol}\label{sec:RSP}
 
 RSP is an implementation of a reliable multicast protocol over unreliable UDP
 multicast transport. RSP behaves similarly to TCP; in contrast to the underlying
@@ -3271,6 +2990,305 @@ implementation can achieve above 90\% wire speed on 10~GBit/s Ethernet, shows
 good scalability with respect to the multicast group size, and is very effective
 for distributing structured and unstructured application data to a large number
 of rendering clients concurrently.
+
+
+\section{Distributed, Versioned Objects}
+
+\subsection{Overview}
+
+Adapting an existing application for parallel rendering requires the
+synchronisation of application data across the processes in the parallel
+rendering setup. Existing parallel rendering frameworks address this often
+poorly, at best they rely on MPI to distribute data. Real-world, interactive
+visualization applications are typically written in C++ and have complex data
+models and class hierarchies to represent their application state. As outlined
+in \cite{EMP:09}, the parallel rendering code in an \textsf{Equalizer}
+application only needs access to the data needed for rendering, as all
+application logic is centralised in the application main thread. We have
+encountered two main approaches to address this distribution: Using a shared
+filesystem for static data, or using data distribution for static and dynamic
+data. Distributed objects are not required to build \textsf{Equalizer}
+applications. While most developers choose to use this abstraction for
+convenience, we have seen applications using other means for data distribution,
+e.g., MPI.
+
+\subsection{Object Types}
+
+Distributed objects in \textsf{Collage} provide powerful, object-oriented data
+distribution for C++ objects. They facilitate the implementation of data
+distribution in a cluster environment. Distributed objects are created by
+subclassing from \textsf{co::Serializable} or \textsf{co::Object}. The
+application programmer implements serialization and deserialisation. Distributed
+objects can be static (immutable) or dynamic. Objects have a universally unique
+identifier (UUID) as cluster-wide address. A master-slave model is used to
+establish mapping and data synchronisation across processes. Typically, the
+application main loop registers a master instance and communicates the UUID to
+the render clients, which map their instance to the given identifier. The
+following object types are available:
+
+\begin{compactdesc}
+\item[Static] The object is not versioned nor buffered. The instance data is
+  serialised whenever a new slave instance is mapped. No additional data is
+  stored.
+\item[Unbuffered] The object is versioned and unbuffered. No data is stored, and
+  no previous versions can be mapped.
+\item[Instance] The object is versioned and buffered. The instance and delta
+  data are identical; that is, only instance data is serialised. Previous
+  instance data is saved to be able to map old versions.
+\item[Delta] The object is versioned and buffered. The delta data is typically
+  smaller than the instance data. The delta data is transmitted to slave
+  instances for synchronisation. Previous instance and delta data is saved to be
+  able to map and sync old versions.
+\end{compactdesc}
+
+Instance and delta objects have a memory overhead on the master instance to
+store past data. The number of old versions retained is configurable per
+object. For Equalizer applications, this overhead typically occurs on the
+application node holding the master instances, and is configured based on the
+configuration's latency. When using unbuffered objects, applications only
+observe inconsistent state during the initial mapping, when a too recent
+version is used by a render client. The push-based commit-sync logic eventually
+brings the object into a consistent state with respect to the rendered frame.
+
+Serialization is facilitated using output or input streams, which abstract the
+data transmission and are used like a \textsf{std::stream}. The data streams
+implement efficient buffering and compression, and automatically select the best
+connection for data transport. Custom data type serialisers can be implemented
+by providing the appropriate serialization functions. No pointers should be
+directly transmitted through the data streams. For pointers, the corresponding
+object is typically a distributed object as well, and its UUID and version are
+transmitted in place of a pointer.
+
+Dynamic objects are versioned, and on \textsf{commit} the delta data from the
+previous version is sent, if available using multicast, to all mapped slave
+instances. The data is queued on the remote node, and is applied when the
+application calls \textsf{sync} to synchronise the object to a new version. The
+\textsf{sync} method might block if a version has not yet been committed or is
+still in transmission. All versioned objects have the following characteristics:
+
+\begin{compactitem}
+
+\item The master instance of the object generates new versions for all slaves.
+These versions are continuous. It is possible to commit on slave instances, but
+special care has to be taken to handle possible conflicts during concurrent
+commits from multiple slave instances.
+
+\item Slave instance versions can only be advanced; that is,
+\textsf{sync(version)} with a version older than the current version will fail.
+
+\item Newly mapped slave instances are mapped to the oldest available version
+by default, or to the version specified when calling \textsf{mapObject}.
+
+\end{compactitem}
+
+Blocking commits allow to limit the number of outstanding, queued versions on
+the slave nodes. A token-based protocol will block the commit on the master
+instance if too many unsynchronised versions exist. This is useful to limit the
+amount of memory consumed by slave instance, and too prohibit run-away
+conditions of the master instance.
+
+\subsection{Serializable}
+
+\label{sec:Serializable}The \textsf{Collage} Serializable implements one
+convenient usage pattern for object data distribution which emerged during
+deployment of Equalizer in applications. The \textsf{co::Serializable} data
+distribution is based on the concept of dirty bits, allowing inheritance with
+data distribution. Dirty bits form a 64-bit mask which marks the parts of the
+object to be distributed during the next commit. Setters of the class mark the
+appropriate dirty bit, and the accumulated bits are used to compute deltas
+during commit.
+
+For serialization, the application developer implements \textsf{serialize} or
+\textsf{deserialize}, which are called with the bit mask specifying which data
+has to be transmitted or received. During a commit or sync, the current dirty
+bits are given, whereas during object mapping all dirty bits are passed to the
+serialization methods. A commit will clear the dirty mask after serialization.
+
+
+\subsection{Optimizations}
+
+The Object API provides sufficient abstraction to implement various
+optimizations for faster mapping and synchronisation of data: compression,
+chunking, caching, preloading and multicast.
+
+\subsubsection{Compression}
+
+The most obvious optimisation is compression. Recently, many new compression
+algorithms have been developed which exploit modern CPU architectures and
+deliver compression rates well above one gigabyte per second. \textsf{Collage}
+uses the Pression library~\cite{pression}, which provides a unified interface
+for a number of compression libraries, such as FastLZ~\cite{jesperfast},
+Snappy~\cite{snappy} and ZStandard~\cite{zstd}. It also contains a custom,
+virtually zero-cost RLE compressor. Pression parallelises the compression and
+decompression using data decomposition. This compression is generic and
+lossless, implemented transparently for the application. Applications can also
+use data-specific compression.
+
+\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
+\includegraphics[width=.618\textwidth]{results/compressor.pdf}
+  {\caption{\label{rCompress}Compression Performance for Binary Data}}
+\end{wrapfloat}
+
+\bench{rCompress} shows the compression ratio and speed for generic binary data
+from \cite{ESP:18}. While the structure of the transmitted data varies with
+each application, this micro-bench\-mark gives a reasonable estimation of the
+expected performance. In our context of interactive distributed rendering
+applications, it is important to use the right tradeoff between spending time
+and resources for data compression, and the gained network transmission time
+due data reduction.
+
+On modern CPUs (the benchmark was executed on a 12-core node), modern
+compression libraries provide performance benefits even on fast interconnects
+such as 10 Gb/s Ethernet. In particular, the modern Snappy and ZStandard
+libraries deliver impressive performance.
+
+\begin{benchmark}[h!t]\center
+  \includegraphics[width=\textwidth]{results/compressorDetail}
+  \caption{\label{rCompressorDetail}Data Compression for the PLY Data and Raw Volumes from \bench{rMapping}}
+\end{benchmark}
+
+In \cite{ESP:18}, we also evaluated the compression performance for more
+concrete application data. The results are shown in \bench{rCompressorDetail}.
+Polygonal data is difficult to compress with a generic lossless compressor, due
+to the floating point format used for the vertices. A data-specific compressor
+aware of the data semantics can provide much better results. Volume data on the
+other hand has shown to be well compressible, with typical $2:1$ compression
+ratios at interactive speeds.
+
+\subsubsection{Chunking}
+
+The data streaming interface implements chunking, which pipelines the
+serialization code with the network transmission. After a configurable number of
+bytes has been serialised to the internal buffer, it is transmitted and
+serialization continues. This is used both for the initial mapping data and for
+commit data.
+
+\subsubsection{Caching and Preloading}
+
+Caching retains instance data of objects in a client-side cache, and reuses
+this data to accelerate mapping of objects. The instance cache is either filled
+by ``snooping'' on multicast transmissions or by an explicit preloading when
+the master objects are registered. The preloading sends instance data of
+recently registered master objects to all connected nodes during idle time of
+the corresponding node. These nodes simply enter the received data to their
+cache. Preloading uses multicast when available.
+
+\subsubsection{Multicast}
+
+Due to the master-slave nature of data distribution, multicast is used to
+optimise the transmission time of data. If the contributing nodes share a
+multicast session, and more than one slave instance is mapped, \textsf{Collage}
+automatically uses the multicast connection to send the new version
+information.
+
+\subsection{Benchmarks}
+
+\bench{rMapping} analyses the performance of data distribution and
+synchronisation in real-world applications. We extracted the data distribution
+code from our mesh renderer (eqPly) and our volume renderer (Livre) into a
+benchmark application to measure the time to initially map all the objects on
+the render client nodes, and to perform a commit$+$sync of the full data set
+after mapping has been established. All figures observe a noticeable
+measurement jitter due to other services running on the shared cluster during
+benchmarking. The details of the benchmark algorithm can be found in
+\cite{ESP:18}.
+
+We used three different data sets, and ran the benchmark on up to eight
+physical nodes, that is, after eight processes nodes start to run two processes
+per node, which share CPU, memory and network interface bandwidth. Object
+mapping is measured using the following settings: \textsf{none} distributes the
+raw, uncompressed, and unbuffered data, \textsf{compression} uses the Snappy
+compressor to compress and distribute unbuffered data, \textsf{buffered} reuses
+uncompressed, serialised data for mappings from multiple nodes, and
+\textsf{compression buffered} reuses the compressed buffer for multiple nodes.
+
+\begin{benchmark}[t]\center
+\includegraphics[height=.245\textwidth]{images/benchmark_eqPly2}\hfil
+\includegraphics[height=.245\textwidth]{images/spikes512}\hfil
+\includegraphics[height=.245\textwidth]{images/beechnut}\vspace{1em}\\
+  \includegraphics[width=\textwidth]{results/mapping}
+  \caption{\label{rMapping}Object Mapping and synchronisation}
+\end{benchmark}
+
+Unbuffered operations need to reserialise, and potentially recompress, the
+master object data for each slave node. Each slave instance needs to
+deserialise and decompress the data, which happens naturally in parallel on the
+slave nodes. During data synchronisation, the master commits the object data to
+all mapped slave instances simultaneously. This is a “push” operation, whereas
+the mapping is a slave-triggered “pull” operation. During commit, the buffers
+only have to be serialised and compressed once, and can then be sent directly
+to all mapped slave nodes. Slave nodes queue this data and consume it during
+synchronisation. In contrast, object mapping needs to wait for each slave node
+to request the mapping, and then may need to reserialise and compress the
+object data. We test the time to commit and sync the data using different
+compression engines discussed under optimisations below.
+
+The David statue at 2 mm resolution is organised in a k-d tree for rendering.
+Each k-d tree node is a separate distributed object, which has two child node
+objects. A total of 1023 objects are distributed and synchronised. Due to
+limited compressibility of the data, the results are relatively similar.
+Compressing the data repeatedly for each client leads to decreased performance,
+since the compression overhead cannot be amortised by the decreased
+transmission time. Buffering data slightly improves performance by reducing the
+CPU and copy overhead. Combining compression and buffering leads to the best
+performance, although only by about 10\%. During synchronisation, data is
+pushed from the master process to all mapped slaves using a unicast connection
+to each slave. While the results are relatively close to each other, we can
+still observe how the tradeoff between compression ratio and speed influences
+overall performance. Better, slower compression algorithms lead to improved
+overall performance when amortised over many send operations.
+
+The volume data sets are distributed in a single object, serialising the raw
+volume buffer. The Spike volume data set has a significant compression ratio,
+which is reflected by the results. Compression for this data is beneficial for
+transmitting data over a 10 Gb/s link, even for a single slave process.
+Buffering has little benefit since the serialization of volume data is trivial.
+Buffered compression makes a significant difference, since the compression cost
+can be amortised over many nodes, reaching raw data transmission rates of 3.7
+GB/s with the default Snappy compressor and at best 4.4 GB/s with ZStandard at
+level 1. The distribution of the beechnut data set also behaves as expected.
+Due to the larger object size, uncompressed transmission is slightly faster
+compared to the Spike data set at 700MB/s, and compressed transmission does not
+improve the mapping performance, likely due to increased memory pressure caused
+by the data size. The comparison of the various compression engines is
+consistent with the benchmarks in \bench{rCompressorDetail}; RLE, Snappy and the
+LZ variants are very close to each other, and ZSTD1 can provide better
+performance after four nodes due to the better compression ratio.
+
+\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{results/network}
+  {\caption{\label{rNetwork}Synchronisation Performance over different Network Protocols}}
+\end{wrapfloat}
+
+\bench{rNetwork} compares data distribution speed using different network
+protocols. In this benchmark, data synchronisation time of the Spike volume
+data set is measured. Buffering is enabled, and compression is disabled to
+focus on the raw network performance. For the benchmark, eight physical nodes
+are used, that is, after eight processes two client processes will run on some
+nodes, sharing CPU and network resources.
+
+TCP over the faster InfiniBand link outperforms the cheaper ten gigabit
+ethernet link by more than a factor of two. Unexpectedly, the native RDMA
+connection performs worse, even though it outperforms IPoIB in a simple
+peer-to-peer connection benchmark. This needs further investigation, but we
+suspect the abstraction of a byte stream connection chosen by Collage is not
+well suited for remote DMA semantics; that is, one needs to design the network
+API around zero-copy semantics with managed memory for modern high-speed
+transports. Both Infiniband connections show significant measurement jitter.
+
+RSP multicast performs as expected. Collage starts using multicast to commit
+new object versions when two or more clients are mapped, since the transmission
+to a single client is faster using unicast. RSP consistently outperforms
+unicast on the same physical interface and shows good scaling behaviour (2.5
+times slower on 16 vs 2 clients on ethernet, 1.8 times slower on InfiniBand).
+The scaling is significantly better when only one process per node is used. The
+increased transmission time with multiple clients is caused by a higher
+probability of packet loss, which increases significantly when using more than
+one process per node and network interface. Infiniband outperforms ethernet
+slightly, but is largely limited by the RSP implementation throughput of
+preparing and queueing the datagrams to and from the protocol thread, which we
+observed in profiling.
+
 
 \chapter{Applications}\label{sApplications}
 
