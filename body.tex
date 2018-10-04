@@ -2006,8 +2006,10 @@ this mode, we can observe significant speedups with ROI (up to 4x), as shown in
 \bench{rROISL}.
 
 In \cite{MEP:10}, this application-provided ROI was extended with an algorithm
-which automatically computes the ROI by analyzing the framebuffer to maximise
-the amount of blank framebuffer omitted during compositing.
+which automatically computes the ROI by analyzing the framebuffer. This
+algorithm has the advantage of simplifying the application developers' life,
+and can also easily detect holes in the rendered framebuffer.
+
 
 \section{Asynchronous Compositing}
 
@@ -2018,7 +2020,7 @@ readback of the produced pixel data (1), optional compression of this pixel data
 assembly (7) in the destination framebuffer.
 
 In a naive implementation, operations 1 to 3 are executed serially on one
-processor, and 4 to 7 on another. In our parallel rendering system, operations 2
+core, and 4 to 7 on another. In our parallel rendering system, operations 2
 to 5 are executed asynchronously to the rendering and operations 1, 6 and 7.
 Furthermore, we use a latency of one frame which means that two rendering frames
 are always in execution, allowing the pipelining of these operations, as shown
@@ -2054,36 +2056,34 @@ needed.
  {\caption{\label{rAsync}Asynchronous Compositing Sort-First Rendering}}
 \end{wrapfloat}
 
-Asynchronous compositing is, together with ROI, one of the most influential
-optimizations for scalable rendering. For sort-first rendering, shown in
-\bench{rAsync} from \cite{EBAHMP:12}, pipelining the readback with the rendering
-yields a performance again of about 10\%. At higher frame rates, when the
-rendering time of a single resource decreases, asynchronous readback has even a
-higher impact, of over 25\% for large node counts.
+Asynchronous compositing is, together with region of interest, one of the most
+influential optimizations for scalable rendering. For sort-first rendering,
+shown in \bench{rAsync} from \cite{EBAHMP:12}, pipelining the readback with the
+rendering yields a performance again of about 10\%. At higher frame rates, when
+the rendering time of a single resource decreases, asynchronous readback has
+even a higher impact, of over 25\% for large node counts.
 
 
 \section{Compression for Image Compositing}
 
-The image compositing stages in distributed rendering for gathering and
-combining partial rendering results into a final display frame are fundamentally
-limited by the GPU-to-node and node-to-node image throughput. Therefore,
-efficient image coding, compression and transmission must be considered to
-minimise that bottleneck.
+The image compositing stages in distributed rendering are fundamentally limited
+by the GPU-to-node and node-to-node image throughput. Therefore, efficient
+image coding, compression and transmission must be considered to minimise that
+bottleneck.
 
 Basic run-length encoding (RLE) has been used as a fast standard to improve
 network throughput for interactive image transmission. However, it only gives
 sufficient results in specific rendering contexts and fails to provide a
 general improvement as shown in \cite{MEP:10}. RLE only works to compact large
 empty or uniform color areas but is often useless for non-trivial full frame
-color results. We developed two enhancements to improve this, per-component RLE
+color results. We developed two enhancements to improve RLE: per-component RLE
 compression and reordering of color bits. These preconditioning steps exploit
 typical characteristics of image data.
 
 Equalizer also integrates more complex compression algorithms such as
-\textsf{libjpeg-turbo}, which are however of little practical use on modern
+\textsf{lib-jpeg-turbo}, which are however of little practical use on modern
 interconnects. Their compression overhead is often too high to be amortised by
-the decreased network transmission time on modern 10 GBit/s or faster
-interconnects.
+the decreased network transmission time on 10 GBit/s or faster interconnects.
 
 \cite{MEP:10} implemented GPU-based YUV subsampling before the image download,
 which has negligible overhead, reasonable compression artefacts, and a good
@@ -2098,7 +2098,7 @@ of the data to improve the compression ratio over the standard RLE compression.
 
 Our basic RLE implementation is a fast 64-bit version that compares two pixels
 at the same time (8 bit per channel RGBA format). While this method is very
-fast it shows poor compression results in most practical settings since it can
+fast, it shows poor compression results in most practical settings since it can
 only compress adjacent pixels of the same color. We have observed a compression
 rate of up to 10\% in practical scenarios.
 
@@ -2157,9 +2157,16 @@ contributes to the sort-first rendering, and does not require a pixel transfer.
 With an increasing number of remote source channels, its size decreases,
 requiring more pixels to be transferred.
 
-The graph shows how the various incremental improvements add up to significant performance gains. Even in a relatively difficult scenario with a fast rendering time and, by modern standards, slow network interconnect, we were able to more than double the performance to above 60~Hz.
+The graph shows how the various incremental improvements add up to significant
+performance gains. Even in a relatively difficult scenario with a fast
+rendering time, and, by modern standards, slow network interconnect, we were
+able to more than double the performance to above 60~Hz.
 
-The basic 8-byte RLE Compressor performs just minimally better than no compression. Both stay relatively close the theoretical maximum, but can't quite reach it due to load imbalances and non-zero rendering time. The swizzling pre-conditioner can significantly reduce the compositing time, and even improve the overall framerate.
+The basic 8-byte RLE Compressor performs just minimally better than no
+compression. Both stay relatively close the theoretical maximum, but can't
+quite reach it due to load imbalances and non-zero rendering time. The
+swizzling pre-conditioner can significantly reduce the compositing time, and
+even improve the overall framerate.
 
 The YUV is compressor is an on-GPU compression plugin which performs a
 color space conversion and lossy chroma subsampling. It can be combined with the
