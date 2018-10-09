@@ -1510,8 +1510,7 @@ allows data distribution with minimal application logic.
 Scalable rendering is a subset of parallel rendering which aims to improve the
 framerate of a rendering task by decomposing it over multiple rendering
 resources. Parallel rendering includes other use cases, for example to use
-multiple GPUs to drive individual displays of a tiled display wall.
-
+multiple GPUs to drive individual displays of a tiled display wall. Scalable rendering addresses the research question on how we can improve the rendering performance of visualization applications to enable users to explore more data.
 
 Scalable rendering research has put a lot of focus on two of the three
 architectures classified by \cite{Molnar92}: sort-first and sort-last rendering.
@@ -1555,21 +1554,20 @@ use case.
 
 \subsection{Stereo}
 
-Stereo, or eye decomposition, is a specialised version of sort-first rendering.
-Two GPUs get assigned each one of the eye passes during stereo rendering. For
-passive stereo, there is no compositing step needed, whereas for active and
-anaglyphic stereo the frame buffer for one eye pass has to be copied to the
-destination channel. Due to the strong similarity between both eye passes, this
-mode provides close to perfect load balance.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/Stereo}
  {\caption{\label{fStereo}Anaglyphic Stereo Compound}}
 \end{wrapfloat}
 
-\fig{fStereo} shows an ana-gly-phic stereo compound.
+Stereo, or eye decomposition, is a specialised version of sort-first rendering.
+Two GPUs get assigned each one of the eye passes during stereo rendering. For
+passive stereo, there is no compositing step needed, whereas for active and
+anaglyphic stereo the frame buffer for one eye pass has to be copied to the
+destination channel. Due to the strong similarity between both eye passes, this
+mode provides close to perfect load balance. \fig{fStereo} shows an ana\-gly\-phic stereo compound.
 
-While many implementations provide passive or active stereo rendering and
+While many visualization applications provide passive or active stereo rendering and
 sometimes decomposition using two GPUs, our implementation within our flexible
 compound structure allows to fully exploit stereo decomposition.  Stereoscopic
 and monoscopic rendering is no special case in the architecture, but rather a
@@ -1793,9 +1791,8 @@ rendering framework. Consequently, this area of parallel rendering research has
 received significant attention. By integrating many state-of-the art
 optimizations into our parallel rendering framework we provide a generic
 solution which scales well on modern visualization cluster architectures.
-Furthermore, we present new optimizations for NUMA-aware thread scheduling,
-insight into spatial sort-last polygonal rendering, and image compression
-algorithms for high-speed interconnects.
+
+We present new insight into the behaviour of known sort-last parallel compositing algorithms on mid-size visualization clusters (compared to high-end HPC systems), the importance of streaming sort-last compositing and spatial sort-last polygonal rendering, the impact of state of the art optimisations such as region of interest and asynchronous compositing, as well as image compression algorithms for high-speed interconnects. This chapter addresses the research quesiton on what new algorithms will decrease the time needed to composite rendering results, in particular for sort-last rendering.
 
 \section{Parallel Compositing\label{sparcomp}}
 
@@ -1901,7 +1898,7 @@ swap, which overcomes the power-of-two source channel requirement by exchanging
 compositions between groups of two or three nodes in the compositing tree.
 
 \begin{figure}[h!t]\center
- \includegraphics[width=0.9\columnwidth]{images/binarySwap}
+ \includegraphics[width=\columnwidth]{images/binarySwap}
  {\caption{\label{fBS}Binary swap sort-last compositing}}
 \end{figure}
 
@@ -1913,18 +1910,11 @@ optimization (\sref{sEarlyAss}), direct send can handle imbalances between
 nodes better since a late channel has a smaller penalty for the overall
 execution time.
 
-\clearpage
 \section{Streaming Sort-Last Compositing}
-
-\begin{wrapfloat}{figure}{O}{.618\textwidth}
-\includegraphics[width=.618\textwidth]{images/DBStream}
-{\caption{\label{fDBStream}Streaming Sort-Last Compound}}
-\end{wrapfloat}
 
 Due to the asynchronous architecture of our framework, streaming sort-last
 compositing becomes a viable alternative to more involved parallel compositing
 algorithms in smaller sort-last configurations.
-
 
 \fig{fDBStream} shows a streaming sort-last compound. The output of one source
 channel is copied to the next channel in the chain, which then composites it on
@@ -1932,10 +1922,14 @@ top of his own rendering, and streams the combined frame on to the next source.
 At the end of the chain, the destination channel completes the input frame by
 compositing it with his rendering.
 
-\begin{wrapfloat}{figure}{I}{.382\textwidth}
-\includegraphics[width=.382\textwidth]{images/DBStreamFlow}
-{\caption{\label{fDBStreamFlow}Streaming Sort-Last Data Flow}}
-\end{wrapfloat}
+\begin{figure}[h!t]\center
+  \subfigure[]{
+    \includegraphics[height=7cm]{images/DBStream}\label{fDBStream}
+  }\hfil\subfigure[]{
+    \includegraphics[height=7cm]{images/DBStreamFlow}\label{fDBStreamFlow}
+  }
+  {\caption{Streaming Sort-Last Compound}}
+\end{figure}
 
 Equalizer only synchronises the input to the output frames, therefore this
 configuration creates a pipelined configuration, where the compositing
@@ -1980,32 +1974,26 @@ frame, the compositing code respects this parameter to place the pixel data on
 the right position. The usage of ROI for load balancing is described in
 \sref{sLoadEqualizer}.
 
-\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
- \includegraphics[width=.618\textwidth]{results/roiSF}
- {\caption{\label{rROISF}Region of Interest for Sort-First Rendering}}
-\end{wrapfloat}
-
 Applying ROI for sort-first rendering provides a small improvement for the
-rendering performance, as shown in \bench{rROISF} from \cite{EBAHMP:12}. As the
+rendering performance, as shown in \bench{rROI}(a) from \cite{EBAHMP:12}. As the
 number of resources increases, the ROI becomes more important since the
 relative amount of time spent in compositing increases as the rendering load
 decreases. With ROI enabled we observed performance improvements between
 5-20\%, reaching 60~Hz when using 33 GPUs. Without ROI, the framerate peaked at
 less than 50~Hz when using 27 GPUs.
 
-\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
- \includegraphics[width=.618\textwidth]{results/roiSL}
- {\caption{\label{rROISL}Region of Interest for Sort-Last Rendering}}
-\end{wrapfloat}
+\begin{benchmark}[t]\center
+    \includegraphics[width=.48\textwidth]{results/roiSF}\hfil
+    \includegraphics[width=.48\textwidth]{results/roiSL}\\{\small(a)\hspace{.5\textwidth}(b)}\\
+ {\caption{\label{rROI}Region of Interest for Sort-First and Sort-Last Rendering}}
+\end{benchmark}
 
 For sort-last rendering performance, ROI is crucial. In our experiments in
 \cite{EBAHMP:12}, we used a polygonal renderer which uses relatively compact
 regions during sort-last decomposition, while still using depth-sorted
 compositing. This is a relatively common use case for sort-last rendering. In
 this mode, we can observe significant speedups with ROI (up to 4x), as shown in
-\bench{rROISL}.
-
-In \cite{MEP:10}, this application-provided ROI was extended with an algorithm
+\bench{rROI}(b). In \cite{MEP:10}, this application-provided ROI was extended with an algorithm
 which automatically computes the ROI by analyzing the framebuffer. This
 algorithm has the advantage of simplifying the application developers' life,
 and can also easily detect holes in the rendered framebuffer.
@@ -2028,19 +2016,6 @@ in \fig{fSyncRB}. We have implemented asynchronous readback using OpenGL pixel
 buffer objects, further increasing the parallelism by pipelining the rendering
 and pixel transfers, as shown in \fig{fAsyncRB}.
 
-\begin{figure}[ht]\center
-  \subfigure[]{
-    \includegraphics[scale=0.6]{images/syncReadback}
-    \label{fSyncRB}
-  }\\
-  \subfigure[]{
-    \includegraphics[scale=0.6]{images/asyncReadback}
-    \label{fAsyncRB}
-  }
-  \caption{Synchronous readback and upload (a) as well as
-    asynchronous readback and upload (b) for two overlapping frames.}
-\end{figure}
-
 In the asynchronous case, the rendering thread performs only
 application-specific rendering operations, since the overhead of starting an
 asynchronous readback becomes negligible. Equalizer uses a plugin system to
@@ -2062,6 +2037,19 @@ shown in \bench{rAsync} from \cite{EBAHMP:12}, pipelining the readback with the
 rendering yields a performance again of about 10\%. At higher frame rates, when
 the rendering time of a single resource decreases, asynchronous readback has
 even a higher impact, of over 25\% for large node counts.
+
+\begin{figure}[t]\center
+  \subfigure[]{
+    \includegraphics[scale=0.6]{images/syncReadback}
+    \label{fSyncRB}
+  }\\
+  \subfigure[]{
+    \includegraphics[scale=0.6]{images/asyncReadback}
+    \label{fAsyncRB}
+  }
+  \caption{Synchronous readback and upload (a) as well as
+    asynchronous readback and upload (b) for two overlapping frames.}
+\end{figure}
 
 
 \section{Compression for Image Compositing}
@@ -2245,7 +2233,7 @@ variants for reactive load balancing for sort-first and sort-last rendering,
 implicitly load balanced work packages for sort-last and sort-first rendering,
 cross-segment load balancing for multi-display installations, constant frame
 rate rendering using dynamic frame resolution, and monitoring of large-scale
-visualization systems.
+visualization systems. These equalizers address the research question on how we can improve load-balancing for sort-first rendering, in particular for large display systems.
 
 \section{Sort-First and Sort-Last Load Balancing}\label{sLoadEqualizer}
 
