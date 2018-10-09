@@ -523,18 +523,18 @@ as cloud computing and high-performance computing (HPC): It aims to accelerate
 the completion of a task by parallelising a time-consuming algorithm, or to
 allow to compute a larger problem by employing multiple resources. Certain
 aspects are shared across these distributed computing domains, such as the need
-to load balance the tasks executed in parallel, to minimise synchronisation and
+to load balance the parallel tasks execution, to minimise synchronisation and
 communication overheads, as well as to find a task decomposition which allows
 to produce correct results.
 
-Scalable rendering however has one significant additional constraint: serving
+Scalable rendering has one significant additional constraint: serving
 an interactive use case. Depending on the application domain and visualization
 system, typically a framerate between 10~Hz and 120~Hz is required to allow
 useful user interaction. This, in turn, translates to a budget of 8~ms to
 100~ms to decompose the task to render a frame, perform rendering in parallel,
 and to composite and display the result. In comparison, cloud computing and
 HPC typically have turnaround times of seconds to hours. Consequently, many
-algorithms for parallel rendering need to rather compute a suboptimal solution,
+algorithms for parallel rendering compute a suboptimal solution,
 but do so in at most a few milliseconds.
 
 Fundamentally, there are two approaches to enable applications to use multiple
@@ -552,6 +552,18 @@ scalable rendering, when multiple GPUs are used to accelerate a single output,
 partial results need to be collected from all contributing resources, combined,
 and send to the output.
 
+
+The architecture of our parallel rendering framework addresses the following research questions:
+\begin{compactitem}
+  \item How can we reduce end-to-end system latency for better user experience?
+  \item In a generic parallel rendering framework, how can we schedule the different rendering stages to minimize the latency for the user?
+  \item How can we architect the parallel rendering framework to minimize synchronization between threads?\\[\medskipamount]
+  \sref{sAsyncExec} introduces our asynchronous execution model, which has been carefully designed to minimise synchronisation points, maximise pipelining and early display of rendered images.\\[\medskipamount]
+
+  \item How can we maximize the impact of this research on large data scientists?\\[\medskipamount]
+  Ultimately, accessible applications determine the impact for large data research. Various pieces have to come together to make these applications happen. With Equalizer we provide the base building blocks: a minimally invasive API and distributed execution layer to lower the entry barrier for application developers, a flexible configuration with a clear separation from the implementation, comprehensive VR features and tiled display wall integration addressing a wide set of visualization installations.\\[\medskipamount]
+\end{compactitem}
+
 Equalizer has a strong separation of the rendering code from its runtime
 configuration. The configuration is laid out in a hierarchical resource
 description and compound trees configure the resources for parallel and
@@ -561,7 +573,7 @@ the execution model and resource configuration, followed by the how the generic
 configuration is used to model the desired visualization setup, and finally
 introduce specifics of scalable and distributed rendering.
 
-\section{Asynchronous Execution Model}
+\section{Asynchronous Execution Model}\label{sAsyncExec}
 
 The core execution model for parallel rendering was pioneered by CAVELib
 \cite{DACNCCGHPSNS:97}, refined by OpenGL Multipipe SDK for shared memory
@@ -1274,7 +1286,7 @@ project's main office in Lausanne. Both locations are linked using a high-speed
 WAN link. The HPC installation has a colocated visualization cluster for remote
 rendering scenarios.
 
-\begin{benchmark}[ht]\center
+\begin{benchmark}[h!t]\center
   \includegraphics[width=\columnwidth]{results/tide}
   \caption{\label{rTide}Remote RTNeuron - Tide Parallel Rendering}
 \end{benchmark}
@@ -1286,7 +1298,7 @@ different tile sizes ($256^2$, $512^2$, $1024^2$ and $1920\times 1080$). Due to
 a configuration issue, the WAN link delivered only 1 GBit/s throughput during
 the benchmark. RTNeuron is an Equalizer-based application used in the Blue
 Brain Project to analyse results from detailed simulations of neuronal
-simulations.
+simulations. 
 
 The results show that interactive frame rates are available even at the full
 native resolution, that a $512^2$ tile size is the best option, and that 95\%
@@ -1294,15 +1306,19 @@ compression delivers the best performance in most cases. Based on the
 experiments we settled on a $512^2$ tile size and 100\% compression quality to
 avoid artefacts as the default settings in Equalizer.
 
-
 \section{Compositing}
 
 In contrast to most other parallel rendering frameworks, Equalizer decouples the
-compositing algorithm from the task decomposition. This is a critical component
-in the architecture, allowing a flexible configuration, often in many unforeseen
+compositing algorithm from the task decomposition. This is a key aspect of our
+architecture, allowing a flexible configuration, often in many unforeseen
 ways. The compound tree with its task decomposition, input and output frames, is
 a specialised description ``programming'' scalable rendering across parallel
 resources.
+
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/directSend}
+  {\caption{\label{fDirectSend}Direct Send Compositing}}
+\end{wrapfloat}
 
 Compositing is configured using output frames connected to input frames,
 compound tasks and eye passes, as well as frame parameters. In its simplest
@@ -1313,16 +1329,11 @@ from the source channel and composites it using the correct offset onto the
 destination channel.
 
 Frame parameters allow the customisation of the pixel handling. They include the
-transferred buffers (color, depth), partial channel viewport, and pixel zooming
+transfer buffers (color, depth), partial channel viewport, and pixel zooming
 (upscale and downscale). An output frame may be connected to multiple input
-frames. These parameters are used in conjunction with compound tasks for
+frames. Frame parameters are used together with compound tasks for
 parallel compositing, and advanced features such as monitoring and dynamic frame
 resolution introduced later.
-
-\begin{wrapfloat}{figure}{O}{.618\textwidth}
-  \includegraphics[width=.618\textwidth]{images/directSend}
-  {\caption{\label{fDirectSend}Direct Send Compositing}}
-\end{wrapfloat}
 
 \fig{fDirectSend} shows the pixel flow of direct send compositing for a three-way
 sort-last decomposition, where the destination channel also contributes to the
