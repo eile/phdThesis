@@ -2415,17 +2415,17 @@ compute resources.
   \caption{\label{rEqualizers}Sort-First and Sort-Last Equalizer Behaviour}
 \end{benchmark}
 
-\bench{rEqualizers} (left) gives an impression of how individual modes perform on
-heterogeneous systems. In this case the tree equalizer performs best, as it
-allows us to a priori define how much usage it should make of individual nodes,
-i.e., bias the allocation of rendering time in accordance with the (simulated)
-compute resources. \bench{rEqualizers} (right), on the other hand, illustrates
-how the decomposition modes perform on a system where compute resources
-fluctuate randomly every frame, as can arguably be the case for shared
-rendering nodes in virtualised environments. For this scenario tile equalizer
-seems best suited, as it performs load balancing implicitly and does not assume
-coherence of available resources between frames. The simpler tree equalizer
-outperforms the load equalizer in this experiment.
+\bench{rEqualizers} (left) models how individual modes perform on heterogeneous
+systems. In this case the tree equalizer performs best, as it allows us to a
+priori define how much usage it should make of individual nodes, i.e., bias the
+allocation of rendering time in accordance with the (simulated) compute
+resources. \bench{rEqualizers} (right), on the other hand, illustrates how the
+decomposition modes perform on a system where compute resources fluctuate
+randomly every frame, as can arguably be the case for shared rendering nodes in
+virtualised environments. For this scenario tile equalizer seems best suited,
+as it performs load balancing implicitly and does not assume coherence of
+available resources between frames. The simpler tree equalizer outperforms the
+load equalizer in this experiment.
 
 The \textsf{tile\_equalizer} often outperforms \textsf{tree\_equalizer}. This
 suggests that the underlying implicit load balancing of task queues can be
