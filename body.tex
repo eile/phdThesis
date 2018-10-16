@@ -2988,7 +2988,7 @@ In \cite{ESP:18} we provide experimental results, showing that our
 implementation can achieve above 90\% wire speed on 10~GBit/s Ethernet, shows
 good scalability with respect to the multicast group size, and is very effective
 for distributing structured and unstructured application data to a large number
-of rendering clients concurrently.
+of rendering clients concurrently, as shown in \bench{rNetwork}.
 
 
 \section{Distributed, Versioned Objects}
@@ -3123,36 +3123,31 @@ decompression using data decomposition. This compression is generic and
 lossless, implemented transparently for the application. Applications can also
 use data-specific compression.
 
-\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
-\includegraphics[width=.618\textwidth]{results/compressor.pdf}
-  {\caption{\label{rCompress}Compression Performance for Binary Data}}
-\end{wrapfloat}
+\bench{rCompressorDetail}~(top left) shows the compression ratio and speed for
+generic binary data from \cite{ESP:18}. While the structure of the transmitted
+data varies with each application, this micro-bench\-mark gives a reasonable
+estimation of the expected performance. In our context of interactive
+distributed rendering applications, it is important to use the right tradeoff
+between spending time and resources for data compression, and the gained
+network transmission time due data reduction.
 
-\bench{rCompress} shows the compression ratio and speed for generic binary data
-from \cite{ESP:18}. While the structure of the transmitted data varies with
-each application, this micro-bench\-mark gives a reasonable estimation of the
-expected performance. In our context of interactive distributed rendering
-applications, it is important to use the right tradeoff between spending time
-and resources for data compression, and the gained network transmission time
-due data reduction.
+\begin{benchmark}[h!t]\center
+  \includegraphics[width=\textwidth]{results/compressorDetail}
+  \caption{\label{rCompressorDetail}Compression Performance for Binary Data, the PLY Data and Raw Volumes used in \bench{rMapping}}
+\end{benchmark}
 
 On modern CPUs (the benchmark was executed on a 12-core node), modern
 compression libraries provide performance benefits even on fast interconnects
 such as 10 Gb/s Ethernet. In particular, the modern Snappy and ZStandard
 libraries deliver impressive performance.
 
-\begin{benchmark}[h!t]\center
-  \includegraphics[width=\textwidth]{results/compressorDetail}
-  \caption{\label{rCompressorDetail}Data Compression for the PLY Data and Raw Volumes from \bench{rMapping}}
-\end{benchmark}
-
-In \cite{ESP:18}, we also evaluated the compression performance for more
-concrete application data. The results are shown in \bench{rCompressorDetail}.
-Polygonal data is difficult to compress with a generic lossless compressor, due
-to the floating point format used for the vertices. A data-specific compressor
-aware of the data semantics can provide much better results. Volume data on the
-other hand has shown to be well compressible, with typical $2:1$ compression
-ratios at interactive speeds.
+In \cite{ESP:18}, we also evaluated the compression performance for concrete
+application data. The results are shown in \bench{rCompressorDetail}. Polygonal
+data is difficult to compress with a generic lossless compressor, due to the
+floating point format used for the vertices. A data-specific compressor aware
+of the data semantics can provide much better results. Volume data on the other
+hand has shown to be well compressible, with typical $2:1$ compression ratios
+at interactive speeds.
 
 \subsubsection{Chunking}
 
