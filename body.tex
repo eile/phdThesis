@@ -78,36 +78,36 @@ research challenges. The key goal is to improve the rendering performance of
 existing and new visualization applications to enable users to explore more
 data. This goal can be broken down in more concrete challenges, starting with
 formalising and implementing the architecture of a parallel rendering
-framework, which allows to decompose the problem into more manageable tasks.
+framework, which allows the decomposition of the problem into more manageable tasks.
 
-These sub-challenges to build a better scalable parallel rendering application
+These sub-challenges to building a better scalable parallel rendering application
 can be identified as finding better task decompositions, decreasing the cost
 for the result composition, reducing the latency of the overall system, and
 minimising synchronisation between the parallel execution threads.
 
 When starting from a given rendering problem, the first task of a parallel
 rendering system is to decompose (parallelise) this task into independent
-sub-tasks, each rendered by a separate resource in parallel. While the basics
-of this decomposition has been researched extensively, there are architectural
+sub-tasks, each rendered by a separate resource (in parallel). While the basics
+of this decomposition have been researched extensively, there are architectural
 challenges to make these decompositions easily available in a generic and
-structured manner. When it comes to load balancing these tasks for an optimal
-parallelization, many challenges are still unaddressed when it comes to modern
-visualization cluster sizes using tens to hundreds of GPUs, and increasingly
+structured manner. Load balancing these tasks for an optimal
+parallelisation present many still unaddressed challenges for modern
+visualization cluster sizes, consisting of tens to hundreds of GPUs, and increasingly
 affordable high-fidelity visualization systems with tens of displays and
 hundreds of millions of pixels.
 
-With the scaling up the amount of resources employed to accelerate the
+By scaling up the amount of resources employed to accelerate the
 rendering task, the task of combining the partial results from each resource
 becomes more challenging. In particular for sort-last rendering, where the
-amount data to composite grows linearly with the amount of parallel resources
+amount of? data to composite grows linearly with the amount of parallel resources
 used, keeping the compositing time within the available budget is a non-trivial
 problem.
 
-Interactive visualization poses an unique set of challenges. Its goal is to
+Interactive visualization poses its own unique set of challenges. The goal is to
 present a believable alternate universe to the visual system of the user. This
-process turns interactive visualization into a powerful tool, since it utilises
+process turns interactive visualization into a powerful tool, by utilising
 the brains' native capabilities to interpret and understand data. Virtual
-Reality takes this goal to the extreme, and when done right, makes the user
+Reality (VR) takes this goal further, and when done right, makes the user
 forget that he interacts with a virtual world.
 
 To achieve this goal, visualization has the daunting task to transform large
@@ -115,10 +115,10 @@ amount of data into coloured pixels in a short amount of time. Believable
 visualization has to minimise the latency between user input and the resulting
 output, and to maximise the number of frames rendered per second. With
 increased immersion in the data, these parameters become more important --
-for Virtual Reality, a 60~Hz refresh rate and a latency below 50~ms is needed,
+for Virtual Reality, a 60~Hz refresh rate and a latency below 50~ms is required,
 whereas for non-immersive desktop visualization 10~Hz and 200~ms are acceptable.
 
-In the context of parallel rendering, these constraints make building a
+For parallel rendering, these constraints make building a
 parallel and distributed application harder compared to other distributed
 applications for simulations and cloud computing. In particular, one has to be
 careful with synchronisation and pipelining of operations to minimise latency.
@@ -133,23 +133,23 @@ parallel rendering.
 
 \section{Parallel Rendering}
 
-Parallel rendering utilises multiple rendering units (GPUs), potentially on
+Parallel rendering utilises multiple rendering units (GPUs), often on
 different computers, to generate images for one or more output displays.
 Scalable rendering is the subset of parallel rendering which uses multiple
 resources to accelerate the rendering of one or more outputs. The goal of
 parallel rendering is to increase the output resolution, rendering performance
 or rendering quality. Traditionally the focus has been on the first two goals,
-often in isolation to each other, e.g., algorithms and implementations for Cave
+often in isolation of each other, e.g., algorithms and implementations for Cave
 systems tend to be different from scalable rendering for large data
 visualization.
 
 The main performance indicator for Large Data Interactive Rendering is the
 performance of the rendering algorithm, that is, the framerate with which the
 program produces new images. This framerate can be improved by either using
-faster or more hardware, or by better algorithms exploiting the existing
+faster or more hardware, or by better algorithms exploiting existing
 hardware and data. This thesis primarily focuses on the first approach, using
 parallel rendering to exploit the CPU and GPU parallelism available on a single
-system or a distributed cluster. The early fundamental concepts have been laid
+system, or a distributed cluster. The early fundamental concepts have been laid
 down in \cite{MCEF:94} and \cite{Crockett:97} (\fig{fSorts}). A number of
 domain specific parallel rendering algorithms and special purpose hardware
 solutions have been proposed in the past, however, only few generic parallel
@@ -160,9 +160,9 @@ rendering frameworks have been developed.
  \caption{Sort-Last, Sort-Middle and Sort-First Parallel Rendering\label{fSorts}}
 \end{figure}
 
-Sort-last rendering decomposes the rendering task at the data level, that is,
-each resource renders a part of the data, and in the end partial fragments from
-each resource are composited to form a final results. Sort-middle rendering
+Sort-last rendering decomposes the rendering task at the data level, so
+each resource renders a part of the data In the end partial fragments from
+each resource are composited into a final result. Sort-middle rendering
 also decomposes the rendering at the data level, but collects and sorts the
 unshaded primitives before or after rasterisation, and then performs the
 fragment shading on the sorted data. Sort-first rendering decomposes the
@@ -173,32 +173,32 @@ sort-middle architectures are only feasible in a hardware implementation due to
 the large amount of data processed and transferred in the sorting stage.
 
 
-\subsection{Domain Specific solutions}
+\subsection{Domain Specific Solutions}
 
 Cluster-based parallel rendering has been commercialised for off-line rendering
-(i.e. distributed ray-tracing) for computer generated animated movies or special
+(i.e. distributed ray-tracing) for computer generated animated films or special
 effects, since the ray-tracing technique is inherently amenable to
-parallelization for off-line processing. Other special purpose solutions exist
+parallelisation for off-line processing. Other special purpose solutions exist
 for parallel rendering in specific application domains such as volume rendering
 \cite{LWMT:97,Wittenbrink:98,HSCSM:00,SL:02,GS:02,NSJLYZ:05} or
-geo-visualization \cite{VR:91,AG:95,LDC:96,JLMV:06}. However, such specific
+geo-visualisation \cite{VR:91,AG:95,LDC:96,JLMV:06}. However, such specific
 solutions are typically not applicable as a generic parallel rendering paradigm
 and do not translate to arbitrary scientific visualization and distributed
-graphics problems.
+graphics problems (+interactive?).
 
-In \cite{NC:07}, parallel rendering of hierarchical level-of-detail (LOD) data
+In \cite{NC:07} parallel rendering of hierarchical level-of-detail (LOD) data
 has been addressed and a solution specific to sort-first tile-based parallel
 rendering has been presented. While the presented approach is not a generic
-parallel rendering system, basic concepts presented in \cite{NC:07} such as load
-management and adaptive LOD data traversal can be carried over to other
+parallel rendering system, basic concepts presented in \cite{NC:07}, such as load
+management and adaptive LOD data traversal, can be carried over to other
 sort-first parallel rendering solutions.
 
 \subsection{Special Purpose Architectures}
 
 Historically, high-performance real-time rendering systems have relied on an
 integrated proprietary system architecture, such as the early SGI graphics supercomputers. Special purpose solutions have become a niche product as their
-graphics performance does not keep up with off-the-shelf workstation graphics
-hardware and scalability of clusters.
+graphics performance did not keep up with off-the-shelf workstation graphics
+hardware and scalability of clusters. (+cost?)
 
 Due to its conceptual simplicity, a number of special purpose image compositing
 hardware solutions for sort-first parallel rendering have been developed. The
@@ -211,23 +211,23 @@ inflexibility and setup overhead have limited their distribution and
 application support. Moreover, with the recent advances in the speed of CPU-GPU
 and GPU-GPU interfaces, such as PCI Express, NVLink and other modern
 interconnects, combinations of software and GPU-based solutions offer more
-flexibility at comparable performance.
+flexibility at a comparable performance.
 
 \subsection{Generic Approaches}
 
 A number of algorithms and systems for parallel rendering have been developed in
-the past. On one hand, some general concepts applicable to cluster parallel
+the past. Some general concepts applicable to cluster parallel
 rendering have been presented in \cite{Mueller:95,Mueller:97} (sort-first
 architecture), \cite{SZFLS:99,SFLS:00} (load balancing), \cite{SFL:01} (data
 replication), or \cite{CMF:05,CM:06} (scalability). On the other hand, specific
 algorithms have been developed for cluster based rendering and compositing such
 as \cite{AP:98}, \cite{CKS:02} and \cite{YYC:01,SMLAP:03}. However, these
-approaches do not constitute APIs and libraries that can readily be integrated
+approaches do not constitute APIs and libraries that can be readily integrated
 into existing visualization applications, although the issue of the design of a
 parallel graphics interface has been addressed in \cite{Igehy98}.
 
-Only few generic APIs and (cluster-)parallel rendering systems exist which
-include VR Juggler \cite{BJHMBC:01} (and its derivatives), Chromium
+Only few generic APIs and (cluster-)parallel rendering systems exist,
+including VR Juggler \cite{BJHMBC:01} (and its derivatives), Chromium
 \cite{HHNFAKK:02} (an evolution of \cite{Humphreys99,Humphreys00,HEBSEH:01}),
 {ClusterGL}~\cite{NHM:11} and OpenGL Multipipe SDK
 \cite{JDBJBCER:04,BRE:05,MPK}. These approaches can be categorised into
@@ -238,60 +238,61 @@ the parallelisation of the application rendering code (\fig{fChromium}).
  \includegraphics[width=\textwidth]{images/chromiumVsEq}
  \caption{Parallel Execution versus Transparent OpenGL Interception\label{fChromium}}
 \end{figure}
+Explanation of figure?
 
 \subsubsection{VRJuggler}
 
 VR Juggler \cite{BJHMBC:01,JBBC:98} is a graphics framework for virtual reality
-applications which shields the application developer from the underlying
-hardware architecture, devices and operating system. Its main aim is to make
-virtual reality configurations easy to set up and use without the need to know
-details about the devices and hardware configuration, but not specifically to
+applications, shielding the application developer from the underlying
+hardware architecture, devices and operating system. Its main aim is ease of use
+in virtual reality configurations and use, without the need to know
+about the devices and hardware configuration details, but not specifically to
 provide scalable rendering. Extensions of VR Juggler, such as for example
 ClusterJuggler \cite{BC:03} and NetJuggler \cite{AGLMR:02}, are typically based
-on the replication of application and data on each cluster node and basically
+on the replication of application and data on each cluster node and only
 take care of synchronisation issues, but fail to provide a flexible and
 powerful configuration mechanism that efficiently supports scalable rendering
 as also noted in \cite{SWNH:03}. VR Juggler does not support scalable parallel
 rendering such as sort-first and sort-last task decomposition and image
-compositing nor does it provide support for network swap barriers
+compositing, nor does it provide support for network swap barriers
 (synchronisation), distributed objects, image compression and transmission, or
 multiple rendering threads per process, important for multi-GPU systems.
 
 \subsubsection{Chromium}
 
 Chromium \cite{HHNFAKK:02} provides a powerful and transparent abstraction of
-the OpenGL API that allows a flexible configuration of display resources. Its
-main limitation with respect to scalable rendering is that it is focused on
+the OpenGL API allowing a flexible configuration of display resources. Its
+main limitation, with respect to scalable rendering, is its focus on
 streaming OpenGL commands through a network of nodes, often initiated from a
-single source. This has also been observed in \cite{SWNH:03}. The problem comes
-in when the OpenGL stream is large in size, due to not only containing OpenGL
-calls but also geometry and image data. Only if the geometry and textures are
+single source. This has also been observed in \cite{SWNH:03}.
+If the OpenGL stream is large in size, due to not only containing OpenGL
+calls, but also geometry and image data ???. Only if the geometry and textures are
 mostly static and can be kept in GPU memory on the graphic card, no
-significant bottleneck can be expected as then the OpenGL stream is composed of
-a relatively small number of rendering instructions. However, as it is typical
-in real-world visualization applications, display and object settings are
+significant bottleneck can be expected, as the OpenGL stream is then composed of
+a relatively small number of rendering instructions. For typical
+real-world visualization applications, display and object settings are
 interactively manipulated, data and parameters may change dynamically, and
-large data sets do not fit statically in GPU memory but are often dynamically
+large data sets do not fit statically in GPU memory, but are often dynamically
 loaded from out-of-core and/or multi-resolution data structures. This can lead
-to frequent updates not only of commands and parameters wich have to be
-distributed but also of the rendered data itself (geometry and texture), thus
+to frequent updates not only of commands and parameters which have to be
+distributed, but also of the rendered data itself (geometry and texture), thus
 causing the OpenGL stream to expand dramatically. Furthermore, this stream of
 function calls and data must be packaged and broadcast in real-time over the
 network to multiple nodes for each rendered frame. This makes CPU performance
-and network bandwidth a more likely limiting factor.
+and network bandwidth more likely the limiting factor.
 
 The performance experiments in \cite{HHNFAKK:02} indicate that Chromium is
-working quite well when the rendering problem is fill-rate limited. This is due
+working well when the rendering problem is fill-rate limited. This is due
 to the fact that the OpenGL commands and a non-critical amount of rendering data
-can be distributed to multiple nodes without significant problems and since the
+can be distributed to multiple nodes without significant problems. The
 critical fill-rate work is then performed locally on the graphics hardware.
 
-Chromium also provides some facilities for parallel application development,
-namely a sort-last, binary-swap compositing SPU and an OpenGL extension
+Chromium also provides some facilities for parallel application development:
+A sort-last, binary-swap compositing SPU and an OpenGL extension
 providing synchronisation primitives, such as a barrier and semaphore. It leaves
-other problems, such as configuration, task decomposition as well as process and
+other problems, like configuration, task decomposition, process and
 thread management unaddressed. Parallel Chromium applications tend to be written
-for one specific parallel rendering use case, such as for example the sort-first
+for one specific parallel rendering use case, e.g. the sort-first
 distributed memory volume renderer \cite{BHPB:03} or the sort-last parallel
 volume renderer raptor \cite{Raptor}. We are not aware of a generic
 Chromium-based application using many-to-one sort-first or stereo
@@ -1841,8 +1842,19 @@ balance is reversed. Typically, a volume renderer is bound in fragment
 processing. COnsequently, sort-first rendering scales better than sort-last,
 since the screenspace is equally divided. For both renderer, one can nicely
 observe static imbalances in the zig-zag graphs, where odd number of resources
-coincidentally split the rendering load imbalanced.
+coincidentally split the rendering load less balanced than even numbers.
 
+Tile compounds provide close to linear scalability, and in some cases
+super-linear scaling. Compared to the other compounds, tile compounds are
+naturally load balanced, providing this excellent scalability relative to
+static sort-first and sort-last. Super-linear scaling is due to their small
+work package size, which makes rendering more cache-friendly. Polygonal
+rendering has a higher static overhead per tile due to the CPU-side view
+frustum culling, and therefore scales less well compared to volume rendering.
+
+Pixel compounds
+provide predictable scalability, but fail to approach ideal linear scaling due
+to their increased compositing cost and constant geometry load.
 
 \chapter{Compositing}\label{sCompositing}
 
