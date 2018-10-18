@@ -9,10 +9,13 @@ data acquisition, computing is now well in the big data age, where future
 advances are measured in our capability to extract meaningful information from
 the available data. Visual analysis based on the interactive rendering of
 three-dimensional data has been proven to be a particularly efficient approach
-to gain intuitive insight into spatial structures and the relations of very large
-3D data sets. These developments create new, unique challenges for applications
-and system software to enable users to fully exploit the available resources to
-gain insight from their data.
+to gain intuitive insight into spatial structures and the relations of very
+large 3D data sets. For example, the electrical slice simulation in
+\fig{FIG_teaser}~(top left) contains millions of voltage samples per time step.
+A visualisation makes this electrical activity immediately understandable, and
+highlights eventual anomalies in the simulation. These developments create new,
+unique challenges for applications and system software to enable users to fully
+exploit the available resources to gain insight from their data.
 
 The quantity of computed, measured or collected data is growing exponentially,
 fuelled by the pervasive diffusion of digitalisation in modern life. Moreover,
@@ -25,7 +28,7 @@ a number of science and technology domains.
 \begin{figure}[h!t]%
 \includegraphics[width=0.497\textwidth]{images/slices.jpg}\hfil\includegraphics[width=0.497\textwidth]{images/cave2.jpg}\\%
 \includegraphics[width=0.497\textwidth]{images/cave.jpg}\hfil\includegraphics[width=0.497\textwidth]{images/tide.jpg}\\%
-\caption{\label{FIG_teaser}Large Data Cisualization of a
+\caption{\label{FIG_teaser}Large Data Visualization of a
   Brain Simulation, Molecular Visualization in the Cave~2, Exploration of EM
   Stack Reconstructions in a Cave, Collaborative Data Analysis on a Tiled
   Display Wall}
@@ -35,11 +38,11 @@ Display technology has made significant progress in the last decade:
 High-resolution screens and tiled display walls are now affordable for most
 organisations, and are getting deployed at an increasing rate. This increased
 resolution and display size helps with understanding the data through higher
-fidelity. The quadratic increase in pixels to be rendered,
-increases the pressure on rendering algorithms to deliver an interactive
-frame rate (hz?). Such large-scale visualization systems are often driven by multiple
-GPUs and workstations, making it natural, and most times necessary, to drive
-them using parallel and distributed applications.
+fidelity, but causes a quadratic increase in pixels to be rendered, which in
+turn challenges rendering algorithms to deliver an interactive frame rate. Such
+large-scale visualization systems are often driven by multiple GPUs and
+workstations, making it natural, and most times necessary, to drive them using
+parallel and distributed applications.
 
 However, not only applications are becoming more and more data-driven, but also
 the technology used to tackle these kinds of problems has been witnessing a
@@ -48,15 +51,14 @@ cluster solutions. On one hand, parallelism within a system has increased
 massively, with tenths of CPU cores, thousands of GPU cores and multiple CPUs
 and GPUs in a single system. On the other hand, massively parallel distributed
 systems are easily accessible from various cloud infrastructure providers, and
-are also affordable for on-site hosting for many organisations. They have become
-the <bla> of choice.
+are also affordable for on-site hosting for many organisations.
 
 System software to exploit the available hardware parallelism capable of
-performing efficient interactive data exploration, has not kept up with the pace
+performing efficient interactive data exploration has not kept up with the pace
 in hardware developments and data gathering capabilities. Mostly, this is
-due to an inherent delay between hardware and software capabilities(?), as
+due to an inherent delay between hardware and software capabilities, as
 development typically only starts once the hardware is available. Secondly,
-existing software is often engineered for different design parameters (being?) and
+existing software is often engineered for different design parameters and
 has a significant inertia to change, to the extreme cost of having to rewrite
 it from scratch.
 
@@ -87,7 +89,7 @@ minimising synchronisation between the parallel execution threads.
 
 When starting from a given rendering problem, the first task of a parallel
 rendering system is to decompose (parallelise) this task into independent
-sub-tasks, each rendered by a separate resource (in parallel). While the basics
+sub-tasks, each rendered by a separate resource in parallel. While the basics
 of this decomposition have been researched extensively, there are architectural
 challenges to make these decompositions easily available in a generic and
 structured manner. Load balancing these tasks for an optimal
@@ -99,7 +101,7 @@ hundreds of millions of pixels.
 By scaling up the amount of resources employed to accelerate the
 rendering task, the task of combining the partial results from each resource
 becomes more challenging. In particular for sort-last rendering, where the
-amount of? data to composite grows linearly with the amount of parallel resources
+amount of data to composite grows linearly with the amount of parallel resources
 used, keeping the compositing time within the available budget is a non-trivial
 problem.
 
@@ -107,7 +109,7 @@ Interactive visualization poses its own unique set of challenges. The goal is to
 present a believable alternate universe to the visual system of the user. This
 process turns interactive visualization into a powerful tool, by utilising
 the brains' native capabilities to interpret and understand data. Virtual
-Reality (VR) takes this goal further, and when done right, makes the user
+Reality (VR) takes this goal to the extreme, and when done right, makes the user
 forget that he interacts with a virtual world.
 
 To achieve this goal, visualization has the daunting task to transform large
@@ -1833,16 +1835,18 @@ performance.
 For static task decomposition, polygonal rendering performs better with
 sort-last compared to sort-first. Sort-last performs a static decomposition in
 data space, which reduces the geometry processing load per GPU, which is the
-dominant factor in most polygonal rendering codes. Since this decomposition can
+dominant factor in our polygonal rendering code. Since this decomposition can
 be computed easily, even a static decomposition is relatively balanced. A
 sort-first decomposition can reduce the geometry processing through view
 frustum culling, but the remaining visible set will be relatively unbalanced on
-each GPU, depending on the current camera position. For volume rendering, this
-balance is reversed. Typically, a volume renderer is bound in fragment
-processing. COnsequently, sort-first rendering scales better than sort-last,
-since the screenspace is equally divided. For both renderer, one can nicely
-observe static imbalances in the zig-zag graphs, where odd number of resources
-coincidentally split the rendering load less balanced than even numbers.
+each GPU, depending on the current camera position.
+
+For volume rendering, this balance is reversed and sort-first performs better.
+Typically, a volume renderer is bound in fragment processing. Consequently,
+sort-first rendering scales better than sort-last, since the screenspace is
+equally divided. For both renderering algorithms, one can observe static
+imbalances in the zig-zag graphs, where odd number of resources coincidentally
+split the rendering load less balanced than even numbers.
 
 Tile compounds provide close to linear scalability, and in some cases
 super-linear scaling. Compared to the other compounds, tile compounds are
@@ -1852,9 +1856,13 @@ work package size, which makes rendering more cache-friendly. Polygonal
 rendering has a higher static overhead per tile due to the CPU-side view
 frustum culling, and therefore scales less well compared to volume rendering.
 
-Pixel compounds
-provide predictable scalability, but fail to approach ideal linear scaling due
-to their increased compositing cost and constant geometry load.
+Pixel compounds provide predictable scalability, but fail to approach ideal
+linear scaling due to their increased compositing cost and constant geometry
+load.
+
+Benchmarks \ref{rCompounds} \ref{rEqualizers}, \ref{rCSLBFPS} and \ref{rCSLB}
+provide more realistic scalability data when using these compounds with load
+balancers.
 
 \chapter{Compositing}\label{sCompositing}
 
