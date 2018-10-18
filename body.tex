@@ -7,17 +7,17 @@
 After decades of exponential growth in computational performance, storage and
 data acquisition, computing is now well in the big data age, where future
 advances are measured in our capability to extract meaningful information from
-the available data. Visual analysis based on interactive rendering of
+the available data. Visual analysis based on the interactive rendering of
 three-dimensional data has been proven to be a particularly efficient approach
-to gain intuitive insight into the spatial structure and relations of very large
+to gain intuitive insight into spatial structures and the relations of very large
 3D data sets. These developments create new, unique challenges for applications
 and system software to enable users to fully exploit the available resources to
 gain insight from their data.
 
-The quantity of computed, measured or collected data is exponentially growing,
-fueled by the pervasive diffusion of digitalisation in modern life. Moreover,
+The quantity of computed, measured or collected data is growing exponentially,
+fuelled by the pervasive diffusion of digitalisation in modern life. Moreover,
 the fields of science, engineering and technology are increasingly defined by a
-data driven approach to conduct research and development. High-quality and
+data-driven approach to research and development. High-quality and
 large-scale data is continuously generated at a growing rate from sensor and
 scanning systems, as well as from data collections and numerical simulations in
 a number of science and technology domains.
@@ -31,13 +31,13 @@ a number of science and technology domains.
   Display Wall}
 \end{figure}
 
-Display technology has made significant progress in the last decade.
+Display technology has made significant progress in the last decade:
 High-resolution screens and tiled display walls are now affordable for most
-organisations and are getting deployed at an increasing rate. This increased
+organisations, and are getting deployed at an increasing rate. This increased
 resolution and display size helps with understanding the data through higher
-fidelity, but with the quadratic increase in pixels to be rendered, it
+fidelity. The quadratic increase in pixels to be rendered,
 increases the pressure on rendering algorithms to deliver an interactive
-frame rate. Such large-scale visualization systems are often driven by multiple
+frame rate (hz?). Such large-scale visualization systems are often driven by multiple
 GPUs and workstations, making it natural, and most times necessary, to drive
 them using parallel and distributed applications.
 
@@ -48,25 +48,26 @@ cluster solutions. On one hand, parallelism within a system has increased
 massively, with tenths of CPU cores, thousands of GPU cores and multiple CPUs
 and GPUs in a single system. On the other hand, massively parallel distributed
 systems are easily accessible from various cloud infrastructure providers, and
-are also affordable for on-site hosting for many organisations.
+are also affordable for on-site hosting for many organisations. They have become
+the <bla> of choice.
 
 System software to exploit the available hardware parallelism capable of
-performing efficient interactive data exploration has not kept up with the pace
-in hardware developments and data gathering capabilities. On one hand, this is
-due to an inherent delay between hardware and software capabilities, since
-development typically only starts once the hardware is available. On the other
-hand, existing software is often engineered for different design parameters and
-has a significant inertia to change, to the extreme of the necessity to rewrite
+performing efficient interactive data exploration, has not kept up with the pace
+in hardware developments and data gathering capabilities. Mostly, this is
+due to an inherent delay between hardware and software capabilities(?), as
+development typically only starts once the hardware is available. Secondly,
+existing software is often engineered for different design parameters (being?) and
+has a significant inertia to change, to the extreme cost of having to rewrite
 it from scratch.
 
 In the context of emerging data-intensive knowledge discovery and data analysis,
-efficient interactive data exploration methodologies have become increasingly
-important. Visual analysis by means of interactive visualization and inspection
+efficient interactive data exploration methodologies have become critical.
+Visual analysis by means of interactive visualization and inspection
 of three-dimensional data is a particularly efficient approach to gain intuitive
 insight into the spatial structure and relations of very large 3D data sets.
-However, defining visual and interactive methods scalable with problem size and
+However, defining visual and interactive methods scaling with problem size and the
 degree of parallelism, as well as generic applicability of high-performance
-interactive visualization methods and systems are recognised among the major
+interactive visualization methods and systems, are recognised among the major
 current and future challenges.
 
 \section{Challenges}
@@ -1810,6 +1811,38 @@ processes during the stereo switch.
  \includegraphics[width=\columnwidth]{images/stereoSwitch}
  {\caption{\label{fStereoSwitch}Stereo-Selective Compound}}
 \end{figure}
+
+\section{Benchmarks}
+
+Benchmarks for static compound configurations are relatively rare, since most
+practical settings use some type of load balancing. They are however
+interesting in that they show how well different rendering algorithms are
+naturally load-balanced. In \cite{ESP:18}, we collected some data for polygonal
+and volume rendering. \bench{rStatic} provides a strong scalability benchmark
+for both types of rendering and a set of compounds. The solid line provides a
+theoretical linear scaling for the single-threaded, single-GPU rendering
+performance.
+
+\begin{benchmark}[h!t]\center
+ \includegraphics[width=\columnwidth]{results/static}
+ {\caption{\label{rStatic}Compound Scalability}}
+\end{benchmark}
+
+
+For static task decomposition, polygonal rendering performs better with
+sort-last compared to sort-first. Sort-last performs a static decomposition in
+data space, which reduces the geometry processing load per GPU, which is the
+dominant factor in most polygonal rendering codes. Since this decomposition can
+be computed easily, even a static decomposition is relatively balanced. A
+sort-first decomposition can reduce the geometry processing through view
+frustum culling, but the remaining visible set will be relatively unbalanced on
+each GPU, depending on the current camera position. For volume rendering, this
+balance is reversed. Typically, a volume renderer is bound in fragment
+processing. COnsequently, sort-first rendering scales better than sort-last,
+since the screenspace is equally divided. For both renderer, one can nicely
+observe static imbalances in the zig-zag graphs, where odd number of resources
+coincidentally split the rendering load imbalanced.
+
 
 \chapter{Compositing}\label{sCompositing}
 
