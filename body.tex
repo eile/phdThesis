@@ -378,9 +378,9 @@ we list the relevant publications and specify the contributions of the author.
 
 \section{Parallel Rendering Architecture}
 
-A major contribution of this thesis is the formalisation and implementation of
-an architecture for a parallel rendering framework, which advances the state of
-the art in many aspects:
+A major contribution of this thesis is the formalisation of the architecture of
+a parallel rendering framework and its reference implementation, which advances
+the state of the art in many aspects:
 
 \begin{compactdesc}
 
@@ -407,15 +407,6 @@ how the rendering code will be executed. This clear separation yields parallel
 rendering applications which can be deployed on a wide set of installations,
 and are often configured in ways unforeseen during their deployment.
 
-\item[Compound trees:] The introduction of compounds, and their underlying
-formalism, provides a formalisation of a flexible task decomposition and result
-recomposition for parallel rendering. Compound trees allow for easy specification
-of complex parallel task decomposition strategies which are automatically
-implemented and executed by the Equalizer system. They generalise parallel
-rendering principles without hardcoding a specific parallel rendering algorithm,
-thus proposing an orthogonal parameter set for decomposing rendering tasks,
-assembling results, and adapting these parameters at runtime.
-
 \item[Display abstraction:] Large scale visualization systems cover a wide set
 of use cases from classical workstation setup to monoscopic tiled display
 walls, stereoscopic, edge-blended multi-projector walls to fully immersive
@@ -425,13 +416,33 @@ abstraction provides a simple configuration of all these installations and
 empowers applications using these installations with 2D and 3D contextual
 information, runtime stereo configuration, and head tracking.
 
+\item[Compound trees:] The introduction of compounds, and their underlying
+formalism, provides a formalisation of a flexible task decomposition and result
+recomposition for parallel rendering. Compound trees allow for easy
+specification of complex parallel task decomposition strategies which are
+implemented and executed by the Equalizer system. They generalise parallel
+rendering principles without hardcoding a specific parallel rendering
+algorithm, thus proposing an orthogonal parameter set for decomposing rendering
+tasks, assembling results, and adapting these parameters at runtime.
+Furthermore, they facilitate new parallel rendering research due to their
+flexibility and extensibility.
+
+\item[Equalizers:] The namesake of our framework, they are active components
+hooked into a compound tree, and modify compound tree parameters at runtime.
+For example, a sort-first load balancer adapts the sub-viewports assigned to
+each resource at runtime. Compounds are the passive configuration, and
+equalizers are the active component to optimize this configuration dynamically.
+This makes their implementation independent of the rest of the framework,
+providing a powerful abstraction for research and development of better
+resource usage for parallel rendering.
+
 \item[Modular architecture:] Our architecture uses layered abstractions which
 gradually provide higher level abstractions. On the low level, a network
 library for distributed abstractions provides the substrate for Equalizer and
 applications. Within each library, a clear separation of responsibilities
 allows to combine existing algorithms easily. For example, an advanced feature
-such as cross-segment load balancing relies on per-segment load balancers, and
-both load balancers reconfigure the underlying compound tree each frame.
+such as a cross-segment equalizer relies on per-segment load equalizers, and
+both equalizers reconfigure the underlying compound tree each frame.
 
 \end{compactdesc}
 
