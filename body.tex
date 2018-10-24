@@ -162,8 +162,8 @@ rendering frameworks have been developed.
  \caption{Sort-Last, Sort-Middle and Sort-First Parallel Rendering\label{fSorts}}
 \end{figure}
 
-Sort-last rendering decomposes the rendering task at the data level, so
-each resource renders a part of the data In the end partial fragments from
+Sort-last rendering decomposes the rendering task at the data level, that is,
+each resource renders a part of the data. In the end partial fragments from
 each resource are composited into a final result. Sort-middle rendering
 also decomposes the rendering at the data level, but collects and sorts the
 unshaded primitives before or after rasterisation, and then performs the
@@ -186,7 +186,7 @@ for parallel rendering in specific application domains such as volume rendering
 geo-visualisation \cite{VR:91,AG:95,LDC:96,JLMV:06}. However, such specific
 solutions are typically not applicable as a generic parallel rendering paradigm
 and do not translate to arbitrary scientific visualization and distributed
-graphics problems (+interactive?).
+graphics problems.
 
 In \cite{NC:07} parallel rendering of hierarchical level-of-detail (LOD) data
 has been addressed and a solution specific to sort-first tile-based parallel
@@ -200,7 +200,7 @@ sort-first parallel rendering solutions.
 Historically, high-performance real-time rendering systems have relied on an
 integrated proprietary system architecture, such as the early SGI graphics supercomputers. Special purpose solutions have become a niche product as their
 graphics performance did not keep up with off-the-shelf workstation graphics
-hardware and scalability of clusters. (+cost?)
+hardware and scalability of clusters.
 
 Due to its conceptual simplicity, a number of special purpose image compositing
 hardware solutions for sort-first parallel rendering have been developed. The
@@ -240,7 +240,6 @@ the parallelisation of the application rendering code (\fig{fChromium}).
  \includegraphics[width=\textwidth]{images/chromiumVsEq}
  \caption{Parallel Execution versus Transparent OpenGL Interception\label{fChromium}}
 \end{figure}
-Explanation of figure?
 
 \subsubsection{VRJuggler}
 
@@ -264,11 +263,11 @@ multiple rendering threads per process, important for multi-GPU systems.
 
 Chromium \cite{HHNFAKK:02} provides a powerful and transparent abstraction of
 the OpenGL API allowing a flexible configuration of display resources. Its
-main limitation, with respect to scalable rendering, is its focus on
+main limitation with respect to scalable rendering is its focus on
 streaming OpenGL commands through a network of nodes, often initiated from a
 single source. This has also been observed in \cite{SWNH:03}.
-If the OpenGL stream is large in size, due to not only containing OpenGL
-calls, but also geometry and image data ???. Only if the geometry and textures are
+This is caused by the size of the OpenGL stream, due to not only containing OpenGL
+calls, but also geometry and image data. Only if the geometry and textures are
 mostly static and can be kept in GPU memory on the graphic card, no
 significant bottleneck can be expected, as the OpenGL stream is then composed of
 a relatively small number of rendering instructions. For typical
@@ -295,7 +294,7 @@ providing synchronisation primitives, such as a barrier and semaphore. It leaves
 other problems, like configuration, task decomposition, process and
 thread management unaddressed. Parallel Chromium applications tend to be written
 for one specific parallel rendering use case, e.g. the sort-first
-distributed memory volume renderer \cite{BHPB:03} or the sort-last parallel
+distributed memory volume renderer in \cite{BHPB:03}, or the sort-last parallel
 volume renderer raptor \cite{Raptor}. We are not aware of a generic
 Chromium-based application using many-to-one sort-first or stereo
 decompositions.
@@ -1449,7 +1448,7 @@ reliability.
 Runtime reconfiguration is designed to be a side effect of the internal resource
 management algorithm, that is, the initialization and exit of a configuration
 uses the same code path as the runtime addition of a single channel. Rendering
-resources in Equalizer are ref-counted by the compounds using them, and the
+resources in Equalizer are reference counted by the compounds using them, and the
 state change between inactivated and activated triggers a launch or stop of the
 associated resource. These resource counters are propagated up the resource
 hierarchy, that is, a channel will (de)activate its window, pipe and node.
