@@ -720,7 +720,7 @@ parallel view frustum culling on each render thread.
 
 Equalizer is a framework to facilitate the development of distributed and
 multi-threaded parallel rendering applications. The programming interface is
-a set of C++ classes, modelled closely to the resource hierarchy of a
+based on a set of C++ classes, modelled closely to the resource hierarchy of a
 graphics rendering system. The application subclasses these objects and
 overrides C++ task methods, similar to C callbacks. These task methods will be
 called in parallel by the framework, depending on the current configuration.
@@ -3525,14 +3525,14 @@ and the visualisation Toolkit (VTK).
 \section{Summary}
 
 Formalising, designing and implementing a generic parallel rendering framework,
-that can serve both complex applications and research, has been no easy task. (due to conflicting requirements?)
+that can serve both complex applications and research, has been no easy task.
 Based on the analysis of Cavelib, practical experience in implementing and
 deploying OpenGL Multipipe SDK, we have been in the unique position to make
 significant contributions in this area. Equalizer, our parallel rendering
 framework, allowed us to take parallel rendering research to a new level. It
-enables the easy? implementation of new decomposition algorithms, many
+enabled us to easily implement new decomposition algorithms, many
 improvements for result composition, novel load balancing schemes, and numerous
-whole system optimisations, all of which are much harder(quanitfy, life is hard) without such a
+whole system optimisations, all of which are much harder to research without such a
 framework and associated applications. This is not only supported by the
 contributions of this thesis, but by other publications and doctoral theses
 completed using Equalizer. This research has not only been performed in the
@@ -3542,7 +3542,7 @@ of Illinois at Chicago for Cave2 research.
 
 Beyond the core system design, we have incorporated many new parallel rendering
 algorithms into our framework. Most notably, cross-segment load balancing
-provides a novel(repeat) approach to better/improve assign/ing multiple rendering resources to
+provides a novel approach to better assign multiple rendering resources to
 multi-display systems. It maximises rendering locality for the display GPUs and
 is not limited to planar displays, compared to other approaches.
 
@@ -3553,10 +3553,10 @@ parallel rendering with new decomposition modes, compositing algorithms, better
 load balancing and an asynchronous rendering pipeline. Last, but not least, a
 network library for distributed, interactive visualisation applications greatly
 facilitates the task to distribute and synchronise application state in a
-parallel rendering system. (is mehr als nur ne cherry, oder?)
+parallel rendering system.
 
 Beyond the scope of this thesis, Equalizer has influenced the field and has
-been used in various commercial and research applications (link/quote). These applications
+been used in various commercial and research applications. These applications
 span a wide field of domains, from virtual prototyping, interactive raytracing,
 large-scale volume rendering, terrain rendering, neuroscience applications, to
 next-generation visualisation systems such as collaborative tiled display walls
@@ -3565,21 +3565,21 @@ and hybrid 2D/3D setups such as the Cave2.
 \section{Future Work}
 
 We consider the core parallel rendering framework largely feature complete,
-with exception of keeping up with new hardware technologies, e.g. providing glue
-code for the Vulkan API, or exploiting new Multi-GPU extensions. A
-large amount of work remains to make parallel rendering more accessible (to?). This may be
-addressed by simplified APIs layered on top of Equalizer, and through integrations with
-popular rendering toolkits. On the other hand, it should address operators and
-users of visualisation systems through simplified configuration, monitoring and
-administration tools.??
+with the exception of keeping up with new technologies, e.g., providing glue
+code for the Vulkan API or exploiting new Multi-GPU extensions. There remains a
+large amount of work to make parallel rendering more accessible. This may be
+addressed by simplified APIs layered on top of Equalizer, and through
+integrations with popular rendering toolkits. Future work should also address
+operators and users of visualisation systems through simplified configuration,
+monitoring and administration tools.
 
-There is still a significant amount of research in automatically selecting the best
-decomposition and recomposition algorithm as well as the resources used
+There is still a significant amount of research in automatically selecting the
+best decomposition and recomposition algorithm, as well as the resources used
 for a given application. This task becomes even more challenging when
-considering changes/fluctuations? of the rendering load and algorithm during the runtime of
+considering changes in the rendering load and algorithm during the runtime of
 an application. Furthermore, implementing load balancing for the compositing
-task is an area largely unexplored, in particular in combination with state
-of the art optimisations (like?).
+task is an area largely unexplored, in particular in combination with state of
+the art optimisations.
 
 We foresee an increasing importance for interactive raytracing, which has its
 own set of challenges for parallel rendering. In particular for large data
