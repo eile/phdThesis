@@ -28,8 +28,8 @@ a number of science and technology domains.
 \begin{figure}[h!t]%
 \includegraphics[width=0.497\textwidth]{images/slices.jpg}\hfil\includegraphics[width=0.497\textwidth]{images/cave2.jpg}\\%
 \includegraphics[width=0.497\textwidth]{images/cave.jpg}\hfil\includegraphics[width=0.497\textwidth]{images/tide.jpg}\\%
-\caption{\label{FIG_teaser}Large Data visualisation of a
-  Brain Simulation, Molecular visualisation in the Cave~2, Exploration of EM
+\caption{\label{FIG_teaser}Large Data Visualisation of a
+  Brain Simulation, Molecular Visualisation in the Cave~2, Exploration of EM
   Stack Reconstructions in a Cave, Collaborative Data Analysis on a Tiled
   Display Wall}
 \end{figure}
@@ -411,7 +411,7 @@ rendering applications which can be deployed on a wide set of installations (wih
 and are often configured in ways unforeseen during their deployment (sounds bad).
 
 \item[Display abstraction:] Large scale visualisation systems cover a wide set
-of use cases from a classical workstation setup to monoscopic tiled display
+of use cases from classical workstation setup to monoscopic tiled display
 walls, stereoscopic, edge-blended multi-projector walls to fully immersive
 installations CAVE systems. Consequently, applications running on these
 systems serve many different use cases. Our novel canvas-layout
@@ -467,8 +467,8 @@ was given to reducing cost for the expensive compositing step of sort-last
 rendering.
 
 \cite{EP:07} provides an analysis of parallel compositing algorithms in an
-early version of our parallel rendering framework, and we show the advantages of send
-compositing over commodity visualisation clusters. The
+early version of our parallel rendering framework, and we show that direct send
+compositing has advantages on commodity visualisation clusters. The
 implementation, algorithm and experimental analysis in this paper are
 contributed by the author.
 
@@ -488,8 +488,8 @@ experimental analysis.
 
 \section{Load Balancing}
 
-Optimal resource usage in large(r) visualisation clusters relies on even
-distribution of work over available resources. This load balancing problem
+Optimal resource usage in larger visualisation clusters relies on an even
+distribution of work over the available resources. This load balancing problem
 requires real-time algorithms based on imperfect knowledge of the system and
 application behaviour. In our architecture, load balancing is achieved by modifying
 the compound tree parameters at runtime. For example, a sort-first load balancer
@@ -506,7 +506,7 @@ provide better performance in realistic scenarios.
 \cite{EEP:11} introduces a novel algorithm for load balancing an arbitrary set
 of rendering resources to drive visualisation installations with many output
 displays, like tiled display walls or multi-projector systems. The author
-contributed the algorithm and the implementation for this publication.
+contributed the algorithm and implementation for this publication.
 
 \cite{SPEP:16} provides an implementation and detailed analysis of central task
 queueing with work packages and different task affinity modes for sort-first and
@@ -516,20 +516,20 @@ this publication.
 \chapter{Parallel Rendering Architecture}\label{sArchitecture}
 
 \section{Overview}
-A generic parallel rendering framework has to cover a wide range of use cases,
-target systems, and configurations. It has to balance a strong
-separation between the application implementation and its configuration,
-and a careful design allowing the resulting program to scale
-up to hundreds of nodes, while providing a minimally invasive API for the
-developer. In this section we present the system architecture of the Equalizer
-parallel rendering framework, and the motivation for its design in contrast to related
-work.
 
-The motivation for using parallel rendering is driven by either the need to control
-multiple displays or projectors from multiple GPUs (and potentially multiple
-nodes), or by the need to increase rendering performance to visualise
-more data _or use a more demanding rendering algorithm for higher visual quality_ (Eh).
-Occasionally both needs coincide, e.g. for the analysis for large data
+A generic parallel rendering framework has to cover a wide range of use cases,
+target systems, and configurations. This requires a strong separation between
+the implementation of the application and its configuration, linked with a
+careful design to allow the resulting program to scale up to hundreds of nodes,
+while providing a minimally invasive API for the developer. In this section we
+present the system architecture of the Equalizer parallel rendering framework,
+and motivate its design in contrast to related work.
+
+The motivation to use parallel rendering is either driven by the need to drive
+multiple displays or projectors from multiple GPUs and potentially multiple
+nodes, or by the need to increase rendering performance to visualise
+more data or use a more demanding rendering algorithm for higher visual quality.
+Occasionally both needs coincide, e.g., for the analysis for large data
 sets on high fidelity visualisation systems.
 
 Parallel rendering has similarities to other distributed computing domains like
@@ -541,26 +541,27 @@ to load balance the parallel task execution, minimise synchronisation and
 communication overhead, as well as to find a task decomposition which allows
 to produce correct results.
 
-Scalable rendering has one significant additional constraint: serving
+Parallel rendering has one significant additional constraint: serving
 an interactive use case. Depending on the application domain and visualisation
-system, a typical framerate between 10~Hz and 120~Hz is required for
+system, typically a framerate between 10~Hz and 120~Hz is required for
 useful user interaction. In turn, this translates to a budget of 8~ms to
-100~ms for task decomposition of the task to render a frame, perform parallel rendering,
-and composite and display the result. In comparison, cloud computing and
-HPC typically have turnaround times of seconds to hours for results. Therefore many
-algorithms for parallel rendering compute suboptimal solutions,
+100~ms to decompose the task to render a frame, perform parallel rendering,
+and to composite and display the result. In comparison, cloud computing and
+HPC typically have turnaround times of seconds to hours. Therefore many
+algorithms for parallel rendering compute a suboptimal solution,
 but do so in at most a few milliseconds.
 
 Fundamentally two approaches enable applications to use multiple
 GPUs: transparent interception at the graphics API (typically OpenGL), or
-extending the application to support parallel rendering natively. The first
-approach has been extensively explored by Chromium and others, while the second
-is the foundation of this thesis. The architecture of Equalizer is founded on
-an in-depth requirements analysis of typical visualisation applications,
-existing frameworks, and previous work on OpenGL Multipipe SDK.
+extending the application to support parallel rendering natively
+(\fig{fChromium}). The first approach has been extensively explored by Chromium
+and others, while the second is the foundation for this thesis. The
+architecture of Equalizer is founded on an in-depth requirements analysis of
+typical visualisation applications, existing frameworks, and previous work on
+OpenGL Multipipe SDK.
 
 The task of parallelising a visualisation application boils down to configuring
-the applications to render code differently for each resource, enabling this
+the application's rendering code differently for each resource, enabling this
 rendering code to access the correct data, and synchronising execution. For
 scalable rendering, when multiple GPUs are used to accelerate a single output,
 partial results need to be collected from all contributing resources, combined,
@@ -570,33 +571,31 @@ and send to the output.
 The architecture of our parallel rendering framework addresses the following research questions:
 \begin{compactitem}
   \item How can we reduce end-to-end system latency for better user experience?
-  \item In a generic parallel rendering framework, how can we schedule the different rendering stages to minimize the latency visible? the user?
-  \item How can we architect the parallel rendering framework to minimise synchronization between threads?\\[\medskipamount]
-  \sref{sAsyncExec} introduces our asynchronous execution model, which has been carefully designed to minimise synchronisation points, maximise pipelining and enables early display of rendered images.\\[\medskipamount]
+  \item In a generic parallel rendering framework, how can we schedule the different rendering stages to minimize the latency for the user?
+  \item How can we architect the parallel rendering framework to minimize synchronization between threads?\\[\smallskipamount]
 
-\item How can we maximize impact of this research on large data
-scientists? what does that mean? \\[\medskipamount]
+\sref{sAsyncExec} introduces our asynchronous execution model, which has been
+carefully designed to minimise synchronisation points, maximise pipelining and
+enables early display of rendered images.\\[\smallskipamount]
 
-Ultimately, accessible applications determine impact for large data
-research. Various pieces have to come together to make these applications
-happen. With Equalizer we provide the required base building blocks (items better?): a minimally
-invasive API and distributed execution layer lowering the entry barrier for
-application developers, a flexible configuration with a clear separation of
+\item How can we maximize the impact of this research on large data
+scientists?\\[\smallskipamount]
+
+Ultimately, accessible applications determine the impact for large data
+research. With Equalizer we provide the base building blocks: a minimally
+invasive API and distributed execution layer to lower the entry barrier for
+application developers, a flexible configuration with a clear separation from
 the implementation, comprehensive VR features and tiled display wall
 integration addressing a wide set of visualisation installations. Various
 applications, introduced in \cref{sApplications}, have been developed using
-Equalizer.\\[\medskipamount]
+Equalizer.
 
 \end{compactitem}
 
-Equalizer has a strong separation of the rendering code from its runtime
-configuration. The configuration is laid out in a hierarchical resource
-description and compound trees configure the resources for parallel and
-scalable rendering. The configuration is a dynamic runtime structure, with a
-serialised configuration file format. In the following we will first describe
-the execution model and resource configuration, followed by how the generic
-configuration is used to model the desired visualisation setup, and finally
-introduce specifics of scalable and distributed rendering.
+In the following we will first describe the execution model and resource
+configuration, followed by how the generic configuration is used to model
+the desired visualisation setup, and finally introduce specifics of scalable
+and distributed rendering.
 
 \section{Asynchronous Execution Model}\label{sAsyncExec}
 
@@ -604,18 +603,18 @@ The core execution model for parallel rendering was pioneered by CAVELib
 \cite{DACNCCGHPSNS:97}, refined by OpenGL Multipipe SDK for shared memory
 systems and scalable rendering, and substantially extended by Equalizer for
 asynchronous and distributed execution. By analysing the typical architecture of
-a visualisation application we see an initialization phase, a main rendering
+a visualisation application we observe an initialization phase, a main rendering
 loop, and an exit phase. Equalizer decomposes these steps for parallel
 execution.
 
 The main rendering loop typically consists of four phases: submitting the
 rendering commands to the graphics subsystem, displaying the rendered image,
-and retrieving events from the operating system, based on which the application
+retrieving events from the operating system, based on which the application
 state is updated and a new image is rendered. Usually, the configuration of
-the rendering is largely hard-coded, with a few configurable parameters such as field of
-view or stereo separation. For parallel execution, we need to separate the
-rendering code from this main loop, and execute it in parallel with different
-rendering parameters, as shown in \fig{FIG_execution}. Similarly, the
+the rendering is largely hard-coded, with a few configurable parameters such as
+field of view or stereo separation. For parallel execution, we need to separate
+the rendering code from this main loop, and execute it in parallel with
+different rendering parameters, as shown in \fig{FIG_execution}. Similarly, the
 initialisation and exit phase also need to be decomposed to allow managing of
 multiple distributed resources.
 
@@ -626,12 +625,24 @@ multiple distributed resources.
  \label{FIG_execution}
 \end{figure}
 
-Another critical design parameter
-are synchronisation points. Most implementations use a per-frame barrier or
-similar synchronisation (fehlt was?) to manage parallel execution. In larger installations,
+\fig{fSyncAsync} shows the execution of the rendering tasks of a two-node
+sort-first compound without latency and with a latency of one frame. The
+asynchronous execution pipelines rendering operations and hides imbalances in
+the load distribution, resulting in an improved framerate. We have observed a
+speedup of 15\% on a five-node rendering cluster when using a latency of one
+frame instead of no latency in a sort-first configuration.
+
+\begin{figure}[h!t]\center
+ \includegraphics[width=\textwidth]{images/syncAsync}
+ {\caption{\label{fSyncAsync}Synchronous and Asynchronous Execution}}
+\end{figure}
+
+Another critical design parameter are synchronisation points. Most
+implementations, including OpenGL Multipipe SDK, use a per-frame barrier or
+similar synchronisation to manage parallel execution. In larger installations,
 this is detrimental to scalability, as even slight load imbalances limit
-parallel speed-up. The Equalizer execution model is fully asynchronous, and
-only introduces synchronisation points when strictly required. The main(default)
+parallel speedup. The Equalizer execution model is fully asynchronous, and only
+introduces synchronisation points when strictly required. The main
 synchronisation points are: configured swap barriers between a set of output
 channels which have to display simultaneously, the availability of input frames
 for scalable rendering, and a task synchronisation to prevent runaway of the
@@ -645,12 +656,28 @@ rendering, image readback, compression, network transmission, and compositing. (
 It also hides small imbalances in the task distribution, as they usually average
 out over multiple frames.
 
-\fig{fSyncAsync} shows the execution of the rendering tasks for a two-node
-sort-first compound without latency and with latency of one frame. The
-asynchronous execution pipeline rendering operations and hides imbalances in
-the load distribution, resulting in an improved framerate. We have observed a
-speedup of 15\% on a five-node rendering cluster when using a latency of one
-frame instead of no latency in a sort-first configuration. (repeat from above?)
+In practical scenerios, application initialisation and exit is also a factor
+for usability. Consequently, these phases are also parallelised in Equalizer. A
+first pass identifies the resources to be launched or terminated, kicks of the
+tasks, and then uses a second pass to synchronize their execution and results.
+
+\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{results/launch}
+ {\caption{\label{rLaunch}Parallel Application Startup}}
+\end{wrapfloat}
+
+\bench{rLaunch} shows the startup time of eqPly, our parallel polygon renderer.
+This benchmarks simply measures the time taken by \textsf{Config::init}, which
+includes the render client process creation using ssh from the application
+node, shared library loading from a shared filesystem, network setup, OpenGL
+and window initialisation, and object data mapping for the Equalizer resource
+instances and a few internal objects used by eqPly. The benchmark confirms that
+the application launch is scaling nicely to a medium cluster size. A slight
+increase in startup time with larger configurations is expected, since more
+processes increase the load on the shared filesystem as well as data
+distribution and synchronisation overheads. Due to the shared filesystem used
+for the executable, the startup times observe a large uncertainty, shown by the
+standard deviation bars.
 
 \begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/cr}
@@ -674,36 +701,31 @@ because the display lists have to be transmitted only once over the network,
 and only simple display calls will be processed and distributed by Chromium for
 each rendered frame.
 
-\begin{figure}[h!t]\center
- \includegraphics[width=\textwidth]{images/syncAsync}
- {\caption{\label{fSyncAsync}Synchronous and Asynchronous Execution}}
-\end{figure}
-
 Chromium initially increases performance when adding nodes, but it quickly
 stagnates, and even decreases, when more nodes are added. In contrast, Equalizer
 continually improves performance with more added nodes and exhibits a smooth
 drop-off in speed-up, due to the expected synchronisation and network overhead
 as the rendered data gets negligible in size per node. This performance
 difference is also due to the fact that Equalizer can benefit from distributed
-parallel view frustum culling.
+parallel view frustum culling on each render thread.
 
 
 \subsection{Programming Interface}
-
-Equalizer implements a framework to facilitate the development of distributed and
-multi-threaded parallel rendering applications. The programming interface is
-based on a set of C++ classes, modelled closely to the resource hierarchy of a
-graphics rendering system. The application subclasses these objects and
-overrides C++ task methods, similar to C callbacks. These task methods will be
-called in parallel by the framework, depending on the current configuration.
-This parallel rendering interface is significantly different from Chromium
-\cite{HHNFAKK:02} and more similar to VRJuggler \cite{BJHMBC:01} or OpenGL
-Multipipe SDK \cite{BRE:05}.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/processes}
  {\caption{\label{fProcessing}Parallel Rendering Entities}}
 \end{wrapfloat}
+
+Equalizer is a framework to facilitate the development of distributed and
+multi-threaded parallel rendering applications. The programming interface is
+a set of C++ classes, modelled closely to the resource hierarchy of a
+graphics rendering system. The application subclasses these objects and
+overrides C++ task methods, similar to C callbacks. These task methods will be
+called in parallel by the framework, depending on the current configuration.
+This parallel rendering interface is significantly different from Chromium
+\cite{HHNFAKK:02} and more similar to VRJuggler \cite{BJHMBC:01} and OpenGL
+Multipipe SDK \cite{BRE:05}.
 
 To separate the responsibilities in a parallel rendering application, different
 entities are responsible for different aspects of the runtime system: the
@@ -850,17 +872,9 @@ each GPU (draw) and one thread to finish asynchronous downloads (read), one
 thread for receiving network data (recv), one command processing thread (cmd),
 and one thread for image transmission to other nodes (xmit). We have
 implemented automatic thread placement by extending and using the hwloc library
-in Equalizer using the following rules:
-
-\begin{compactitem}
-
-\item Restrict all node threads (main, recv, cmd, xmit) to the cores of the
-processor local to the network card.
-
-\item Restrict all GPU threads (draw, read) to the cores of the processor close
-to the respective GPU.
-
-\end{compactitem}
+in Equalizer. We restrict all node threads (main, recv, cmd, xmit) to the cores
+of the processor local to the network card, and all GPU threads (draw, read) to
+the cores of the processor close to the respective GPU.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/numaThreads.pdf}
@@ -874,11 +888,11 @@ configuration. Many of the threads do not occupy a full core at runtime,
 especially node threads are mostly idle on a rendering client.
 
 When using the default \textsf{first-touch} memory placement strategy, memory
-is allocated on the processor where it is accessed first. In Equalizer, all
-GPU-specific memory allocations are done by the render threads executing the
-rendering code, therefore placing the CPU-side buffers onto the same socket as
-the corresponding GPU. Similarly, network buffers are allocated and used from
-the one of the node threads.
+is allocated on the processor where it is first accessed. All GPU-specific
+memory allocations are done by the render threads executing the rendering code,
+therefore placing the CPU-side buffers onto the same socket as the
+corresponding GPU. Similarly, network buffers are allocated and used from the
+one of the node threads.
 
 \begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/affinity.pdf}
@@ -1418,24 +1432,20 @@ In \cref{sCompositing} we provide detailed information on our compositing advanc
 
 \section{Load Balancing}
 
-Compounds in itself only provide a static configuration of the parallel
-rendering setup. \textsf{Equalizers} are algorithms which hook into a compound
-and modify parameters of their respective subtree at runtime to dynamically
-optimise the resource usage. Each equalizer focuses on tuning one aspect of
-the decomposition, allowing them to be composited in a configuration. Due to
-their nature, they are transparent to application developers, but might have
-application-accessible parameters to tune their behaviour. Resource equalisation
-is the critical component for scalable parallel rendering, and therefore the
-eponym for the \textsf{Equalizer} project name.
+Compounds only provide a static configuration of the parallel rendering setup.
+\textsf{Equalizers} are algorithms which hook into a compound and modify
+parameters of their respective subtree at runtime to dynamically optimise the
+resource usage. Each equalizer focuses on tuning one aspect of the
+decomposition, allowing them to be composited in a configuration. Due to their
+nature, they are transparent to application developers, but might have
+application-accessible parameters to tune their behaviour. Resource
+equalisation is the critical component for scalable parallel rendering, and
+therefore the eponym for the \textsf{Equalizer} project name.
 
 Compounds are a static snapshot of a configuration, and equalizers provide
 dynamic configuration on top. This separation of responsibilities is an
-important architectural component of our parallel rendering framework. Load
-balancing is one use case for equalizers, where the algorithm analysis runtime
-statistics to change the task decomposition each frame to equalise rendering
-times between all resources.
-
-In \cref{sLoadBalancing} we provide an extensive overview over the available
+important architectural component of our parallel rendering framework. In
+\cref{sLoadBalancing} we provide an extensive overview over the available
 equalizers.
 
 \section{Runtime Reconfiguration}
@@ -1474,11 +1484,11 @@ may cause the startup or exit of new rendering processes in the cluster.
 Runtime reliability detects failed nodes in a visualisation cluster,
 independent of the cause (hardware or software failure). The server tracks a
 `last seen' time stamp for each node. When waiting for a task to finish, the
-server uses this time stamp to detect potentially failed node. Potentially
-failed nodes are pinged with a special command, which is processed even if all
-application threads are busy. Nodes still answering this command are considered
-alive for a longer period, after which they are considered failed, likely due
-to an infinite loop in the application code. Failed nodes are removed from the
+server uses this time stamp to detect failures. Potentially failed nodes are
+pinged with a special command, which is processed even if all application
+threads are busy. Nodes still answering this command are considered alive for a
+longer period, after which they are considered failed, likely due to an
+infinite loop in the application code. Failed nodes are removed from the
 configuration, and their associated compounds are deactivated. In the case of
 load balanced source channels, the load equalizer will simply reassign the work
 to other source channels. For static configurations, the source channel
@@ -1488,12 +1498,11 @@ the corresponding output display will disappear from the configuration.
 \section{Distributed Execution Layer}
 
 An important part of writing a parallel rendering application is the
-communication layer between the individual processes. \textsf{Equalizer} relies
-on the \textsf{Collage} network library for its internal operation.
-\textsf{Collage} provides networking functionality of different abstraction
-layers, gradually providing higher level functionality for the programmer. The
-main primitives in \textsf{Collage} and their relations are shown in
-\fig{fNetObject} and provide:
+communication layer between the individual processes. Equalizer relies on the
+Collage network library for its internal operation. Collage provides networking
+functionality of different abstraction layers, gradually providing higher level
+functionality for the programmer. \fig{fNetObject} shows the main primitives in
+Collage:
 
 \begin{compactdesc}
 \item[Connection] A stream-oriented point-to-point communication
@@ -1521,12 +1530,12 @@ main primitives in \textsf{Collage} and their relations are shown in
 \end{figure}
 
 \textsf{Collage} implements a few generic distributed objects which are used by
-\textsf{Equalizer} and other applications. A barrier is a distributed barrier
-primitive used for software swap synchronisation. Its implementation follows a
-simple master-slave approach, which has shown to by sufficient for this use
-case. Queues are distributed, single producer, multiple consumer FIFO queues. To
-hide network latencies, consumers prefetch items into a local queue. Queues are
-used for tile and chunk compounds (\sref{sTile}).
+\textsf{Equalizer} and other applications. A barrier is a distributed primitive
+used for software swap synchronisation. Its implementation follows a simple
+master-slave approach, which has shown to by sufficient for this use case.
+Queues are distributed, single producer, multiple consumer FIFO queues used for
+tile and chunk compounds (\sref{sTile}). To hide network latencies, consumers
+prefetch items.
 
 An object map facilitates distribution and synchronisation of a collection of
 distributed objects. Master versions can be registered on a central node, e.g.,
@@ -1874,7 +1883,7 @@ previous chapter, are dependent on the application rendering code, compositing
 is largely a generic problem and can be implemented and optimised in a parallel
 rendering framework. Consequently, this area of parallel rendering research has
 received significant attention. By integrating many state-of-the art
-optimisations into our parallel rendering framework we provide a generic
+optimizations into our parallel rendering framework we provide a generic
 solution which scales well on modern visualisation cluster architectures.
 
 We present new insight into the behaviour of known sort-last parallel compositing algorithms on mid-size visualisation clusters (compared to high-end HPC systems), the importance of streaming sort-last compositing and spatial sort-last polygonal rendering, the impact of state of the art optimisations such as region of interest and asynchronous compositing, as well as image compression algorithms for high-speed interconnects. This chapter addresses the research quesiton on what new algorithms will decrease the time needed to composite rendering results, in particular for sort-last rendering.
@@ -3501,15 +3510,15 @@ and the visualisation Toolkit (VTK).
 
 \section{Summary}
 
-Formalising, designing and implementing a generic parallel rendering framework
-which can serve both complex applications and research has been no easy task.
+Formalising, designing and implementing a generic parallel rendering framework,
+that can serve both complex applications and research, has been no easy task. (due to conflicting requirements?)
 Based on the analysis of Cavelib, practical experience in implementing and
 deploying OpenGL Multipipe SDK, we have been in the unique position to make
 significant contributions in this area. Equalizer, our parallel rendering
-framework, allowed us to take parallel rendering research to a new level, by
-enabling the easy implementation of new decomposition algorithms, many
+framework, allowed us to take parallel rendering research to a new level. It
+enables the easy? implementation of new decomposition algorithms, many
 improvements for result composition, novel load balancing schemes, and numerous
-whole system optimisations, all of which are much harder without such a
+whole system optimisations, all of which are much harder(quanitfy, life is hard) without such a
 framework and associated applications. This is not only supported by the
 contributions of this thesis, but by other publications and doctoral theses
 completed using Equalizer. This research has not only been performed in the
@@ -3518,10 +3527,10 @@ laboratories, e.g., the Electronic visualisation Laboratory at the University
 of Illinois at Chicago for Cave2 research.
 
 Beyond the core system design, we have incorporated many new parallel rendering
-algorithms in our framework. Most notably, cross-segment load balancing
-provides a novel approach to better assign multiple rendering resources to
+algorithms into our framework. Most notably, cross-segment load balancing
+provides a novel(repeat) approach to better/improve assign/ing multiple rendering resources to
 multi-display systems. It maximises rendering locality for the display GPUs and
-is not limited to planar displays as other approaches.
+is not limited to planar displays, compared to other approaches.
 
 Having a fully-featured rendering framework and real-world applications enabled
 us to implement many algorithmic improvements and optimisations, and evaluate
@@ -3530,10 +3539,10 @@ parallel rendering with new decomposition modes, compositing algorithms, better
 load balancing and an asynchronous rendering pipeline. Last, but not least, a
 network library for distributed, interactive visualisation applications greatly
 facilitates the task to distribute and synchronise application state in a
-parallel rendering system.
+parallel rendering system. (is mehr als nur ne cherry, oder?)
 
 Beyond the scope of this thesis, Equalizer has influenced the field and has
-been used in various commercial and research applications. These applications
+been used in various commercial and research applications (link/quote). These applications
 span a wide field of domains, from virtual prototyping, interactive raytracing,
 large-scale volume rendering, terrain rendering, neuroscience applications, to
 next-generation visualisation systems such as collaborative tiled display walls
@@ -3542,32 +3551,32 @@ and hybrid 2D/3D setups such as the Cave2.
 \section{Future Work}
 
 We consider the core parallel rendering framework largely feature complete,
-with the exception of keeping up with new technologies, e.g., providing glue
-code for the Vulkan API or exploiting new Multi-GPU extensions. There remains a
-large amount of work to make parallel rendering more accessible. This may be
-addressed by simplified APIs on top of Equalizer, and through integrations with
+with exception of keeping up with new hardware technologies, e.g. providing glue
+code for the Vulkan API, or exploiting new Multi-GPU extensions. A
+large amount of work remains to make parallel rendering more accessible (to?). This may be
+addressed by simplified APIs layered on top of Equalizer, and through integrations with
 popular rendering toolkits. On the other hand, it should address operators and
 users of visualisation systems through simplified configuration, monitoring and
-administration tools.
+administration tools.??
 
-There is still a significant amount of research in automatically selecting the
-decomposition and recomposition algorithm as well as the resources to be used
+There is still a significant amount of research in automatically selecting the best
+decomposition and recomposition algorithm as well as the resources used
 for a given application. This task becomes even more challenging when
-considering changes of the rendering load and algorithm during the runtime of
+considering changes/fluctuations? of the rendering load and algorithm during the runtime of
 an application. Furthermore, implementing load balancing for the compositing
 task is an area largely unexplored, in particular in combination with state
-of the art optimisations.
+of the art optimisations (like?).
 
-We foresee an increasing importance of interactive raytracing, which has its
+We foresee an increasing importance for interactive raytracing, which has its
 own set of challenges for parallel rendering. In particular for large data
-rendering, there are a number of open questions, such as out-of-core parallel
+rendering, there are a number of open questions, like out-of-core parallel
 raytracing and data-parallel decomposition with global illumination.
 
-Load balancing to better utilize the available resources, and to increase
-scalability to higher node counts, remains an open area of research. While this
+Load balancing for better utilisation of available resources, and increased
+scalability to higher node counts remains an open area of research. While this
 thesis provides many new results in this area, a comprehensive benchmark and
-study of different algorithms and applications would be very valuable, based on
-which new load-balancing algorithms may be discovered.
+study of different algorithms and applications would be very valuable,
+which may lead to the discovery of new load-balancing algorithms.
 
 One of the remaining challenges is to make interactive supercomputing
 accessible. Significant research has been performed on how to link simulations
