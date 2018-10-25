@@ -198,7 +198,8 @@ sort-first parallel rendering solutions.
 \subsection{Special Purpose Architectures}
 
 Historically, high-performance real-time rendering systems have relied on an
-integrated proprietary system architecture, such as the early SGI graphics supercomputers. Special purpose solutions have become a niche product as their
+integrated proprietary system architecture, such as the early SGI graphics
+supercomputers. Special purpose solutions have become a niche product as their
 graphics performance did not keep up with off-the-shelf workstation graphics
 hardware and scalability of clusters.
 
@@ -317,11 +318,11 @@ size of the OpenGL command stream sent over the network.
 {CGLX}~\cite{DK:11} aims to bring parallel execution transparently to OpenGL
 applications, by emulating the GLUT API and intercepting certain OpenGL calls.
 Its target use case are multi-display installations, i.e., static sort-first
-renderings? with no compositing. In contrast to frameworks like {Chromium} and
+rendering with no compositing. In contrast to frameworks like {Chromium} and
 {ClusterGL}, which distribute OpenGL calls, {CGLX} follows the distributed
 application approach. This works transparently for trivial applications, but
 quickly requires the application developer to address the complexities of a
-distributed application, when mutable application state must be
+distributed application, when mutable application state needs to be
 synchronised across processes. For production applications, writing parallel
 applications remains the only viable approach for scalable rendering, as shown
 by the success of {Paraview}, {Visit} and {Equalizer}-based applications.
@@ -333,7 +334,7 @@ rendering API for a shared memory multi-CPU/GPU system. It is similar to IRIS
 Performer \cite{RH:94} in that it handles multi-GPU rendering by a lean
 abstraction layer via a callback mechanism, and that it runs
 different application tasks in parallel. However, MPK is not designed nor meant
-for rendering nodes over a network. MPK focuses on providing a parallel
+for rendering nodes separated by a network. MPK focuses on providing a parallel
 rendering framework for a single application, parts of which are run in
 parallel on multiple rendering channels, such as the culling, rendering and
 final image compositing processes. The author used to be the technical lead
@@ -376,8 +377,8 @@ Equalizer applications.
 
 \chapter{Contributions}
 
-This chapter summarises the main contributions of this thesis. In each section
-the relevant publications are listed and specify the contributions of the author.
+This chapter summarises the main contributions of this thesis. In each section,
+we list the relevant publications and specify the contributions of the author.
 
 \section{Parallel Rendering Architecture}
 
@@ -391,9 +392,9 @@ the state of the art in many aspects:
 allow applications to retain all their rendering code and application logic.
 The programming interface is based on a set of C++ classes, modelled closely to
 the resource hierarchy of a graphics rendering system. The application
-subclasses these objects what? and overrides C++ task methods, similar to C
+subclasses these objects and overrides C++ task methods, similar to C
 callbacks. These task methods will be called in parallel by the framework,
-depending on the current configuration. benefit? The contract for the implementation of
+depending on the current configuration. The contract for the implementation of
 the task methods does not assume any specific rendering library, algorithm or
 technology, thus facilitating the adaptation of existing applications for
 parallel rendering. This parallel rendering interface is significantly
@@ -404,11 +405,11 @@ different from Chromium \cite{HHNFAKK:02} and more similar to VRJuggler
 framework makes a clear separation between the rendering algorithm and the runtime
 configuration. It provides a contract between the framework and the application
 code based on a rendering context, and uses this context to drive the
-application output depending on the runtime configuration (example?). Application
+application output depending on the runtime configuration. Application
 developers are unaware of parallel rendering setups and make no assumptions on
 how the rendering code will be executed. This clear separation yields parallel
-rendering applications which can be deployed on a wide set of installations (wihout setup?),
-and are often configured in ways unforeseen during their deployment (sounds bad).
+rendering applications which can be deployed on a wide set of installations,
+and are often configured in new ways unforeseen during their deployment.
 
 \item[Display abstraction:] Large scale visualisation systems cover a wide set
 of use cases from classical workstation setup to monoscopic tiled display
@@ -420,7 +421,7 @@ empowers applications using these installations with 2D and 3D contextual
 information, runtime stereo configuration, and head tracking.
 
 \item[Compound trees:] The introduction of compounds, and their underlying
-formalism, provides a formalisation (repeat) of a flexible task decomposition and results in
+contract, provides a formalisation of a flexible task decomposition and result
 recomposition for parallel rendering. Compound trees allow for easy
 specification of complex parallel task decomposition strategies, which are
 implemented and executed by the Equalizer system. They generalise parallel
@@ -434,36 +435,36 @@ flexibility and extensibility.
 hooked into a compound tree, and modify compound tree parameters at runtime.
 For example, a sort-first load balancer adapts the sub-viewports assigned to
 each resource at runtime. Compounds are the passive configuration, and
-equalizers are the active component to optimize this configuration dynamically (at runtime? enforce).
+equalizers are the active component to optimize this configuration dynamically.
 This makes their implementation independent of the rest of the framework,
-providing a powerful abstraction of research and development for better
-resource usage of parallel rendering.
+providing a powerful abstraction for research and development of better
+resource usage for parallel rendering.
 
 \item[Modular architecture:] Our architecture uses layered abstractions that
-gradually provide higher level abstractions (huh). On the lower level, a network
+gradually provide higher level abstractions. On the lower level, a network
 library for distributed abstractions provides the substrate for Equalizer and its
 applications. Within each library, a clear separation of responsibilities
 allows an easy combination of existing algorithms. For example, an advanced feature
 like a cross-segment equalizer relies on per-segment load equalizers, and
-both equalizers reconfigure the underlying compound tree each frame. (aaand?)
+both equalizers reconfigure the underlying compound tree each frame.
 
 \end{compactdesc}
 
 \cite{EMP:09} and \cite{ESP:18} publish the architectural foundations of
 parallel rendering frameworks. Any algorithmic implementation and
-architectural contributions in these publications are made by the
-author, while experimental results have significant? contributions from the
+architectural contributions in these publications are contributed by the
+author, while experimental results have significant contributions from the
 secondary authors.
 
 \cite{BRE:05} provides in many ways the foundation for Equalizer, to which the
 author was a contributor for the implementation of a parallel rendering
 framework for shared memory systems.
 
-\section{Scalable Rendering}
+\section{Scalable Rendering and Compositing}
 
-With the flexible system architecture we implemented new scalable rendering
-algorithms, introduced/described in \cite{EMP:09} and \cite{ESP:18}. A particular focus
-was given to reducing cost for the expensive compositing step of sort-last
+Based on the flexible system architecture we implemented new scalable rendering
+algorithms, introduced in \cite{EMP:09} and \cite{ESP:18}. A particular focus
+was given on reducing cost for the expensive compositing step of sort-last
 rendering.
 
 \cite{EP:07} provides an analysis of parallel compositing algorithms in an
@@ -495,7 +496,7 @@ application behaviour. In our architecture, load balancing is achieved by modify
 the compound tree parameters at runtime. For example, a sort-first load balancer
 adapts the sub-viewports assigned to each resource at runtime. These so-called
 \textsf{equalizers} are a component hooked into the compound tree, which makes
-their use and implementation independent of the rest of the framework. (why good?)
+their use and implementation independent of the rest of the framework.
 
 \cite{EMP:09} and \cite{ESP:18} provide experimental results on the
 effectiveness of our sort-first and sort-last load balancing implementations.
@@ -652,7 +653,7 @@ still finishing the current frame. Nonetheless, finished resources will
 immediately display their result. This asynchronous execution architecture,
 coupled with a frame of latency, allows pipelining of many operations, such as
 the application event processing, task computation and load balancing,
-rendering, image readback, compression, network transmission, and compositing. (schwindel)
+rendering, image readback, compression, network transmission, and compositing.
 It also hides small imbalances in the task distribution, as they usually average
 out over multiple frames.
 
@@ -1555,7 +1556,9 @@ allows data distribution with minimal application logic.
 Scalable rendering is a subset of parallel rendering which aims to improve the
 framerate of a rendering task by decomposing it over multiple rendering
 resources. Parallel rendering includes other use cases, for example to use
-multiple GPUs to drive individual displays of a tiled display wall. Scalable rendering addresses the research question on how we can improve the rendering performance of visualisation applications to enable users to explore more data.
+multiple GPUs to drive individual displays of a tiled display wall. Scalable
+rendering addresses the research question on how we can improve the rendering
+performance of visualisation applications to enable users to explore more data.
 
 Scalable rendering research has put a lot of focus on two of the three
 architectures classified by \cite{Molnar92}: sort-first and sort-last rendering.
@@ -1886,7 +1889,14 @@ received significant attention. By integrating many state-of-the art
 optimizations into our parallel rendering framework we provide a generic
 solution which scales well on modern visualisation cluster architectures.
 
-We present new insight into the behaviour of known sort-last parallel compositing algorithms on mid-size visualisation clusters (compared to high-end HPC systems), the importance of streaming sort-last compositing and spatial sort-last polygonal rendering, the impact of state of the art optimisations such as region of interest and asynchronous compositing, as well as image compression algorithms for high-speed interconnects. This chapter addresses the research quesiton on what new algorithms will decrease the time needed to composite rendering results, in particular for sort-last rendering.
+We present new insight into the behaviour of known sort-last parallel
+compositing algorithms on mid-size visualisation clusters (compared to high-end
+HPC systems), the importance of streaming sort-last compositing and spatial
+sort-last polygonal rendering, the impact of state of the art optimisations
+such as region of interest and asynchronous compositing, as well as image
+compression algorithms for high-speed interconnects. This chapter addresses the
+research quesiton on what new algorithms will decrease the time needed to
+composite rendering results, in particular for sort-last rendering.
 
 \section{Parallel Compositing\label{sparcomp}}
 
@@ -2087,10 +2097,10 @@ For sort-last rendering performance, ROI is crucial. In our experiments in
 regions during sort-last decomposition, while still using depth-sorted
 compositing. This is a relatively common use case for sort-last rendering. In
 this mode, we can observe significant speedups with ROI (up to 4x), as shown in
-\bench{rROI}(b). In \cite{MEP:10}, this application-provided ROI was extended with an algorithm
-which automatically computes the ROI by analyzing the framebuffer. This
-algorithm has the advantage of simplifying the application developers' life,
-and can also easily detect holes in the rendered framebuffer.
+\bench{rROI}(b). In \cite{MEP:10}, this application-provided ROI was extended
+with an algorithm which automatically computes the ROI by analyzing the
+framebuffer. This algorithm has the advantage of simplifying the application
+developers' life, and can also easily detect holes in the rendered framebuffer.
 
 
 \section{Asynchronous Compositing}
@@ -2327,7 +2337,9 @@ variants for reactive load balancing for sort-first and sort-last rendering,
 implicitly load balanced work packages for sort-last and sort-first rendering,
 cross-segment load balancing for multi-display installations, constant frame
 rate rendering using dynamic frame resolution, and monitoring of large-scale
-visualisation systems. These equalizers address the research question on how we can improve load-balancing for sort-first rendering, in particular for large display systems.
+visualisation systems. These equalizers address the research question on how we
+can improve load-balancing for sort-first rendering, in particular for large
+display systems.
 
 \section{Sort-First and Sort-Last Load Balancing}\label{sLoadEqualizer}
 
@@ -2755,10 +2767,12 @@ connected to input frames on the monitoring channel. The monitor equalizer
 changes the scaling factor and offset between the output and input, so that the
 monitor channel has the same, but typically downscaled view, as the originating
 segments. While this is not strictly a scalable rendering feature, it optimises
-resource usage by not needlessly rendering the same view multiple times. It reuses the zoom parameter of compositing frames, and adapts this every time one of the channels is resized.
+resource usage by not needlessly rendering the same view multiple times. It
+reuses the zoom parameter of compositing frames, and adapts this every time one
+of the channels is resized.
 
 
-\chapter{Data Distribution and synchronisation}\label{sCollage}
+\chapter{Data Distribution and Synchronisation}\label{sCollage}
 
 \section{Overview}
 
@@ -3187,7 +3201,7 @@ bits are given, whereas during object mapping all dirty bits are passed to the
 serialization methods. A commit will clear the dirty mask after serialization.
 
 
-\subsection{optimisations}
+\subsection{Optimisations}
 
 The Object API provides sufficient abstraction to implement various
 optimisations for faster mapping and synchronisation of data: compression,
