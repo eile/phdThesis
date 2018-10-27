@@ -520,7 +520,7 @@ this publication.
 
 A generic parallel rendering framework has to cover a wide range of use cases,
 target systems, and configurations. This requires a strong separation between
-the implementation of the application and its configuration, linked with a
+the implementation of the application and its configuration. Linked with a
 careful design to allow the resulting program to scale up to hundreds of nodes,
 while providing a minimally invasive API for the developer. In this section we
 present the system architecture of the Equalizer parallel rendering framework,
@@ -529,7 +529,7 @@ and motivate its design in contrast to related work.
 The motivation to use parallel rendering is either driven by the need to drive
 multiple displays or projectors from multiple GPUs and potentially multiple
 nodes, or by the need to increase rendering performance to visualise
-more data or use a more demanding rendering algorithm for higher visual quality.
+more data, or use a more demanding rendering algorithm for higher visual quality. (itemise?)
 Occasionally both needs coincide, e.g., for the analysis for large data
 sets on high fidelity visualisation systems.
 
@@ -562,7 +562,7 @@ typical visualisation applications, existing frameworks, and previous work on
 OpenGL Multipipe SDK.
 
 The task of parallelising a visualisation application boils down to configuring
-the application's rendering code differently for each resource, enabling this
+the applications' rendering code differently for each resource, enabling this
 rendering code to access the correct data, and synchronising execution. For
 scalable rendering, when multiple GPUs are used to accelerate a single output,
 partial results need to be collected from all contributing resources, combined,
@@ -593,7 +593,7 @@ Equalizer.
 
 \end{compactitem}
 
-In the following we will first describe the execution model and resource
+In the following document/description/text we will first describe the execution model and resource
 configuration, followed by how the generic configuration is used to model
 the desired visualisation setup, and finally introduce specifics of scalable
 and distributed rendering.
@@ -604,7 +604,7 @@ The core execution model for parallel rendering was pioneered by CAVELib
 \cite{DACNCCGHPSNS:97}, refined by OpenGL Multipipe SDK for shared memory
 systems and scalable rendering, and substantially extended by Equalizer for
 asynchronous and distributed execution. By analysing the typical architecture of
-a visualisation application we observe an initialization phase, a main rendering
+a visualisation application we see an initialization phase, a main rendering
 loop, and an exit phase. Equalizer decomposes these steps for parallel
 execution.
 
@@ -639,10 +639,10 @@ frame instead of no latency in a sort-first configuration.
 \end{figure}
 
 Another critical design parameter are synchronisation points. Most
-implementations, including OpenGL Multipipe SDK, use a per-frame barrier or
-similar synchronisation to manage parallel execution. In larger installations,
+implementations, including OpenGL Multipipe SDK, use a per-frame barrier, or
+similar synchronisation, to manage parallel execution. In larger installations,
 this is detrimental to scalability, as even slight load imbalances limit
-parallel speedup. The Equalizer execution model is fully asynchronous, and only
+parallel speedup?. The Equalizer execution model is fully asynchronous, and only
 introduces synchronisation points when strictly required. The main
 synchronisation points are: configured swap barriers between a set of output
 channels which have to display simultaneously, the availability of input frames
@@ -651,15 +651,15 @@ main loop execution. By default, Equalizer keeps up to one frame of latency in
 execution, that is, some resources might render the next frame while others are
 still finishing the current frame. Nonetheless, finished resources will
 immediately display their result. This asynchronous execution architecture,
-coupled with a frame of latency, allows pipelining of many operations, such as
+coupled with a frame latency, allows pipelining of many operations, such as
 the application event processing, task computation and load balancing,
 rendering, image readback, compression, network transmission, and compositing.
 It also hides small imbalances in the task distribution, as they usually average
 out over multiple frames.
 
-In practical scenerios, application initialisation and exit is also a factor
+In practical scenarios, application initialisation and exit is also a factor
 for usability. Consequently, these phases are also parallelised in Equalizer. A
-first pass identifies the resources to be launched or terminated, kicks of the
+first pass identifies the resources to be launched or terminated, kicks off the
 tasks, and then uses a second pass to synchronize their execution and results.
 
 \begin{wrapfloat}{benchmark}{O}{.618\textwidth}
@@ -671,22 +671,22 @@ tasks, and then uses a second pass to synchronize their execution and results.
 This benchmarks simply measures the time taken by {\em Config::init}, which
 includes the render client process creation using ssh from the application
 node, shared library loading from a shared filesystem, network setup, OpenGL
-and window initialisation, and object data mapping for the Equalizer resource
+and window initialisation, object data mapping for the Equalizer resource
 instances and a few internal objects used by eqPly. The benchmark confirms that
-the application launch is scaling nicely to a medium cluster size. A slight
+the application launch is scaling nicely to a medium cluster size (clear? meaning?). A slight
 increase in startup time with larger configurations is expected, since more
-processes increase the load on the shared filesystem as well as data
+processes increase the load on the shared filesystem, as well as data
 distribution and synchronisation overheads. Due to the shared filesystem used
 for the executable, the startup times observe a large uncertainty, shown by the
-standard deviation bars.
+standard deviation bars. explanation?
 
 \begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/cr}
  {\caption{\label{rCR}Driving a Tiled Display Wall}}
 \end{wrapfloat}
 
-In comparison to interception approaches as used by Chromium, our asynchronous
-programming model inherently provides better performance. \bench{rCR} tests
+In comparison to interception approaches used by Chromium, our asynchronous
+programming model inherently (sure?) provides better performance. \bench{rCR} tests
 the rendering performance for driving a simple tiled display wall configuration
 with a static model, rotating about its vertical axis, placed such that it
 nicely covers the different screens.
@@ -697,14 +697,14 @@ driving the attached display. The polygonal model is rendered using eqPly and
 uses display lists for the static geometry. Using display lists allows Chromium
 to send geometry and texture data only once to the rendering nodes (retained mode
 rendering) and display them repeatedly using {\em glCallLists()}, which is
-inexpensive in terms of network overhead. This setup is favourable for Chromium
-because the display lists have to be transmitted only once over the network,
+inexpensive in terms of network overhead. This setup is favourable for Chromium,
+because the display lists are transmitted only once over the network,
 and only simple display calls will be processed and distributed by Chromium for
 each rendered frame.
 
 Chromium initially increases performance when adding nodes, but it quickly
 stagnates, and even decreases, when more nodes are added. In contrast, Equalizer
-continually improves performance with more added nodes and exhibits a smooth
+continually improves? performance with more added nodes and exhibits a smooth
 drop-off in speed-up, due to the expected synchronisation and network overhead
 as the rendered data gets negligible in size per node. This performance
 difference is also due to the fact that Equalizer can benefit from distributed
@@ -730,14 +730,14 @@ Multipipe SDK \cite{BRE:05}.
 
 To separate the responsibilities in a parallel rendering application, different
 entities are responsible for different aspects of the runtime system: the
-application process to drive a rendering session, the server to control the
-parallel rendering configuration, render clients to execute the rendering
+application process driving a rendering session, the server controlling the
+parallel rendering configuration, render clients executing the rendering
 tasks, and an administrative API to reconfigure the rendering session at
-runtime. All processes are communicate with each other through a common network
+runtime. All processes communicate with each other through a common network
 library (Collage) and a client library implementing the Equalizer API, as shown
 in \fig{fProcessing}.
 
-The administrative API can connect to a server, and modify some aspects of the
+The administrative API can connect to a server (why cool, change stuff at runtime?), and modify some aspects of the
 resource hierarchy, e.g., to create new output channels. Its description is
 outside of the scope of this thesis, and is mentioned here for
 completeness.
@@ -748,13 +748,13 @@ The main application thread in Equalizer drives the rendering, that is, it
 carries out the main event loop, but does not actually execute any rendering.
 Depending on the configuration, the application process often hosts one or more
 render client threads. These render client threads are identical in behaviour
-and implementation to render threads on render client nodes. When a
+and implementation to render threads on the render client nodes. When a
 configuration has no additional nodes besides the application node, we have a
 single-process, multi-threaded rendering application: all application code is
-executed in the same process, and no network data distribution has to be
+executed in the same process, and no network data distribution is
 implemented.
 
-The main rendering loop is quite simple: The application requests a new frame
+The main rendering loop is simple: The application requests a new frame
 to be rendered, synchronises on the completion of a frame and processes events
 received from the render clients. It may perform idle processing between the
 start and synchronisation of a frame. \fig{FIG_execution} shows a simplified
@@ -764,27 +764,27 @@ execution model of an Equalizer application.
 \subsection{Server}
 
 The Equalizer server manages the parallel rendering session. It is an
-asynchronous execution thread or process which receives requests from the
+asynchronous execution thread or process, which receives requests from the
 application and serves these requests using the current configuration, launching
 and stopping rendering client processes on nodes, determining the rendering
 tasks for a frame, and synchronising the completion of tasks.
 
 \subsection{Render Client}
 
-During initialization, the application provides a rendering client executable.
+During initialisation, the application provides a rendering client executable.
 The rendering client is often, especially for simple applications, the same
-executable as the application. However, in more sophisticated implementations
+executable as the application. However, in more sophisticated implementations,
 the rendering client can be another executable which only contains the
 application-specific rendering code. The server deploys this rendering client
 on all nodes specified in the configuration. Render clients may run on a
 different architecture or operating system from the main application, the
-underlying network library ensures type safety and endian ordering.
+underlying network library ensures type safety and Endian ordering.
 
 In contrast to the application process, the rendering client main loop is
-completely controlled by Equalizer, based on application commands. A render
-client consists of the following threads: the node main thread, one network
+completely controlled by Equalizer, using application commands. A render
+client consists of the following threads: The node main thread, one network
 receive thread, one thread for each graphic card (GPU) to execute rendering
-tasks, and potentially one thread for asynchronous compositing per GPU. If a
+tasks, and /optionally one thread for asynchronous compositing per GPU. If a
 configuration also uses the application node for rendering, then the
 application process uses one or more render threads, consistent with render
 client processes. The Equalizer client library implements the main loop, which
@@ -807,13 +807,13 @@ rendering algorithm from the system-specific configuration. It specifies:
 
 \begin{compactdesc}
 
- \item[Buffer] OpenGL-style read and draw buffer as well as color mask. These
+ \item[Buffer] OpenGL-style read and draw buffer as well as colour mask. These
  parameters are influenced by the current eye pass, eye separation and
  anaglyphic stereo settings.
 
  \item[Viewport] Two-dimensional pixel viewport restricting the rendering area.
  The pixel viewport is influenced by the destination viewport definition and
- viewports set for sort-first/2D decompositions.
+ viewport set for sort-first/2D decompositions.
 
  \item[Frustum] Frustum parameters as defined by {\em glFrustum}. Typically
  the frustum is used to set up the OpenGL projection matrix. The frustum is
@@ -822,14 +822,14 @@ rendering algorithm from the system-specific configuration. It specifies:
 
  \item[Head Transformation] A transformation matrix positioning the frustum. For
  planar views this is an identity matrix and is used in immersive rendering.
- It is normally used to set up the `view' part of the modelview matrix, before
+ It is usually used to set up the `view' part of the modelview matrix, before
  static light sources are defined.
- \item[Range] A one-dimensional range with the interval [0..1]. This parameter is
+ \item[Range] A one-dimensional range within the interval [0..1]. This parameter is
  optional and should be used by the application to render only the appropriate
  subset of its data for sort-last rendering.
 
 \item[View] The view object from the logical rendering rendering configuration,
-introduced below. Holds view-specific data, such as camera, model or any other
+as introduced below. Holds view-specific data, such as camera, model or any other
 application state.
 
 \end{compactdesc}
@@ -837,12 +837,12 @@ application state.
 \subsubsection{Event Handling}
 
 Event handling routes events from the source window in the rendering thread to
-the the application main thread for consumption. At each step, events can be
+the application main thread for consumption. At each step, events can be
 observed, transformed or dropped. Events are received from the operating system
 in the rendering thread, transformed there into a generic representation, and
 sent to the application main thread. The application processes them in the main
 loop and modifies its internal state accordingly. This follows the natural data
-flow for most windowing systems, and has natural semantics for thread safe
+flow for most windowing systems and has natural semantics for thread safe
 event handling. For Qt, Equalizer internally dispatches events from the process
 main thread to the render threads to ensure consistent behaviour.
 
@@ -875,7 +875,7 @@ and one thread for image transmission to other nodes (xmit). We have
 implemented automatic thread placement by extending and using the hwloc library
 in Equalizer. We restrict all node threads (main, recv, cmd, xmit) to the cores
 of the processor local to the network card, and all GPU threads (draw, read) to
-the cores of the processor close to the respective GPU.
+the cores of the processor closest to the respective GPU.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/numaThreads.pdf}
@@ -884,7 +884,7 @@ the cores of the processor close to the respective GPU.
 
 \fig{fNumaThreads} shows the thread placement for the node used in
 \fig{fNumaNode}. Threads are bound to all cores of the respective socket, and
-the ratio of cores to threads varies with the used hardware and software
+the ratio of cores to threads varies/is balanced with the used hardware and software
 configuration. Many of the threads do not occupy a full core at runtime,
 especially node threads are mostly idle on a rendering client.
 
@@ -901,7 +901,7 @@ one of the node threads.
 \end{wrapfloat}
 
 We tested the influence of thread placement by explicitly placing the threads
-either on the correct or incorrect processor. A low-level memory bandwidth test
+either on the correct or incorrect (closest furthest?) processor. A low-level memory bandwidth test
 shows a $2\times$ performance difference between these two settings. We found
 that this leads to a performance improvement of more than 6\% in real-world
 rendering loads, as shown in \bench{rNuma}. This benchmark uses the
@@ -909,7 +909,7 @@ aforementioned cluster nodes, and renders polygonal data using sort-first
 scalable rendering. The exact experiment setup is described in
 \cite{EBAHMP:12}. While this is a relatively small influence, it becomes more
 important with higher frame rates as the relative draw time decreases, and the
-memory-intensive compositing step increases. Thread placement is therefore one
+memory-intensive compositing step increases?. Thread placement is therefore one
 of the components to achieve scalability on larger visualisation clusters with
 NUMA nodes.
 
@@ -920,7 +920,7 @@ A configuration consists of the declaration of the rendering resources, the
 physical and logical description of the projection system, and the
 configuration on how the aforementioned resources are used for parallel and
 scalable rendering. A configuration is an instantiated class hierarchy in
-memory used by the server to compute rendering tasks, and has a serialized text
+memory used by the server to compute rendering tasks, and has a serialised text
 file format to read and write configuration files.
 
 The rendering resources are represented in a hierarchical tree structure
@@ -931,7 +931,7 @@ windows, and channels (2D rendering area in a window).
 Physical layouts of display systems are configured using canvases with
 segments, which represent 2D rendering areas composed of multiple displays or
 projectors. Logical layouts are applied to canvases and define the views on a
-canvas. Observers observe multiple views and represent a head-tracked user in a
+canvas. Observers observe (Wodden wood) multiple views and represent a head-tracked user in a
 visualisation application.
 
 Scalable resource usage is configured using a compound tree, which is a
@@ -950,7 +950,7 @@ system process of the render client executable will be used for each node. Each
 configuration might also use an application node, in which case the application
 process is also used for rendering.
 
-The {\em pipe} is the abstraction of a graphic card (GPU), and uses an
+The {\em pipe} is the abstraction of a graphics card (GPU), and uses an
 operating system thread for rendering. All pipe, window and channel task methods
 are executed from the pipe thread. The pipe maintains the information about the
 GPU to be used by the windows for rendering.
@@ -961,7 +961,7 @@ can be an on-screen window or an off-screen pbuffer or framebuffer object
 execute their rendering tasks sequentially on the pipe's execution thread, in
 the order they are defined in the configuration.
 
-The {\em channel} is the abstraction of an OpenGL viewport within its parent
+The {\em channel} abstracts an OpenGL viewport within its parent
 window. It is the entity executing the actual rendering. The channel's
 rendering context is overwritten when it is rendering for another channel
 during scalable rendering. Multiple channels in application windows may be used
@@ -972,7 +972,7 @@ Matrox TripleHead2Go.
 
 \subsection{Display Resources}
 
-Display resources are the second part of a configuration. They describe the
+Display resources are the second part of the configuration. They describe the
 physical display setup (canvases $\rightarrow$ segments), logical display
 (layouts $\rightarrow$ views) and head tracking of users within the
 visualisation installation (observers).
@@ -981,10 +981,10 @@ A {\em canvas} represents one physical projection surface, e.g., a
 PowerWall, a curved screen, an immersive installation, or a window on a
 workstation. Canvases provide a convenient way to configure projection
 surfaces. They group a set of segments (displays or projectors) into a 2D
-projection surface. A canvas uses layouts, which describe logical views.
+projection surface. A canvas uses layouts describing logical views.
 Typically, a desktop window uses one canvas, one segment, one layout and one
 view. One configuration might drive multiple canvases, for example a projection
-wall with an operator station. Planar surfaces, e.g., a display wall, configure
+wall with an operator station. Planar surfaces, e.g., a display wall, configures
 a frustum for the respective canvas. For non-planar surfaces, the frustum will
 be configured on each display segment. The application rendering code has
 access to the 2D area being updated, for example to draw 2D menus on top of the
@@ -997,7 +997,7 @@ access to the 2D area being updated, for example to draw 2D menus on top of the
 
 The frustum can be specified as a wall or projection description in the global
 reference system, which is shared with the head-tracking matrix of the
-application. A wall is defined by the bottom-left, bottom-right and top-left
+application. A wall is defined by the bottom-left, bottom-right and top-left (3, not top-right? is in pic)
 coordinates relative to the origin. A projection is defined by the position and
 head-pitch-roll orientation of the projector, as well as the horizontal and
 vertical field-of-view and distance to the projection wall. \fig{fFrusta}
@@ -1005,14 +1005,14 @@ illustrates the wall and projection frustum parameters. All size units are in
 meters.
 
 A canvas consists of one or more segments. A planar canvas typically has a
-frustum description, which initializes the segment frustum based on the 2D area
+frustum description, which initialises the segment frustum based on the 2D area
 covered by it. Non-planar frusta are configured by overriding the default
 segment frusta. These frusta typically describe a physically correct display
 setup for Virtual Reality installations.
 
 A canvas has one or more layouts. One of the layouts is the active layout, that
 is, this set of views is currently used for rendering. It is possible to
-specify {\em OFF} as a layout, which deactivates the canvas. It is possible
+specify {\em OFF} as a layout, which deactivates the canvas. It is supported
 to use the same layout on different canvases, for example to mirror a display
 wall layout on a control station window.
 
@@ -1020,12 +1020,12 @@ A {\em segment} represents one output channel of the canvas, e.g., a
 projector or a display. A segment has an output channel, which references the
 channel to which the display device is connected. To synchronise the video
 output, a swap barrier is configured to synchronise the respective window
-buffer swaps. Swap barriers can use a network-based software synchronisation or
+buffer swaps. Swap barriers can use network-based software synchronisation or
 hardware synchronisation based on NVidia's G-Sync hardware.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/canvas.pdf}
-  {\caption{\label{fCanvas}A Canvas using four Segments}}
+  {\caption{\label{fCanvas}A Canvas using four segments}}
 \end{wrapfloat}
 
 A segment covers a two-dimensional region of its parent canvas, configured by
@@ -1049,9 +1049,9 @@ viewing position, or any other representation of the application's data. The
 view object is accessible to the application thread and all render threads
 contributing to its rendering. This allows the application to manage
 view-specific data by attaching it as a distributed object to the view, which
-will be synchronized from the application main thread to the render clients at the beginning of each frame.
+will be synchronised from the application main thread to the render clients at the beginning of each frame.
 
-A view has a fractional viewport relative to its layout. A layout is normally
+A view has a fractional viewport relative to its layout. A layout is usually
 fully covered by its views. Each view can have a frustum description. The
 view's logical frustum overrides physical frusta specified at the canvas or
 segment level. This is typically used for non-physically correct rendering,
@@ -1062,17 +1062,17 @@ head-tracked.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/layout.png}
- {\caption{\label{fLayout}Layout with four Views}}
+ {\caption{\label{fLayout}Layout with four views}}
 \end{wrapfloat}
 
-\fig{fLayout} shows an example layout using four views on a single segment.
+\fig{fLayout} shows an example layout using four views on a single segment, where
 \fig{fDisplay} shows a real-world setup of a single canvas with six segments
-using underlap for the display bezels, with a two-view layout. This
+using underlap(?) for the display bezels, with a two-view layout. This
 configuration generates eight destination channels.
 
 \begin{figure}[t]\center
  \includegraphics[width=\textwidth]{images/wallLayout.jpg}
- {\caption{\label{fDisplay}Tiled Display Wall using one Canvas with six Segments and a Layout with two Views}}
+ {\caption{\label{fDisplay}Tiled Display Wall using one canvas with six segments and a layout with two views}}
 \end{figure}
 
 An {\em observer} represents an actor looking at one or multiple views. It
@@ -1093,30 +1093,30 @@ a flexible resource configuration. Compounds are modified at runtime by
 Compounds are a data structure to describe the execution of rendering tasks in
 the form of a tree. Each compound corresponds to some rendering tasks (clear,
 draw, assemble, readback) and references a channel from the resource
-description which executes the tasks. The allocation of channels on pipes and
+description executing the tasks. The allocation of channels on pipes and
 nodes determines which resources execute the task, and what can be executed in
 parallel. A compound may provide output frames from the readback task to
 others, and can request input frames from others for its own assembly task.
 Output frames are linked to input frames by name.
 
-Compound trees are a logical description of the rendering pipeline, and only
+Compound (repeat previous absatz) trees are a logical description of the rendering pipeline, and only
 reference the actual physical resources through their channels. This allows
 mapping a compound tree to different physical configurations by simply
 replacing the channel references. For example, one can test the functionality
 of a sort-last configuration by using channels of different windows on a
 single-GPU workstation before deploying it to multiple physical GPUs.
 
-A simple leaf compound description for rendering a part of the data set, given
+A simple leaf compound description for rendering a part of the data set, marked
 by the data {\em range}, into a particular region of the {\em viewport} is
-given in \fig{FIG_leaf_compound}. The data range is a logical mapping of the
+given (repeat) in \fig{FIG_leaf_compound}. The data range is a logical mapping of the
 data set onto the unit interval and is left to the application to interpret
-appropriately. Hence the range [0 $\frac{1}{2}$] indicates that the first half
+appropriately. Hence, the range [0 $\frac{1}{2}$] indicates that the first half
 of the data set should be rendered, for example the first $\frac{n}{2}$
 triangles of a polygonal mesh with $n$ faces. The viewport is indicated by the
 parameters [x y width height] as fraction of the parent's viewport, and in the
 example the data is thus rendered into the left half of the viewport. The
-resulting framebuffer data -- including per-pixel color and depth -- of the
-rendering executed on this channel is read back and made available to other
+resulting framebuffer data -- including per-pixel colour and depth -- of the
+rendering executed on this channel is read back and is made available to other
 compounds by the name left\_half.
 
 \begin{figure}[h!t]\center
@@ -1133,12 +1133,12 @@ compounds by the name left\_half.
  \caption{Compound Rendering half of the Data Set into half of the Viewport\label{FIG_leaf_compound}}
 \end{figure}
 
-A non-leaf compound performing some image assembly and compositing task is
+A non-leaf compound performing some? image assembly and compositing task is
 provided in \fig{FIG_inner_compound}. Framebuffer data is read from two other
-compounds which supposedly execute rendering for part\_a and part\_b of the data
+compounds, which supposedly???????????????? execute rendering for part\_a and part\_b of the data
 set in parallel. The compound itself executes by default $z$-depth visibility
 compositing of the two input images on its channel and returns the resulting
-color framebuffer in the output frame named frame.display.
+colour framebuffer in the output frame named frame.display(format nicely).
 
 \begin{figure}[h!t]\center {\begin{tabbing} \ \ \ \ \ \=\ \ \ \=\ \ \ \=\ \ \
 \=\ \ \ \=\ \ \ \= \kill \> {\bf compound} \{ \\ \>\> {\bf channel} "display"
@@ -1149,12 +1149,12 @@ Compositing\label{FIG_inner_compound}} \end{figure}
 
 Leaf compounds execute all tasks by default, but the focus is often on the draw
 task with a default assemble and standard readback task used to pass the
-resulting image data on to other compounds for further compositing. Hence while
+resulting image data on to other compounds for further compositing. While
 leaf compounds execute the rendering in parallel, non-leaf compounds often
-correspond to, but are not restricted to the (parallel) image compositing and
+correspond to, but are not restricted to, the (parallel) image compositing and
 assembly part. The readback or assemble tasks are only active if output or input
-frames have been specified, respectively. Otherwise the rendered image frame is
-left in-place for further processing in a parent compound sharing the same
+frames have been specified, respectively?. Otherwise the rendered image frame is
+left in-place for further processing in a parent compound, sharing the same
 channel.
 
 Note that non-leaf nodes in the compound tree structure traverse their children
@@ -1165,12 +1165,12 @@ compounds can share channels, as often done between a parent and one of its
 child compounds, rendered image data can sometimes be left in place, avoiding
 readback and transfer to another node.
 
-All attributes as well as the channel are inherited from the parent compound if
+All attributes, as well as the channel, are inherited from the parent compound if
 not specified otherwise. The {\em viewport}, {\em data range} and {\em eye}
-attributes are used to describe the decomposition of the parent's 2D viewport,
+attributes are used to describe the decomposition of the parents' 2D viewport,
 database range, temporal, pixel, subpixel and eye passes, respectively.
 
-A more formal classification of compound entities is:
+A more formal classification of compound entities:
 
 \begin{compactdesc}
  \item [Root compound] is the top-level compound of a compound tree. It might
@@ -1179,27 +1179,27 @@ A more formal classification of compound entities is:
 
 \item [Destination compound(s)] are the top-most compounds referencing a
 channel, which becomes the destination channel. This destination channel
-determines the rendering context for the whole subtree, that is, compounds and
-their channels lower in the hierarchy contribute to the rendering of the
-destination channel be executing part of the destination render context and
+determines the rendering context for the whole subtree, including compounds and
+their channels lower in the hierarchy contributing to the rendering of the
+destination channel by executing part of the destination render context and
 providing output frames which will eventually be composited onto the
 destination channel.
 
  \item [Source compounds] are the leaf nodes in a compound tree. They typically
- use a different channel from the destination channel and configure scalability
+ use a different channel from the destination channel and configure? scalability
  by overriding render context parameters. This decomposes the rendering of the
  destination channel. By adding output and input frames, the partial results are
  collected and composited:
  \begin{compactdesc}
   \item[Decomposition] On each child compound the rendering task of that
   child can be limited by setting the {\em viewport}, {\em range},
-  {\em period} and {\em phase}, {\em pixel}, {\em subpixel},
+  {\em period}, {\em phase}, {\em pixel}, {\em subpixel},
   {\em eye} or {\em zoom} as desired.
 
   \item[Compositing] Source compounds define an {\em output\_frame} to read
   back the result. This output frame is used as an {\em input\_frame} on the
   destination compound receiving the pixels. The frames are connected with each
-  other by their name, which has to be unique within the root compound tree.
+  other by their name, that has to be unique within the root compound tree.
   For parallel compositing, the algorithm is described by defining multiple
   input and output frames across all source compounds and restricting the task
   to assemble and readback.
@@ -1211,7 +1211,7 @@ destination channel.
 
 \section{Virtual Reality}
 
-Virtual Reality is an important field for parallel rendering. It does require
+Virtual Reality is an important field for parallel rendering. It requires
 special attention to support it as a first-class citizen in a generic parallel
 rendering framework. {\em Equalizer} has been used in many virtual reality
 installations, such as the Cave2 \cite{FNTTL:13}, the high-resolution C6 CAVE
@@ -1222,16 +1222,16 @@ these installations, motivated by application use cases.
 \subsection{Head Tracking}
 
 Head tracking is the minimal feature needed to support immersive installations.
-{\em Equalizer} does support multiple, independent tracked views through the
-observer abstraction. Built-in VRPN support enables the direct,
+{\em Equalizer} does support multiple, independent tracked views through
+observer abstraction. Built-in VRPN 9abbr) support enables the direct,
 application-transparent configuration of a VRPN tracker device. Alternatively,
 applications can provide a $4\times 4$ tracking matrix. Both CAVE-style tracking
-with fixed projection surfaces and HMD tracking with moving displays are
+with fixed projection surfaces, and HMD tracking with moving displays are
 implemented.
 
 \subsection{Dynamic Focus Distance}
 
-To our knowledge, all parallel rendering systems have the focal plane coincide
+To our knowledge all parallel rendering systems have the focal plane coincide
 with the physical display surface. For better viewing comfort, we introduce a
 new dynamic focus mode, where the application defines the distance of the focal
 plane from the observer, based on the current \textit{lookat} distance.
@@ -1259,11 +1259,11 @@ to the tracking matrix.
 
 \subsection{Model Unit}
 
-This moduel unit allows applications to specify a scaling factor between the
-model and the real world, to allow exploration of macroscopic or microscopic
+This model unit allows applications to specify a scaling factor between the
+model and the real world, allowing exploration of macroscopic or microscopic
 worlds in virtual reality. The unit is per view, allowing different scale
 factors within the same application. It scales both the specified projection
-surface as well as the eye position (and therefore eye separation) to achieve
+surface, as well as the eye position (and therefore eye separation) to achieve
 the necessary effect.
 
 \subsection{Runtime Stereo Switch}
@@ -1277,9 +1277,9 @@ stereo or stereo-dependent task decompositions.
 
 Simulations performed on today’s high performance supercomputers produce
 massive amounts of data, which are often too expensive to move to another
-system. Tiled display walls have proven to help understanding complex data due
+system. Tiled display walls have proven to help understand complex data due
 to their size, resolution and collaborative usage. Often the two systems are
-not located in the same facility due to power constraints or other factors.
+not located in the same facility by cause of power constraints or other factors.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/tide}
@@ -1287,18 +1287,18 @@ not located in the same facility due to power constraints or other factors.
 \end{wrapfloat}
 
 Software for driving tiled display walls has converged on the collaborative
-aspect of these installations. Sage, Sage 2, DisplayCluster and, to a certain
+aspect of these installations. Sage, Sage~2, DisplayCluster and, to a certain
 extent, Omegalib, implement a multi-window environment around a shared
 framebuffer concept. DisplayCluster provides a dynamic, desktop-like windowing
-system with built-in media viewing capability that supports ultra
+system with built-in media viewing capability, that supports ultra
 high-resolution imagery and video content, as well as remote streaming allowing
 arbitrary applications from remote sources to be shown. \fig{fTide} shows our
 evolution of DisplayCluster called Tide~\cite{tide} running on a 24~megapixel,
 $4\times 3$ tiled display wall.
 
 Streaming to a Tide wall is implemented using the Deflect~\cite{deflect} client
-library. The application provides an image buffer to Deflect, which is
-compressed using libjpeg-turbo, and sent asynchronously and in parallel by the
+library. The application provides an image buffer to Deflect,
+compressed by using libjpeg-turbo, and sent asynchronously and in parallel by the
 stream library. Multiple stream sources from multiple processes can provide
 content to a single wall window, enabling parallel streaming for parallel
 rendering applications. Deflect also implements an event model, where the
@@ -1307,7 +1307,7 @@ from the wall.
 
 We integrated the stream library into Equalizer to send the framebuffer of each
 destination channel of a view to DisplayCluster, using a direct FBO download
-(if possible) or a texture download. We use asynchronous transmission to
+(if possible), or a texture download. We use asynchronous transmission to
 pipeline compression, streaming, and rendering. Received events from
 DisplayCluster are converted and forwarded to Equalizer’s event system. This
 integration allows all Equalizer applications to benefit from streaming without
@@ -1321,7 +1321,7 @@ to be streamed.
 
 We evaluated the overall system performance using the Blue Brain Project setup
 shown in \fig{fTideSetup}. The supercomputer and data is located in a remote
-supercomputing center in Lugano, whereas the tiled display wall is at the
+supercomputing centre in Lugano, whereas the tiled display wall is at the
 project's main office in Lausanne. Both locations are linked using a high-speed
 WAN link. The HPC installation has a colocated visualisation cluster for remote
 rendering scenarios.
@@ -1352,7 +1352,7 @@ In contrast to most other parallel rendering frameworks, Equalizer decouples the
 compositing algorithm from the task decomposition. This is a key aspect of our
 architecture, allowing a flexible configuration, often in many unforeseen
 ways. The compound tree with its task decomposition, input and output frames, is
-a specialised description ``programming'' scalable rendering across parallel
+a specialised description ``programming'' offering scalable rendering across parallel
 resources.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
@@ -1368,19 +1368,19 @@ viewport decomposes the task, and the output frame collects this partial result
 from the source channel and composites it using the correct offset onto the
 destination channel.
 
-Frame parameters allow the customisation of the pixel handling. They include the
-transfer buffers (color, depth), partial channel viewport, and pixel zooming
-(upscale and downscale). An output frame may be connected to multiple input
+Frame parameters allow the customisation of pixel handling. They include the
+transfer buffers (colour, depth), partial channel viewport, and pixel zooming
+(up- and downscale). An output frame may be connected to multiple input
 frames. Frame parameters are used together with compound tasks for
 parallel compositing, and advanced features such as monitoring and dynamic frame
-resolution introduced later.
+resolution were introduced later.
 
 \fig{fDirectSend} shows the pixel flow of direct send compositing for a three-way
 sort-last decomposition, where the destination channel also contributes to the
-rendering. In the first step, each channel exchanges two color+depth tiles with
+rendering. In the first step, each channel exchanges two colour+depth tiles with
 its neighbours, and then $z$-composites its own tile. This yields one complete
-tile on each channel, of which two color tiles are then assembled on the
-destination channel, whereas the third tile is already in place.
+tile on each channel, of which two colour tiles are then assembled on the
+destination channel, where the third tile is already in place.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/directSendCompound}
@@ -1393,7 +1393,7 @@ read back two incomplete tiles for sort-last compositing. These three leaf
 compounds represent the first step in the left-hand diagram. One level up, each
 channel receives two tiles and assembles them onto its partially rendered
 result, creating a complete tile. For the two source-only channels, a final
-color-only output image is connected to the destination channel. The arrows
+colour-only output image is connected to the destination channel. The arrows
 illustrate the pixel flow for one of the tiles.
 
 For most rendering applications even a relatively complex setup such as this
@@ -1411,11 +1411,11 @@ The abstraction through frames is flexible, but still allows many architectural
 optimisations:
 \begin{compactdesc}
 \item[Unordered Compositing:] Unless overwritten by the application, Equalizer
-will composite all input frames in the order they become available, not in the
-order they are configured. In the example from \fig{fDirectSend}, the
+will composite all input frames by default in the order they become available, not in the
+order they are configured. In the \fig{fDirectSend} example, the
 destination channel will assemble its four input frames one by one as the output
-frame is received. Due to the asynchronous execution and resulting pipelining of
-operations, this availability changes each frame depending on the runtime of
+frame is received. Due to asynchronous execution and resulting pipelining of
+operations, the availability changes each frame depending on the runtime of
 other tasks.
 
 \item[Parallel Compression, Downloads and Network Transfers:] Compressing,
@@ -1424,8 +1424,8 @@ independent from the render thread. GPU transfers are handled by asynchronous
 PBO transfers. Pipelining all these operations with the actual rendering
 significantly minimises the compositing overhead.
 
-\item[On-GPU Transfers:] Occasionally, the source and destination channel are on
-the same GPU. Using textures as pixel buffers allows minimal overhead for the
+\item[On-GPU Transfers:] Occasionally the source and destination channel are on
+the same GPU. Using textures as pixel buffers minimises overhead for the
 output to input frame transfer.
 \end{compactdesc}
 
@@ -1433,9 +1433,9 @@ In \cref{sCompositing} we provide detailed information on our compositing advanc
 
 \section{Load Balancing}
 
-Compounds only provide a static configuration of the parallel rendering setup.
-{\em Equalizers} are algorithms which hook into a compound and modify
-parameters of their respective subtree at runtime to dynamically optimise the
+Compounds provide only a static configuration of the parallel rendering setup.
+{\em Equalizers} are algorithms hooking into a compound and modify
+parameters of their respective subtree at runtime, to dynamically optimise the
 resource usage. Each equalizer focuses on tuning one aspect of the
 decomposition, allowing them to be composited in a configuration. Due to their
 nature, they are transparent to application developers, but might have
@@ -1443,7 +1443,7 @@ application-accessible parameters to tune their behaviour. Resource
 equalisation is the critical component for scalable parallel rendering, and
 therefore the eponym for the {\em Equalizer} project name.
 
-Compounds are a static snapshot of a configuration, and equalizers provide
+Compounds are a static snapshot of a configuration, and equalisers? provide
 dynamic configuration on top. This separation of responsibilities is an
 important architectural component of our parallel rendering framework. In
 \cref{sLoadBalancing} we provide an extensive overview over the available
@@ -1452,7 +1452,7 @@ equalizers.
 \section{Runtime Reconfiguration}
 
 Supported by the distributed execution layer, introduced in the next section,
-Equalizer implements dynamic reconfiguration of a running visualisation
+Equalizer(fancy format?) implements dynamic reconfiguration of a running visualisation
 application. This functionality is used by runtime layout switches and runtime
 reliability.
 
@@ -1460,12 +1460,12 @@ Runtime reconfiguration is designed to be a side effect of the internal resource
 management algorithm, that is, the initialization and exit of a configuration
 uses the same code path as the runtime addition of a single channel. Rendering
 resources in Equalizer are reference counted by the compounds using them, and the
-state change between inactivated and activated triggers a launch or stop of the
+state change from inactivated to activated triggers a launch or stop of the
 associated resource. These resource counters are propagated up the resource
-hierarchy, that is, a channel will (de)activate its window, pipe and node.
+hierarchy: A channel will (de)activate its window, pipe and node.
 
 Channel and window (de)activation are relatively lightweight and only incur the
-creation and initialization of the class instance (and associated OpenGL
+creation and initialisation of the class instance (and associated OpenGL
 resources) on the client. A pipe (de)activation incurs additionally a new (or
 removed) operating system thread, and a node (de)activation is tied to a
 process. Depending on the application logic, at some level of the resource
@@ -1479,8 +1479,8 @@ which is a very lightweight operation. Since each combination of a layout and a
 canvas creates a unique set of destination channels, the destination compounds
 of these channels may use a different set of source channels for rendering,
 which may reside on different GPUs or even nodes in the cluster. Some
-configurations use a different number of rendering GPUs or even nodes, which
-may cause the startup or exit of new rendering processes in the cluster.
+configurations use a different number of rendering GPUs or even nodes,
+ causing the startup or exit of new rendering processes in the cluster.
 
 Runtime reliability detects failed nodes in a visualisation cluster,
 independent of the cause (hardware or software failure). The server tracks a
@@ -1517,11 +1517,11 @@ Collage:
   to aggregate data for network transmission. Performs byte swapping during
   input if the endianness differs between the remote and local node.
 \item[Node and LocalNode] The abstraction of a process in the cluster. Nodes
-  communicate with each other using connections. A LocalNode listens on various
+  communicate with each other using connections. A LocalNode(fancy format) listens on various
   connections and processes requests for a given process. Received data is
   wrapped in ICommands and dispatched to command handler methods. A Node is a
   proxy for a remote LocalNode.
-\item[Object] Provides object-oriented, versioned data distribution of C++
+\item[Object] Provides object-oriented and versioned data distribution of C++
   objects between nodes. Objects are registered or mapped on a Local\-Node.
 \end{compactdesc}
 
@@ -1530,11 +1530,11 @@ Collage:
   \caption{\label{fNetObject}Communication between two Collage Objects}
 \end{figure}
 
-{\em Collage} implements a few generic distributed objects which are used by
+{\em Collage} implements a few generic distributed objects, which are used by
 {\em Equalizer} and other applications. A barrier is a distributed primitive
 used for software swap synchronisation. Its implementation follows a simple
 master-slave approach, which has shown to by sufficient for this use case.
-Queues are distributed, single producer, multiple consumer FIFO queues used for
+Queues are distributed, single producer, multiple consumer FIFO queues are? used for
 tile and chunk compounds (\sref{sTile}). To hide network latencies, consumers
 prefetch items.
 
@@ -1566,7 +1566,7 @@ Sort-middle rendering is still largely confined to hardware implementations due
 to its high communication cost of sorting and distributing fragments to
 processing units.
 
-In this chapter, we present new parallelization variants of sort-first
+In this chapter, we present new parallelisation variants of sort-first
 rendering, and other decompositions which break out of this standard
 classification. For each mode, we introduce its algorithm and implementation,
 potential impact on the application code, as well as its strengths and
@@ -1740,7 +1740,7 @@ suited for distributed memory systems, since the separate memory space makes
 concurrent rendering of different frames much easier to implement. While it
 increases the framerate almost linearly, it does not decrease the latency
 between user input and the corresponding output. Consequently, this
-decomposition mode is mostly useful for non-interactive movie generation.
+decomposition mode is mostly useful for non-interactive film generation.
 
 DPlex is very well load balanced, since most applications observe a strong
 frame-to-frame coherence with respect to the rendering load. This decomposition
@@ -1789,7 +1789,7 @@ mirroring the video signal by other means, but this was not available on the
 given setup.
 
 \item Using combined stereo and sort-first decomposition on the central tiles of
-a tiled display wall. Oftentimes the central tiles of a tiled display wall
+a tiled display wall. Often times the central tiles of a tiled display wall
 receive a higher rendering load then the outer tiles. In this particular
 configuration, each tile was driven by a dual-GPU node using active stereo
 compounds, and the middle segments where given an additional machine setting up
@@ -1855,7 +1855,7 @@ each GPU, depending on the current camera position.
 For volume rendering, this balance is reversed and sort-first performs better.
 Typically, a volume renderer is bound in fragment processing. Consequently,
 sort-first rendering scales better than sort-last, since the screenspace is
-equally divided. For both renderering algorithms, one can observe static
+equally divided. For both rendering algorithms, one can observe static
 imbalances in the zig-zag graphs, where odd number of resources coincidentally
 split the rendering load less balanced than even numbers.
 
@@ -1895,7 +1895,7 @@ HPC systems), the importance of streaming sort-last compositing and spatial
 sort-last polygonal rendering, the impact of state of the art optimisations
 such as region of interest and asynchronous compositing, as well as image
 compression algorithms for high-speed interconnects. This chapter addresses the
-research quesiton on what new algorithms will decrease the time needed to
+research question on what new algorithms will decrease the time needed to
 composite rendering results, in particular for sort-last rendering.
 
 \section{Parallel Compositing\label{sparcomp}}
@@ -1911,20 +1911,22 @@ compositing step can be exploited by distributing the work over multiple
 resources and then collecting the reduced image tiles, commonly called parallel
 compositing.
 
+\subsection{Spatial and Depth-Sorted Sort-Last Compositing}
+
 For sort-last rendering, there are two approaches to combine the partial
 results: $z$-sorting using the depth buffer, and spatial rendering
 decomposition with ordered compositing.
 
-The first algorithm uses both the color and depth buffer, and assigns the final
-pixel to the color of the source with the front-most depth buffer values. It
+The first algorithm uses both the colour and depth buffer, and assigns the final
+pixel to the colour of the source with the front-most depth buffer values. It
 requires no spatial ordering of the data during rendering. It does not
 correctly composite pixels with transparent geometry, since no guarantee of the
 blending order can be made. Due to the use of the depth buffer, it is also more
 expensive since more pixel data needs to be processed. Furthermore, depth
-buffer readback tends to slower, and compression algorithms for depth buffer
-data tend not to perform as well as color buffer compression. Depth-sorted
+buffer readback tends to be slower, and compression algorithms for depth buffer
+data tend not to perform as well as colour buffer compression. Depth-sorted
 compositing is often used for polygonal data, as shown in \fig{fDepth} since
-these applications often do not sort their geometry onto convex spatial
+these applications often do not sort their geometry into convex spatial
 regions.
 
 \begin{figure}[h!t]\center
@@ -1944,16 +1946,13 @@ application to render convex regions of data on each source, and then depth-sort
 the partial images produced by each source. The partial images are composited in
 order, typically with alpha-blending. Since the sorting happens at the image
 level, rather then the fragment level as in the first algorithm, it can operate
-using only the color buffer, as shown in \fig{fSorted}.
+using only the colour buffer, as shown in \fig{fSorted}.
 
 This algorithm produces correct transparency, unless multi-sampling is used
 during rendering. Multi-sampling also incurs a loss of information, where
 multiple samples are collapsed into a single pixel. Pixels where samples are
 generated from different geometries are problematic, since the averaging
 operations blends them with incomplete information during sort-last rendering.
-A fully correct algorithm would need to composite all fragments from all
-sources before collapsing them, or to operate on the full-size multisample
-buffer.
 
 Spatial compositing provides better performance, and provides better
 scalability for other optimisations such as region of interest and load
@@ -1970,11 +1969,14 @@ planes to generate perfectly convex rendering subsets.
 \bench{rDBSpatial} shows the difference between spatial and depth-sorted
 sort-last rendering in RTNeuron (\sref{sRTNeuron}). Due to complexities in the
 application data model, and the disadvantageous geometrical structure of
-neurons, the spatial mode in RTNeuron scales less well then the round-robin
-allocation used for the depth-sorted mode. Still, due to the significantly
-reduced compositing load of this mode, both due to a smaller region of interest
-and no depth buffer transfers, spatial sort-last rendering has a significantly
-better framerate. The exact experiment setup can be found in \cite{EBAHMP:12}.
+neurons, the spatial rendering in RTNeuron scales less well then the
+round-robin allocation used for the depth-sorted mode. Still, due to the
+significantly reduced compositing load of this mode, both due to a smaller
+region of interest and no depth buffer transfers, spatial sort-last rendering
+has a significantly better framerate. The exact experiment setup can be found
+in \cite{EBAHMP:12}.
+
+\subsection{Direct Send and Binary Swap}
 
 Contrary to most other implementations, parallel compositing algorithms in
 Equalizer are not hardcoded, but rather configured explicitly in the
@@ -2014,10 +2016,10 @@ optimisation (\sref{sEarlyAss}), direct send can handle imbalances between
 nodes better since a late channel has a smaller penalty for the overall
 execution time.
 
-\section{Streaming Sort-Last Compositing}
+\subsection{Streaming Sort-Last Compositing}
 
 Due to the asynchronous architecture of our framework, streaming sort-last
-compositing becomes a viable alternative to more involved parallel compositing
+compositing is a viable alternative to more involved parallel compositing
 algorithms in smaller sort-last configurations.
 
 \fig{fDBStream} shows a streaming sort-last compound. The output of one source
@@ -2038,9 +2040,9 @@ compositing it with his rendering.
 Equalizer only synchronises the input to the output frames, therefore this
 configuration creates a pipelined configuration, where the compositing
 operations form the ``critical path'', that is, each channel has his draw pass
-delayed by the time taken by all preceding compositing operations, as shown in
-\fig{fDBStreamFlow}. This pipelining emerges naturally due to the
-synchronisation points introduced by the compositing configuration.
+delayed by the time taken by all preceding compositing operations, as shown
+schematically in \fig{fDBStreamFlow}. This pipelining emerges naturally due to
+the synchronisation points introduced by the compositing configuration.
 
 The total system latency for sort-last stream compounds is $t_{draw} + (n -
 1)\times (t_{readback} + t_{assemble})$. Note that the readback and assemble
@@ -2098,7 +2100,7 @@ regions during sort-last decomposition, while still using depth-sorted
 compositing. This is a relatively common use case for sort-last rendering. In
 this mode, we can observe significant speedups with ROI (up to 4x), as shown in
 \bench{rROI}(b). In \cite{MEP:10}, this application-provided ROI was extended
-with an algorithm which automatically computes the ROI by analyzing the
+with an algorithm which automatically computes the ROI by analysing the
 framebuffer. This algorithm has the advantage of simplifying the application
 developers' life, and can also easily detect holes in the rendered framebuffer.
 
@@ -2167,9 +2169,9 @@ Basic run-length encoding (RLE) has been used as a fast standard to improve
 network throughput for interactive image transmission. However, it only gives
 sufficient results in specific rendering contexts and fails to provide a
 general improvement as shown in \cite{MEP:10}. RLE only works to compact large
-empty or uniform color areas but is often useless for non-trivial full frame
-color results. We developed two enhancements to improve RLE: per-component RLE
-compression and reordering of color bits. These preconditioning steps exploit
+empty or uniform colour areas but is often useless for non-trivial full frame
+colour results. We developed two enhancements to improve RLE: per-component RLE
+compression and reordering of colour bits. These preconditioning steps exploit
 typical characteristics of image data.
 
 Equalizer also integrates more complex compression algorithms such as
@@ -2191,13 +2193,13 @@ of the data to improve the compression ratio over the standard RLE compression.
 Our basic RLE implementation is a fast 64-bit version that compares two pixels
 at the same time (8 bit per channel RGBA format). While this method is very
 fast, it shows poor compression results in most practical settings since it can
-only compress adjacent pixels of the same color. We have observed a compression
+only compress adjacent pixels of the same colour. We have observed a compression
 rate of up to 10\% in practical scenarios.
 
-The first improvement is to treat each color component separately by producing
+The first improvement is to treat each colour component separately by producing
 four independent RLE-compressed output streams as illustrated in \fig{fRLE}.
 This per-component RLE improves the compression rate from 10\% to about 25\%
-since individual color components change less often than full pixels (based on
+since individual colour components change less often than full pixels (based on
 results from \cite{MEP:10}).
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
@@ -2206,13 +2208,13 @@ results from \cite{MEP:10}).
   \label{fRLE}
 \end{wrapfloat}
 
-The second improvement is {\em bit-swizzling} of color values before
+The second improvement is {\em bit-swizzling} of colour values before
 per-component compression. This swizzling step is a data pre-conditioner, which
 reorders and interleaves the per-component bits as shown in \fig{fSwizzle} by
 grouping them by significance of the corresponding bits. Now the per-component
 RLE compression separately compresses the higher, medium and lower order bits
 in separate streams, thus achieving stronger compression for smoothly changing
-color values since high-order bits change less often.
+colour values since high-order bits change less often.
 
 \begin{figure}[h!t]
   \centering
@@ -2239,7 +2241,7 @@ channels compared to a single-threaded implementation.
 
 \bench{rRLE} summarises the compression results from \cite{MEP:10}. We have
 chosen sort-first rendering, since this highlights the results for the RLE
-compressor which is optimised for color image data. This benchmark did run a
+compressor which is optimised for colour image data. This benchmark did run a
 visualisation cluster with Gigabit Ethernet at a resolution of $1280\times
 1024$ pixels. It rendered the David statuette at 1mm resolution, which resulted
 in a rendering time of about 28 ms on a single GPU. The theoretical maximum
@@ -2278,7 +2280,7 @@ is compressed before network transfer.
 
 The GPU transfer might also apply compression. This is typically done on the
 GPU to reduce the amount of memory transferred over the GPU-CPU interconnect.
-One example is YUV subsampling, where a shader implements the RGB to YUV color
+One example is YUV subsampling, where a shader implements the RGB to YUV colour
 space conversion and subsequent chroma subsampling. Furthermore, a GPU transfer
 plugin may implement asynchronous downloads, where the download is started
 from the render thread an finished in a separate download thread as shown in
@@ -2384,7 +2386,7 @@ cluster configurations.
 The load balancer has to operate on the assumption that the load is uniform
 within one load grid tile. This leads naturally to estimation errors, since in
 reality the load is not uniformly distributed, e.g., it tends to increase
-towards the center of the screen in \fig{fROI}. We reuse the region of interest
+towards the centre of the screen in \fig{fROI}. We reuse the region of interest
 (ROI) from compositing of each source channel to automatically refine the load
 grid as shown \fig{fROI}, top. In cases where the rendered data projects only
 to a limited screen area, this ROI refinement provides the load balancer with a
@@ -2398,7 +2400,7 @@ this to allocate an equal render time to each subtree. It makes no assumption
 of the load distribution in 2D or 1D space, it only tries to correct the
 imbalance in render time.
 
-Both equalizers implement tuneable parameters allowing application developers
+Both equalizers implement tunable parameters allowing application developers
 to optimise the load balancing based on the characteristics of their rendering
 algorithm. These parameters are accessible through an API from the application
 main thread:
@@ -2730,12 +2732,12 @@ adjustments.
 
 \section{Frame Rate Equalizer}\label{sFramerateEq}
 
-The framerate equalizer smoothens the output frame rate of a destination channel
+The framerate equalizer smooths the output frame rate of a destination channel
 by instructing the corresponding window to delay its buffer swap to a minimum
 time between swaps. This is regularly used for time-multiplexed decompositions,
 where source channels tend to drift and finish their rendering unevenly
 distributed over time. This equalizer is however fully independent of DPlex
-compounds, and may be used to smoothen irregular application rendering
+compounds, and may be used to smooth irregular application rendering
 algorithms. Due to the artificial sleep time before swap, it may incur a small
 performance penalty, but it greatly improves the perceived rendering quality for
 users in DPlex compounds.
@@ -2796,7 +2798,7 @@ parallel compositing algorithms, where the compositing nodes form an ad-hoc
 peer-to-peer sub-network.
 
 \item[Dynamic connection management:] As a consequence of the peer-to-peer
-network, all nodes in a cluster are equivalent. Due to the heterogenous nature
+network, all nodes in a cluster are equivalent. Due to the heterogeneous nature
 of a parallel rendering application we furthermore imposed no constraints on
 the management of connections between nodes. Nodes are identified and addressed
 by an universally unique identifier. The network layer lazily establishes a
@@ -2852,7 +2854,7 @@ of endpoints for multicast connections.
 \item[OCommand:] Extends DataOStream to implement the protocol between Collage
   nodes by adding node and command type routing information to the stream.
 \item[DataIStream:] Decodes a buffer of received data into C++ objects and PODs
-  by implementing input stream operators. Performs endian swapping if the
+  by implementing input stream operators. Performs Endian swapping if the
   endianness differs between the originating and local node.
 \item[ICommand:] The other side of OCommand, extending DataIStream.
 \item[Node and LocalNode:] The abstraction of a process in the cluster. Nodes
@@ -3005,9 +3007,9 @@ thread-safe queues. The queues contain datagrams filled with the application
 byte stream, prefixed by a header of at most eight bytes. Each connection has a
 configurable number of buffers (1024 by default) of a configurable MTU (1470
 bytes default), which are either free or in transmission. The header contains
-two bytes for the datagram type (connection handshake, data, acknowledgment,
-negative acknowledgment, acknowledgment request), and up two six bytes of
-datagram-specific information (e.g. for acknowledgment: two bytes read node
+two bytes for the datagram type (connection handshake, data, acknowledgement,
+negative acknowledgement, acknowledgement request), and up two six bytes of
+datagram-specific information (e.g. for acknowledgement: two bytes read node
 identifier, two bytes write node identifier, two bytes sequence number).
 
 \fig{fRSP} shows the data flow through the RSP implementation. Each member of
@@ -3036,9 +3038,9 @@ queue. The protocol thread writes the datagrams unto the UDP multicast socket,
 and reads and handles any incoming datagrams. On the receiver side, the protocol
 receives the data, and pushes them in order to the corresponding application
 thread queue. Out-of-order datagrams are stored aside and queued in order later,
-and a negative acknowledgments (nack) are immediately sent for missing
+and a negative acknowledgements (nack) are immediately sent for missing
 datagrams. The writer will repeat nack'd datagrams, recycle fully acknowledged
-datagrams to the application queue, and ask for missing acknowledgments if
+datagrams to the application queue, and ask for missing acknowledgements if
 needed. When reading data, the application pops full buffers from the
 corresponding connection's queue (blocking when no data is available), copies
 the data piece-wise out of datagram into the application buffer, and recycles
@@ -3047,7 +3049,7 @@ the cleared buffers onto the protocol thread queue.
 Handling a smooth packet flow is critical for performance. RSP uses active flow
 control to advance the byte stream buffered by the implementation. Each incoming
 connection actively acknowledges every $n$ (17 by default) packets fully
-received. The incoming connections offset this acknowledgment by their
+received. The incoming connections offset this acknowledgement by their
 connection identifier to avoid bursts of acks. Any missed datagram is actively
 nack'd as soon as detected. Write connections continuously retransmit packets
 for nack datagrams, and advance their window upon reception of all acks from the
@@ -3100,7 +3102,7 @@ e.g., MPI.
 Distributed objects in {\em Collage} provide powerful, object-oriented data
 distribution for C++ objects. They facilitate the implementation of data
 distribution in a cluster environment. Distributed objects are created by
-subclassing from {\em co::Serializable} or {\em co::Object}. The
+subclassing from {\em co::Serialisable} or {\em co::Object}. The
 application programmer implements serialization and deserialisation. Distributed
 objects can be static (immutable) or dynamic. Objects have a universally unique
 identifier (UUID) as cluster-wide address. A master-slave model is used to
@@ -3170,11 +3172,11 @@ instance if too many unsynchronised versions exist. This is useful to limit the
 amount of memory consumed by slave instance, and too prohibit run-away
 conditions of the master instance.
 
-\subsection{Serializable}
+\subsection{Serialisable}
 
-\label{sec:Serializable}The {\em Collage} Serializable implements one
+\label{sec:Serializable}The {\em Collage} Serialisable implements one
 convenient usage pattern for object data distribution which emerged during
-deployment of Equalizer in applications. The {\em co::Serializable} data
+deployment of Equalizer in applications. The {\em co::Serialisable} data
 distribution is based on the concept of dirty bits, allowing inheritance with
 data distribution. Dirty bits form a 64-bit mask which marks the parts of the
 object to be distributed during the next commit. Setters of the class mark the
@@ -3182,7 +3184,7 @@ appropriate dirty bit, and the accumulated bits are used to compute deltas
 during commit.
 
 For serialization, the application developer implements {\em serialize} or
-{\em deserialize}, which are called with the bit mask specifying which data
+{\em deserialise}, which are called with the bit mask specifying which data
 has to be transmitted or received. During a commit or sync, the current dirty
 bits are given, whereas during object mapping all dirty bits are passed to the
 serialization methods. A commit will clear the dirty mask after serialization.
@@ -3345,24 +3347,24 @@ focus on the raw network performance. For the benchmark, eight physical nodes
 are used, that is, after eight processes two client processes will run on some
 nodes, sharing CPU and network resources.
 
-TCP over the faster InfiniBand link outperforms the cheaper ten gigabit
-ethernet link by more than a factor of two. Unexpectedly, the native RDMA
+TCP over the faster InfiniBand link outperforms the cheaper Ten Gigabit
+Ethernet link by more than a factor of two. Unexpectedly, the native RDMA
 connection performs worse, even though it outperforms IPoIB in a simple
 peer-to-peer connection benchmark. This needs further investigation, but we
 suspect the abstraction of a byte stream connection chosen by Collage is not
 well suited for remote DMA semantics; that is, one needs to design the network
 API around zero-copy semantics with managed memory for modern high-speed
-transports. Both Infiniband connections show significant measurement jitter.
+transports. Both InfiniBand connections show significant measurement jitter.
 
 RSP multicast performs as expected. Collage starts using multicast to commit
 new object versions when two or more clients are mapped, since the transmission
 to a single client is faster using unicast. RSP consistently outperforms
 unicast on the same physical interface and shows good scaling behaviour (2.5
-times slower on 16 vs 2 clients on ethernet, 1.8 times slower on InfiniBand).
+times slower on 16 vs. 2 clients on Ethernet, 1.8 times slower on InfiniBand).
 The scaling is significantly better when only one process per node is used. The
 increased transmission time with multiple clients is caused by a higher
 probability of packet loss, which increases significantly when using more than
-one process per node and network interface. Infiniband outperforms ethernet
+one process per node and network interface. InfiniBand outperforms Ethernet
 slightly, but is largely limited by the RSP implementation throughput of
 preparing and queueing the datagrams to and from the protocol thread, which we
 observed in profiling.
