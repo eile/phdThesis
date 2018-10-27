@@ -2699,25 +2699,28 @@ potentially overlapping, set of GPUs which may contribute to its rendering.
 
 \section{Dynamic Frame Resolution}
 
+
+Dynamic Frame Resolution (DFR) (\fig{fdfr}) provides a functionality similar to
+dynamic video resizing \cite{MBDM:97}, that is, it maintains a constant
+framerate by adapting the rendering resolution of a fill-limited application.
+
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/dfr}
   \caption{\label{fdfr}Dynamic Frame Resolution}
 \end{wrapfloat}
 
-The DFR equalizer (\fig{fdfr}) provides a functionality similar to dynamic
-video resizing \cite{MBDM:97}, that is, it maintains a constant framerate by
-adapting the rendering resolution of a fill-limited application. While the
-aforementioned uses a now-obsolete hardware implementation, our implementation
-is purely in software.
+While the aforementioned uses a now-obsolete hardware implementation, our
+implementation works on commodity hardware and is purely implemented in
+software.
 
-Dynamic frame resolution (DFR) works by rendering into a source channel
-(typically on a FBO) separate to the destination channel, and then scaling the
-rendering during the transfer (typically through an on-GPU texture) to the
-destination channel. The DFR equalizer monitors the rendering performance and
-accordingly adapts the resolution of the source channel and the zoom factor for
-the source to destination transfer. If the performance and source channel
-resolutions allow, this will not only subsample, but also supersample the
-destination channel to reduce aliasing artefacts.
+DFR works by rendering into a source channel (typically on a FBO) separate to
+the destination channel, and then scaling the rendering during the transfer
+(typically through an on-GPU texture) to the destination channel. The DFR
+equalizer monitors the rendering performance and accordingly adapts the
+resolution of the source channel and the zoom factor for the source to
+destination transfer. If the performance and source channel resolutions allow,
+this will not only subsample, but also supersample the destination channel to
+reduce aliasing artefacts.
 
 DFR can be combined with other scalability features, e.g., sort-first
 rendering. It is also notable that it does not need any additional code in the
