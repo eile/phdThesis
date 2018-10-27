@@ -495,7 +495,7 @@ requires real-time algorithms based on imperfect knowledge of the system and
 application behaviour. In our architecture, load balancing is achieved by modifying
 the compound tree parameters at runtime. For example, a sort-first load balancer
 adapts the sub-viewports assigned to each resource at runtime. These so-called
-\textsf{equalizers} are a component hooked into the compound tree, which makes
+{\em equalizers} are a component hooked into the compound tree, which makes
 their use and implementation independent of the rest of the framework.
 
 \cite{EMP:09} and \cite{ESP:18} provide experimental results on the
@@ -668,7 +668,7 @@ tasks, and then uses a second pass to synchronize their execution and results.
 \end{wrapfloat}
 
 \bench{rLaunch} shows the startup time of eqPly, our parallel polygon renderer.
-This benchmarks simply measures the time taken by \textsf{Config::init}, which
+This benchmarks simply measures the time taken by {\em Config::init}, which
 includes the render client process creation using ssh from the application
 node, shared library loading from a shared filesystem, network setup, OpenGL
 and window initialisation, and object data mapping for the Equalizer resource
@@ -696,7 +696,7 @@ display wall setup, where in each case a single GPU and node is responsible for
 driving the attached display. The polygonal model is rendered using eqPly and
 uses display lists for the static geometry. Using display lists allows Chromium
 to send geometry and texture data only once to the rendering nodes (retained mode
-rendering) and display them repeatedly using \textsf{glCallLists()}, which is
+rendering) and display them repeatedly using {\em glCallLists()}, which is
 inexpensive in terms of network overhead. This setup is favourable for Chromium
 because the display lists have to be transmitted only once over the network,
 and only simple display calls will be processed and distributed by Chromium for
@@ -815,7 +815,7 @@ rendering algorithm from the system-specific configuration. It specifies:
  The pixel viewport is influenced by the destination viewport definition and
  viewports set for sort-first/2D decompositions.
 
- \item[Frustum] Frustum parameters as defined by \textsf{glFrustum}. Typically
+ \item[Frustum] Frustum parameters as defined by {\em glFrustum}. Typically
  the frustum is used to set up the OpenGL projection matrix. The frustum is
  influenced by the destinations view definition, sort-first decomposition,
  tracking head matrix and the current eye pass.
@@ -888,7 +888,7 @@ the ratio of cores to threads varies with the used hardware and software
 configuration. Many of the threads do not occupy a full core at runtime,
 especially node threads are mostly idle on a rendering client.
 
-When using the default \textsf{first-touch} memory placement strategy, memory
+When using the default {\em first-touch} memory placement strategy, memory
 is allocated on the processor where it is first accessed. All GPU-specific
 memory allocations are done by the render threads executing the rendering code,
 therefore placing the CPU-side buffers onto the same socket as the
@@ -945,23 +945,23 @@ $\rightarrow$ pipes $\rightarrow$ win\-dows $\rightarrow$ channels describing
 the rendering resources. The developer will use instances of these classes to
 implement application logic and manage data.
 
-The \textsf{node} is the representation of a single computer in a cluster. One operating
+The {\em node} is the representation of a single computer in a cluster. One operating
 system process of the render client executable will be used for each node. Each
 configuration might also use an application node, in which case the application
 process is also used for rendering.
 
-The \textsf{pipe} is the abstraction of a graphic card (GPU), and uses an
+The {\em pipe} is the abstraction of a graphic card (GPU), and uses an
 operating system thread for rendering. All pipe, window and channel task methods
 are executed from the pipe thread. The pipe maintains the information about the
 GPU to be used by the windows for rendering.
 
-The \textsf{window} encapsulates a drawable and an OpenGL context. The drawable
+The {\em window} encapsulates a drawable and an OpenGL context. The drawable
 can be an on-screen window or an off-screen pbuffer or framebuffer object
 (FBO). Windows on the same pipe share their OpenGL rendering resources. They
 execute their rendering tasks sequentially on the pipe's execution thread, in
 the order they are defined in the configuration.
 
-The \textsf{channel} is the abstraction of an OpenGL viewport within its parent
+The {\em channel} is the abstraction of an OpenGL viewport within its parent
 window. It is the entity executing the actual rendering. The channel's
 rendering context is overwritten when it is rendering for another channel
 during scalable rendering. Multiple channels in application windows may be used
@@ -977,7 +977,7 @@ physical display setup (canvases $\rightarrow$ segments), logical display
 (layouts $\rightarrow$ views) and head tracking of users within the
 visualisation installation (observers).
 
-A \textsf{canvas} represents one physical projection surface, e.g., a
+A {\em canvas} represents one physical projection surface, e.g., a
 PowerWall, a curved screen, an immersive installation, or a window on a
 workstation. Canvases provide a convenient way to configure projection
 surfaces. They group a set of segments (displays or projectors) into a 2D
@@ -1012,11 +1012,11 @@ setup for Virtual Reality installations.
 
 A canvas has one or more layouts. One of the layouts is the active layout, that
 is, this set of views is currently used for rendering. It is possible to
-specify \textsf{OFF} as a layout, which deactivates the canvas. It is possible
+specify {\em OFF} as a layout, which deactivates the canvas. It is possible
 to use the same layout on different canvases, for example to mirror a display
 wall layout on a control station window.
 
-A \textsf{segment} represents one output channel of the canvas, e.g., a
+A {\em segment} represents one output channel of the canvas, e.g., a
 projector or a display. A segment has an output channel, which references the
 channel to which the display device is connected. To synchronise the video
 output, a swap barrier is configured to synchronise the respective window
@@ -1036,14 +1036,14 @@ distribution of SUNY Stony Brook, NY, USA.}). The viewport is used to configure
 the segment's default frustum from the canvas frustum description, and to place
 logical views correctly.
 
-A \textsf{layout} is the grouping of logical views. It is used by one or more
+A {\em layout} is the grouping of logical views. It is used by one or more
 canvases. For all given layout/canvas combinations, Equalizer creates
 destination channels when the configuration is loaded. These destination
 channels may later be referenced by compounds to configure scalable rendering.
 Layouts can be switched at runtime by the application. Switching a layout will
 activate different destination channels for rendering.
 
-A \textsf{view} is a logical view of the application data, in the sense used by
+A {\em view} is a logical view of the application data, in the sense used by
 the Model-View-Controller pattern. It can configure a scene, viewing mode,
 viewing position, or any other representation of the application's data. The
 view object is accessible to the application thread and all render threads
@@ -1075,7 +1075,7 @@ configuration generates eight destination channels.
  {\caption{\label{fDisplay}Tiled Display Wall using one Canvas with six Segments and a Layout with two Views}}
 \end{figure}
 
-An \textsf{observer} represents an actor looking at one or multiple views. It
+An {\em observer} represents an actor looking at one or multiple views. It
 has a head matrix, defining its position and orientation within the world, eye
 offsets and focus distance parameters. Typically, a configuration has one
 observer. Configurations with multiple observers are used if multiple,
@@ -1088,7 +1088,7 @@ Compound trees describe how multiple rendering resources are combined to
 produce the desired output, especially how multiple GPUs are aggregated to
 increase rendering performance. They are one of the core innovations, enabling
 a flexible resource configuration. Compounds are modified at runtime by
-\textsf{equalizers} to implement dynamic behaviour, e.g., for load balancing.
+{\em equalizers} to implement dynamic behaviour, e.g., for load balancing.
 
 Compounds are a data structure to describe the execution of rendering tasks in
 the form of a tree. Each compound corresponds to some rendering tasks (clear,
@@ -1192,12 +1192,12 @@ destination channel.
  collected and composited:
  \begin{compactdesc}
   \item[Decomposition] On each child compound the rendering task of that
-  child can be limited by setting the \textsf{viewport}, \textsf{range},
-  \textsf{period} and \textsf{phase}, \textsf{pixel}, \textsf{subpixel},
-  \textsf{eye} or \textsf{zoom} as desired.
+  child can be limited by setting the {\em viewport}, {\em range},
+  {\em period} and {\em phase}, {\em pixel}, {\em subpixel},
+  {\em eye} or {\em zoom} as desired.
 
-  \item[Compositing] Source compounds define an \textsf{output\_frame} to read
-  back the result. This output frame is used as an \textsf{input\_frame} on the
+  \item[Compositing] Source compounds define an {\em output\_frame} to read
+  back the result. This output frame is used as an {\em input\_frame} on the
   destination compound receiving the pixels. The frames are connected with each
   other by their name, which has to be unique within the root compound tree.
   For parallel compositing, the algorithm is described by defining multiple
@@ -1213,7 +1213,7 @@ destination channel.
 
 Virtual Reality is an important field for parallel rendering. It does require
 special attention to support it as a first-class citizen in a generic parallel
-rendering framework. \textsf{Equalizer} has been used in many virtual reality
+rendering framework. {\em Equalizer} has been used in many virtual reality
 installations, such as the Cave2 \cite{FNTTL:13}, the high-resolution C6 CAVE
 at the KAUST visualisation laboratory, and head-mounted displays
 (\fig{FIG_teaser}). In the following we lay out the features needed to support
@@ -1222,7 +1222,7 @@ these installations, motivated by application use cases.
 \subsection{Head Tracking}
 
 Head tracking is the minimal feature needed to support immersive installations.
-\textsf{Equalizer} does support multiple, independent tracked views through the
+{\em Equalizer} does support multiple, independent tracked views through the
 observer abstraction. Built-in VRPN support enables the direct,
 application-transparent configuration of a VRPN tracker device. Alternatively,
 applications can provide a $4\times 4$ tracking matrix. Both CAVE-style tracking
@@ -1400,7 +1400,7 @@ For most rendering applications even a relatively complex setup such as this
 example requires very little programmer involvement. The abstractions provided
 by the resource description, render context and compounds enable Equalizer to
 reconfigure the application almost transparently. For polygonal rendering, it
-suffices that the application honours the \textsf{range} parameter of the render
+suffices that the application honours the {\em range} parameter of the render
 context to decompose its rendering. All other tasks, in particular the parallel
 compositing and pixel transfers, are fully handled by Equalizer. Applications
 which require ordered compositing, for example volume rendering, overwrite the
@@ -1434,14 +1434,14 @@ In \cref{sCompositing} we provide detailed information on our compositing advanc
 \section{Load Balancing}
 
 Compounds only provide a static configuration of the parallel rendering setup.
-\textsf{Equalizers} are algorithms which hook into a compound and modify
+{\em Equalizers} are algorithms which hook into a compound and modify
 parameters of their respective subtree at runtime to dynamically optimise the
 resource usage. Each equalizer focuses on tuning one aspect of the
 decomposition, allowing them to be composited in a configuration. Due to their
 nature, they are transparent to application developers, but might have
 application-accessible parameters to tune their behaviour. Resource
 equalisation is the critical component for scalable parallel rendering, and
-therefore the eponym for the \textsf{Equalizer} project name.
+therefore the eponym for the {\em Equalizer} project name.
 
 Compounds are a static snapshot of a configuration, and equalizers provide
 dynamic configuration on top. This separation of responsibilities is an
@@ -1530,8 +1530,8 @@ Collage:
   \caption{\label{fNetObject}Communication between two Collage Objects}
 \end{figure}
 
-\textsf{Collage} implements a few generic distributed objects which are used by
-\textsf{Equalizer} and other applications. A barrier is a distributed primitive
+{\em Collage} implements a few generic distributed objects which are used by
+{\em Equalizer} and other applications. A barrier is a distributed primitive
 used for software swap synchronisation. Its implementation follows a simple
 master-slave approach, which has shown to by sufficient for this use case.
 Queues are distributed, single producer, multiple consumer FIFO queues used for
@@ -1540,7 +1540,7 @@ prefetch items.
 
 An object map facilitates distribution and synchronisation of a collection of
 distributed objects. Master versions can be registered on a central node, e.g.,
-the application node in \textsf{Equalizer}. Consumers, e.g., \textsf{Equalizer}
+the application node in {\em Equalizer}. Consumers, e.g., {\em Equalizer}
 render clients, can selectively map the objects they are interested in.
 Committing the object map will commit all registered objects and sync their new
 version to the slaves. Syncing the map on the slaves will synchronise all mapped
@@ -1626,7 +1626,7 @@ rendering, e.g., to render a monoscopic view on a control workstation while
 rendering stereoscopic on a larger immersive installation.
 
 Stereo compounds are configured by restricting each source to a single eye
-pass. Typically, one of the channels also configures the \textsf{cyclop} eye
+pass. Typically, one of the channels also configures the {\em cyclop} eye
 pass, which gets activated when the view is switched to monoscopic rendering.
 
 
@@ -1644,7 +1644,7 @@ example direct volume rendering. Source channels cannot reduce geometry load
 through view frustum culling, since each source channel has almost the same
 frustum as the destination channel. However, the fragment load on all source
 channels is reduced linearly and well load balanced due to the interleaved
-distribution of pixels. This functionality is transparent to \textsf{Equalizer}
+distribution of pixels. This functionality is transparent to {\em Equalizer}
 applications, and the default compositing uses the stencil buffer to blit
 pixels onto the destination channel.
 
@@ -1697,7 +1697,7 @@ overlaps with rendering.
 
 As shown in~\cite{SPEP:16}, work packages can provide better performance due to
 being implicitly load balanced, as long as there is an insignificant overhead
-for the render task setup. This mode is transparent to \textsf{Equalizer}
+for the render task setup. This mode is transparent to {\em Equalizer}
 applications. We have used a tile compound to scale an interactive ray tracing
 application to hundreds of rendering nodes using RTT Deltagen.
 
@@ -1748,12 +1748,12 @@ mode has the peculiarity that small imbalances tend to accumulate such that the
 concurrent frames all finish simultaneously. To provide a smooth framerate, if
 so desired, a framerate equalizer can be installed on the destination compound.
 \sref{sFramerateEq} covers this functionality. It is transparent to
-\textsf{Equalizer} applications, but does require the configuration latency to
+{\em Equalizer} applications, but does require the configuration latency to
 be greater or equal than the number of source channels.
 
 DPlex rendering is not hard-coded into our framework, but configured by
 restricting the rendering task temporally on each source compound. This is
-achieved by setting a \textsf{period} and \textsf{phase} parameters, which
+achieved by setting a {\em period} and {\em phase} parameters, which
 configure the number of frames skipped and starting offset on the given source
 compound. A simple DPlex compound would have a destination compound with $n$
 source compounds, where each source has a period of $n$ and one phase from
@@ -1775,7 +1775,7 @@ unforeseen configurations, for example:
 
 \begin{compactitem}
 
-\item Reusing the \textsf{period} parameter used to configure number of frames
+\item Reusing the {\em period} parameter used to configure number of frames
 in a DPlex compound, an underpowered control workstation for a large tiled
 display wall was configured to render only every other frame using a period of
 two. Due to the standard latency of one frame, this meant that the display wall
@@ -2069,7 +2069,7 @@ Equalizer provides an API for the programmer to provide the region of interest
 rendered by a single resource, which can be easily computed by computing the
 screen-space projection of the model's bounding volume. We have extended the
 core parallel rendering framework to use this application-provided ROI to
-optimise the \textsf{load\_equalizer} as well as the image compositing.
+optimise the {\em load\_equalizer} as well as the image compositing.
 
 The compositing code uses the ROI to minimise image readback size, and
 consequently network transmission. The ROI is an output frame parameter, and is
@@ -2173,7 +2173,7 @@ compression and reordering of color bits. These preconditioning steps exploit
 typical characteristics of image data.
 
 Equalizer also integrates more complex compression algorithms such as
-\textsf{lib-jpeg-turbo}, which are however of little practical use on modern
+{\em lib-jpeg-turbo}, which are however of little practical use on modern
 interconnects. Their compression overhead is often too high to be amortised by
 the decreased network transmission time on 10 GBit/s or faster interconnects.
 
@@ -2330,7 +2330,7 @@ aspect of the decomposition or recomposition. Due to their nature, they are
 transparent to application developers, but might have application-accessible
 parameters to tune their behaviour. Resource equalisation is the critical
 component for scalable parallel rendering, and therefore the eponym for the
-\textsf{Equalizer} project name.
+{\em Equalizer} project name.
 
 In this section we present various {\em equalizer} implementations: two
 variants for reactive load balancing for sort-first and sort-last rendering,
@@ -2353,8 +2353,8 @@ optimisations for these parallel rendering modes. Our load equalizers are fully
 transparent for application developers; that is, they use a reactive approach
 based on past rendering times. This requires a reasonable frame-to-frame
 coherence for good results, which is the case with most rendering applications.
-Equalizer implements two different algorithms, a \textsf{load\_equalizer} and a
-\textsf{tree\_equalizer}, which have shown to each have their advantage
+Equalizer implements two different algorithms, a {\em load\_equalizer} and a
+{\em tree\_equalizer}, which have shown to each have their advantage
 depending on the type of rendering load.
 
 Both equalizers extract their load metrics from statistics collected by the
@@ -2364,7 +2364,7 @@ of each frame, the server triggers all equalizers on all compound trees, which
 enables them to set new decomposition parameters before the rendering tasks are
 computed.
 
-The \textsf{load\_equalizer} builds a model of the rendering load in screen
+The {\em load\_equalizer} builds a model of the rendering load in screen
 space or data space. It stores a 2D (for sort-first) or 1D (for sort-last) grid
 of the load, mapping the load of each channel. The load is stored in normalised
 2D/1D coordinates using $\frac{time}{area}$ as the load, the contributing source
@@ -2391,8 +2391,8 @@ to a limited screen area, this ROI refinement provides the load balancer with a
 more accurate load estimation leading to a better load prediction during the
 balancing step.
 
-The \textsf{tree\_equalizer} uses the same binary kD-tree structure as the
-\textsf{load\_equalizer} for recursive load balancing. It computes the
+The {\em tree\_equalizer} uses the same binary kD-tree structure as the
+{\em load\_equalizer} for recursive load balancing. It computes the
 accumulated render time of all children for each node of the tree, and uses
 this to allocate an equal render time to each subtree. It makes no assumption
 of the load distribution in 2D or 1D space, it only tries to correct the
@@ -2467,7 +2467,7 @@ In~\cite{SPEP:16}, this basic, random task assignment was extended with
 client-affinity models.
 
 Depending on the sort-first or sort-last decomposition mode, a
-\textsf{tile\_equalizer} or \textsf{chunk\_equalizer} generates tiles or
+{\em tile\_equalizer} or {\em chunk\_equalizer} generates tiles or
 database ranges of a configurable size and enqueues them at the beginning of
 each frame. This active equalizer is the central component of the tile and chunk
 compounds introduced in \sref{sTile}.
@@ -2479,10 +2479,10 @@ compounds introduced in \sref{sTile}.
 and sort-last rendering. The experiment setup is described in \cite{ESP:18}.
 The results show that, as expected, load balancing improves the performance
 over a static task decomposition significantly. The simpler
-\textsf{tree\_equalizer} outperforms the load grid-driven
-\textsf{load\_equalizer} in most cases, except for sort-first volume rendering
+{\em tree\_equalizer} outperforms the load grid-driven
+{\em load\_equalizer} in most cases, except for sort-first volume rendering
 where the load in the region of interest is relatively uniform. This result is
-counterintuitive since the \textsf{load\_equalizer} operates with more
+counterintuitive since the {\em load\_equalizer} operates with more
 information and should be able to produce better results. It seems to confirm
 that simple algorithms often outperform theoretically better, but more complex
 implementations. The decoupling of the load balancing algorithm from the rest
@@ -2522,10 +2522,10 @@ as it performs load balancing implicitly and does not assume coherence of
 available resources between frames. The simpler tree equalizer outperforms the
 load equalizer in this experiment.
 
-The \textsf{tile\_equalizer} often outperforms \textsf{tree\_equalizer}. This
+The {\em tile\_equalizer} often outperforms {\em tree\_equalizer}. This
 suggests that the underlying implicit load balancing of task queues can be
-superior to the explicit methods of \textsf{load\_equalizer} and
-\textsf{tree\_equalizer} in high load situations, where the additional overhead
+superior to the explicit methods of {\em load\_equalizer} and
+{\em tree\_equalizer} in high load situations, where the additional overhead
 of tile generation and distribution is more justified. The relatively simple
 nature of our benchmark application's rendering algorithms is also favouring
 work packages, since they have a near-zero static overhead per rendering pass.
@@ -2542,48 +2542,33 @@ shown in \fig{fvieweq}.
 
 \begin{figure}[h!t]
   \includegraphics[width=\textwidth]{images/vieweq}
-  \caption{\label{fvieweq}Six-to-two Cross-Segment Load Balancing}
+  \caption{\label{fvieweq}Six GPU to two Display Cross-Segment Load Balancing}
 \end{figure}
 
-The $m$ output channels typically each drive a display or projector of a
-multi-display system. Commonly, each destination channel is solely responsible
-for rendering and/or compositing of its corresponding display segment.
+The $m$ output channels each drive a display or projector of a multi-display
+system. Commonly, each destination channel is solely responsible for rendering
+and potentially compositing of its corresponding display segment.
 
 A key element of CSLB is that the $m$ GPUs physically driving the $m$ display
-segments will not be restricted in a one-to-one mapping to rendering tasks of
-the corresponding display segment. In fact, CSLB performs dynamic assignment of
-$n$ graphics resources from a pool to drive $m$ different destination display
+segments are not restricted to a one-to-one mapping of rendering tasks to the
+corresponding display segment. CSLB performs a dynamic assignment of $n$
+graphics resources from a pool to drive $m$ different destination display
 segments, where the $m$ destination channel GPUs themselves may also be part of
-the pool of graphics resources.
-
-CSLB also does not require a planar display surface, that is, the algorithm
-works equally for tiled display walls and immersive installations.
+the pool of graphics resources. CSLB also does not require a planar display
+surface, that is, the algorithm works equally for tiled display walls and
+immersive installations.
 
 Dynamic resource assignment is performed through load balancing components that
 exploit statistical data from previous frames for the decision of optimal GPU
 usage for each segment as well as optimal distribution of workload among them.
-The algorithm can easily be extended to use predictive load balancing based on
-a load estimation given the application.
+The algorithm is also compatible with predictive load balancing based on a load
+estimation given by the application.
 
 CSLB is implemented in Equalizer as two layers of hierarchically organised
 components, specified in the configuration. The first level globally assigns
 fractions of resources to each destination channel, and the second level
-consist of load\_equalizers or tree\_equalizers balancing the assigned
-resources for each destination channel.
-
-\fig{fViewEqualizer} depicts a snapshot of a simple CSLB setup along with its
-configuration file. Two destination channels, {\em Channel1} and {\em
-Channel2}, each connected to a projector, create the final output for a
-multi-projector view. Each projector is driven by a distinct GPU, constituting
-the source channels {\em Source1} and {\em Source2}. Each source channel GPU
-can contribute to the rendering of the other destination channel segment. For
-each destination channel, a set of potential resources are allocated. A
-top-level {\em view\_equalizer} assigns the usage of each resource, based on
-which a per-segment {\em load\_equalizer} computes the 2D split to balance the
-assigned resources within the display. The left segment of the display has a
-higher workload, so, both {\em Source1} and {\em Source2} are used to render
-for {\em Channel1}, whereas {\em Channel2} makes use of only {\em Source2} to
-assemble the image for the right segment.
+consist of {\em load\_equalizer}s or {\em tree\_equalizer}s balancing the
+assigned resources for each destination channel.
 
 \begin{figure}[h!t] \center
   \subfigure[CSLB resources setup.]{\includegraphics[width=0.47\textwidth]{images/viewEqualizerSetup}
@@ -2630,36 +2615,39 @@ compound \\
 \label{fViewEqualizer}
 \end{figure}
 
-CSLB uses a two-stage approach: a {\sf view\_equalizer} is attached to the top
-level of the parallel rendering task decomposition compound hierarchy, and
-handles the resource assignment. Each child of this root compound has one
-destination channel, constituting one of the $m$ display segments, with a {\sf
-load\_equalizer} or \textsf{tree\_equalizer} each. Hence the {\sf
-view\_equalizer} supervises the different destination channels of a
-multi-display setup. The {\sf load\_equalizer} on the other hand is responsible
-for the partitioning of the rendering task among its child compounds using the
-precomputed usage for each child. Therefore, each destination channel of a
-display segment has its source channel leaf nodes sharing the actual rendering
-load. One physical graphics resource (GPU), being assigned to a source channel,
-can be referenced in multiple leaf nodes and thus contribute to different
-displays.
+\fig{fViewEqualizer} depicts a snapshot of the simplest CSLB setup along with
+its configuration file. Two destination channels, {\em Channel1} and {\em
+Channel2}, each connected to a projector, create the final output for a
+multi-projector view. Each projector is driven by a distinct GPU, constituting
+the source channels {\em Source1} and {\em Source2}. Each source channel GPU
+can contribute to the rendering of the other destination channel segment. For
+each destination channel, a set of potential resources are allocated. A
+top-level {\em view\_equalizer} assigns the usage of each resource, based on
+which a per-segment {\em load\_equalizer} computes the 2D split to balance the
+assigned resources within the display. The left segment of the display has a
+higher workload, so, both {\em Source1} and {\em Source2} are used to render
+for {\em Channel1}, whereas {\em Channel2} uses only {\em Source2} to render
+the image for the right segment. The schematic also shows the current usage of
+the four potential source compounds, where only three have an active draw pass
+at this point in time.
+
+CSLB uses a two-stage approach: a {\em view\_equalizer} at the top level of the
+compound hierarchy handles the resource assignment. Each child of this root
+compound has one destination (segment) channel, constituting one of the $m$
+display segments, with a {\em load\_equalizer} or {\em tree\_equalizer} each.
+The {\em view\_equalizer} supervises the different destination channels of a
+multi-display setup; the {\em load\_equalizer}s on the other hand are
+responsible for the partitioning of the rendering task of each segment among
+its child compounds. They use the precomputed usage of each child to allocate a
+corresponding amount of work for the child. Therefore, each destination channel
+of a display segment has its source channel leaf nodes sharing the actual
+rendering load. One physical GPU) being assigned to a source channel, can be
+referenced in multiple leaf nodes and thus contribute to different displays.
 
 For performance reason, the view equalizer assigns each resource to at most two
 rendering tasks, e.g., to update itself and to contribute to another display.
 Furthermore, it gives priority to the source compound using the same channel as
 the output channel of each segment, thus minimising pixel transfers.
-
-The rendered data, algorithm and camera will produce different rendering load
-over time for each segment of a multi-display system. Since the slowest segment
-determines the overall performance of the system, it is important to
-dynamically adjust load among segments. The {\sf view\_equalizer} analyses the
-load of all segments based on past frame rendering statistics and adapts
-resource usage for each segment. For each rendered frame, the {\sf
-view\_equalizer} sets the usage of each leaf source channel compound, to
-activate or deactivate it for rendering on the given destination channel. This
-usage is picked up by the per-segment load balancers, which will assign work
-proportionally to the usage, with no rendering task for $0$ usage.
-\cite{EEP:11} provides a detailed description of the algorithm.
 
 Cross-segment load balancing thus allows for optimal resource usage of multiple
 GPUs used for driving the display segments themselves, as well as any additional
@@ -2672,22 +2660,20 @@ scalable rendering for optimal performance.
 \end{wrapfloat}
 
 \cite{EEP:11} provide experimental results for a six-monitor tiled display wall
-driven by 12 source GPUs. \bench{rCSLBFPS} shows an overview for the achievable
+driven by twelve GPUs. \bench{rCSLBFPS} shows an overview for the achievable
 performance improvements. The first two configurations use a static assignment
 of two GPUs to one output channel, where the first one statically assigns one
 half to each GPU, and the second uses a load balancer to dynamically split the
-segment between the two GPUs. Already this 2D load balancing improves the
-framerate by almost 50\%.
-
-The remaining configurations add a view equalizer on top of the per-segment 2D
-load equalizer. The configuration assigns up to 4, 6, 8, 10 or all GPUs to each
-segment, that is, any segment may use up to $n$ GPUs, and the GPUs are shared
-evenly across multiple segments. While theoretically the all-to-all
-($12:6\times 12$) configuration should provide the best performance,
-mispredictions of the equalizers lead to a sweet spot of GPU sharing between
-segments. In our $12:6$ setup, assigning up to six GPUs per segment almost
-doubles the performance over the state-of-the-art sort-first load balanced
-setup.
+work between the two GPUs. Already this 2D load balancing improves the
+framerate by almost 50\%. The remaining configurations add a view equalizer on
+top of the per-segment 2D load equalizer. The configuration assigns up to 4, 6,
+8, 10 or all GPUs to each segment, that is, any segment may use up to $n$ GPUs,
+and the GPUs are shared evenly across multiple segments. While theoretically
+the all-to-all ($12:6\times 12$) configuration should provide the best
+performance, mispredictions of the equalizers lead to a sweet spot of GPU
+sharing between segments. In our $12:6$ setup, assigning up to six GPUs per
+segment almost doubles the performance over the state-of-the-art sort-first
+load balanced setup.
 
 \bench{rCSLB} shows the rendering time over a fixed camera path of 540 frames.
 In the static case, two GPUs are responsible for each of the six outputs of the
@@ -2710,8 +2696,6 @@ displays, but also for curved displays and CAVE installations. On the other
 hand, it allows a flexible assignment of potential contributing GPUs to each
 output channel individually, that is, each output may have a different,
 potentially overlapping, set of GPUs which may contribute to its rendering.
-\cite{EEP:11} shows in its experiments that there is a sweet spot of the number
-of resources per channel.
 
 \section{Dynamic Frame Resolution}
 
@@ -2885,14 +2869,14 @@ of endpoints for multicast connections.
 
 \subsection{Connection}
 
-A \textsf{Connection} is the basic primitive used for communication between
+A {\em Connection} is the basic primitive used for communication between
 processes in Collage. It provides a stream-oriented communication between two
 endpoints. A connection is either closed, connected or listening. A closed
 connection cannot be used for communications. A connected connection can be
 used to read or write data to the communication peer. A listening connection
 can accept connection requests leading to new, connected connections.
 
-A \textsf{ConnectionSet} is used to manage multiple connections. The typical use
+A {\em ConnectionSet} is used to manage multiple connections. The typical use
 case is to have one or more listening connections for the local process, and a
 number of connected connections for communicating with other processes.
 The connection set is used to select one connection which requires some action.
@@ -2902,7 +2886,7 @@ connected connection or the notification of a disconnect.
 The connection and connection set can be used by applications to implement
 other network-related functionality, e.g., to communicate with a sound server
 on a different machine. They do not require a particular wire protocol. A
-\textsf{LocalNode} has a connection set and uses this to manage connections
+{\em LocalNode} has a connection set and uses this to manage connections
 with other nodes.
 
 \subsection{Data Streams}
@@ -2925,8 +2909,8 @@ are used to implement thread-aware dispatching of received commands to handler
 functions.
 
 Nodes and objects communicate using commands derived from data streams. The
-basic command dispatch is implemented in the \textsf{Dispatcher} class, from
-which \textsf{Node} and \textsf{Object} are sub-classed.
+basic command dispatch is implemented in the {\em Dispatcher} class, from
+which {\em Node} and {\em Object} are sub-classed.
 
 The dispatcher allows the registration of commands with a dispatch queue and an
 invocation method. Each command has a type and command identifier, which is
@@ -2943,31 +2927,31 @@ correct thread when an appropriate command arrives.
 
 \subsection{Nodes}
 
-The \textsf{Node} is the abstraction of one process in the peer-to-peer network.
+The {\em Node} is the abstraction of one process in the peer-to-peer network.
 Each node has a universally unique identifier. This identifier is used to
 address nodes, e.g., to query connection information to connect to the node.
 Nodes use connections to communicate with each other by sending
-\textsf{OCommand}s.
+{\em OCommand}s.
 
-The \textsf{LocalNode} is the specialisation of the node for the given process.
+The {\em LocalNode} is the specialisation of the node for the given process.
 It encapsulates the communication logic for connecting remote nodes, as well as
 object registration and mapping. Local nodes are set up in the listening state
 during initialization.
 
-A remote \textsf{Node} can either be connected explicitly by the application,
+A remote {\em Node} can either be connected explicitly by the application,
 or implicitly due to a connection from a remote node. The explicit connection
 can be done by programmatically creating a node, adding the necessary
-\textsf{ConnectionDescription}s and connecting it to the local node. It may
+{\em ConnectionDescription}s and connecting it to the local node. It may
 also be done by connecting the remote node to the local node by using its
-\textsf{NodeID}. This will cause Collage to query connection information for
+{\em NodeID}. This will cause Collage to query connection information for
 this node from the already connected nodes and zeroconf, instantiating the node
 and connecting it. Both operations may fail.
 
 \subsubsection{\label{sZeroconf}Zeroconf Discovery}
 
-Each \textsf{LocalNode} provides a \textsf{Zeroconf} communicator, which allows
+Each {\em LocalNode} provides a {\em Zeroconf} communicator, which allows
 node and resource discovery. The zeroconf service "\_collage.\_tcp" is used to
-announce the presence of a listening \textsf{LocalNode} using the ZeroConf
+announce the presence of a listening {\em LocalNode} using the ZeroConf
 protocol to the network. The node identifier and all listening connection
 descriptions are announced, which is used to connect unknown nodes by using the
 node identifier alone.
@@ -2975,7 +2959,7 @@ node identifier alone.
 \subsubsection{Communication between Nodes}
 
 \fig{fNetNode} shows the communication between two nodes. Each
-\textsf{LocalNode} has a receiver thread, which uses a connection set to read
+{\em LocalNode} has a receiver thread, which uses a connection set to read
 and dispatch incoming data from the network, and a command thread used for
 higher-level functions such as object mapping. When the remote node sends a
 command, the listening node receives the command and dispatches it from the
@@ -3027,7 +3011,7 @@ identifier, two bytes write node identifier, two bytes sequence number).
 the multicast group opens a listening connection, which will send query
 datagrams to the multicast socket. For each found member, a receiving
 connection instance is created and, similar to a TCP socket, passed to the
-application upon \textsf{accept}. Each connection instance has a fixed number
+application upon {\em accept}. Each connection instance has a fixed number
 (1024 by default) of fixed-size (1470 by default) buffers, each used directly
 as an UDP datagram. The listening connection uses these buffers for writing
 data, and each receiving connection uses its buffers for received data. These
@@ -3043,7 +3027,7 @@ data management.
 
 When writing data, the application thread pops empty buffers from its queue
 (blocking when the data cannot be written fast enough), fills in the
-\textsf{data} datagram header and copies the application data piece-wise into
+{\em data} datagram header and copies the application data piece-wise into
 the datagram. The datagrams are then pushed onto the protocol thread buffer
 queue. The protocol thread writes the datagrams unto the UDP multicast socket,
 and reads and handles any incoming datagrams. On the receiver side, the protocol
@@ -3098,22 +3082,22 @@ rendering setup. Existing parallel rendering frameworks address this often
 poorly, at best they rely on MPI to distribute data. Real-world, interactive
 visualisation applications are typically written in C++ and have complex data
 models and class hierarchies to represent their application state. As outlined
-in \cite{EMP:09}, the parallel rendering code in an \textsf{Equalizer}
+in \cite{EMP:09}, the parallel rendering code in an {\em Equalizer}
 application only needs access to the data needed for rendering, as all
 application logic is centralised in the application main thread. We have
 encountered two main approaches to address this distribution: Using a shared
 filesystem for static data, or using data distribution for static and dynamic
-data. Distributed objects are not required to build \textsf{Equalizer}
+data. Distributed objects are not required to build {\em Equalizer}
 applications. While most developers choose to use this abstraction for
 convenience, we have seen applications using other means for data distribution,
 e.g., MPI.
 
 \subsection{Object Types}
 
-Distributed objects in \textsf{Collage} provide powerful, object-oriented data
+Distributed objects in {\em Collage} provide powerful, object-oriented data
 distribution for C++ objects. They facilitate the implementation of data
 distribution in a cluster environment. Distributed objects are created by
-subclassing from \textsf{co::Serializable} or \textsf{co::Object}. The
+subclassing from {\em co::Serializable} or {\em co::Object}. The
 application programmer implements serialization and deserialisation. Distributed
 objects can be static (immutable) or dynamic. Objects have a universally unique
 identifier (UUID) as cluster-wide address. A master-slave model is used to
@@ -3147,7 +3131,7 @@ version is used by a render client. The push-based commit-sync logic eventually
 brings the object into a consistent state with respect to the rendered frame.
 
 Serialization is facilitated using output or input streams, which abstract the
-data transmission and are used like a \textsf{std::stream}. The data streams
+data transmission and are used like a {\em std::stream}. The data streams
 implement efficient buffering and compression, and automatically select the best
 connection for data transport. Custom data type serialisers can be implemented
 by providing the appropriate serialization functions. No pointers should be
@@ -3155,11 +3139,11 @@ directly transmitted through the data streams. For pointers, the corresponding
 object is typically a distributed object as well, and its UUID and version are
 transmitted in place of a pointer.
 
-Dynamic objects are versioned, and on \textsf{commit} the delta data from the
+Dynamic objects are versioned, and on {\em commit} the delta data from the
 previous version is sent, if available using multicast, to all mapped slave
 instances. The data is queued on the remote node, and is applied when the
-application calls \textsf{sync} to synchronise the object to a new version. The
-\textsf{sync} method might block if a version has not yet been committed or is
+application calls {\em sync} to synchronise the object to a new version. The
+{\em sync} method might block if a version has not yet been committed or is
 still in transmission. All versioned objects have the following characteristics:
 
 \begin{compactitem}
@@ -3170,10 +3154,10 @@ special care has to be taken to handle possible conflicts during concurrent
 commits from multiple slave instances.
 
 \item Slave instance versions can only be advanced; that is,
-\textsf{sync(version)} with a version older than the current version will fail.
+{\em sync(version)} with a version older than the current version will fail.
 
 \item Newly mapped slave instances are mapped to the oldest available version
-by default, or to the version specified when calling \textsf{mapObject}.
+by default, or to the version specified when calling {\em mapObject}.
 
 \end{compactitem}
 
@@ -3185,17 +3169,17 @@ conditions of the master instance.
 
 \subsection{Serializable}
 
-\label{sec:Serializable}The \textsf{Collage} Serializable implements one
+\label{sec:Serializable}The {\em Collage} Serializable implements one
 convenient usage pattern for object data distribution which emerged during
-deployment of Equalizer in applications. The \textsf{co::Serializable} data
+deployment of Equalizer in applications. The {\em co::Serializable} data
 distribution is based on the concept of dirty bits, allowing inheritance with
 data distribution. Dirty bits form a 64-bit mask which marks the parts of the
 object to be distributed during the next commit. Setters of the class mark the
 appropriate dirty bit, and the accumulated bits are used to compute deltas
 during commit.
 
-For serialization, the application developer implements \textsf{serialize} or
-\textsf{deserialize}, which are called with the bit mask specifying which data
+For serialization, the application developer implements {\em serialize} or
+{\em deserialize}, which are called with the bit mask specifying which data
 has to be transmitted or received. During a commit or sync, the current dirty
 bits are given, whereas during object mapping all dirty bits are passed to the
 serialization methods. A commit will clear the dirty mask after serialization.
@@ -3211,7 +3195,7 @@ chunking, caching, preloading and multicast.
 
 The most obvious optimisation is compression. Recently, many new compression
 algorithms have been developed which exploit modern CPU architectures and
-deliver compression rates well above one gigabyte per second. \textsf{Collage}
+deliver compression rates well above one gigabyte per second. {\em Collage}
 uses the Pression library~\cite{pression}, which provides a unified interface
 for a number of compression libraries, such as FastLZ~\cite{jesperfast},
 Snappy~\cite{snappy} and ZStandard~\cite{zstd}. It also contains a custom,
@@ -3268,7 +3252,7 @@ cache. Preloading uses multicast when available.
 
 Due to the master-slave nature of data distribution, multicast is used to
 optimise the transmission time of data. If the contributing nodes share a
-multicast session, and more than one slave instance is mapped, \textsf{Collage}
+multicast session, and more than one slave instance is mapped, {\em Collage}
 automatically uses the multicast connection to send the new version
 information.
 
@@ -3287,11 +3271,11 @@ benchmarking. The details of the benchmark algorithm can be found in
 We used three different data sets, and ran the benchmark on up to eight
 physical nodes, that is, after eight processes nodes start to run two processes
 per node, which share CPU, memory and network interface bandwidth. Object
-mapping is measured using the following settings: \textsf{none} distributes the
-raw, uncompressed, and unbuffered data, \textsf{compression} uses the Snappy
-compressor to compress and distribute unbuffered data, \textsf{buffered} reuses
+mapping is measured using the following settings: {\em none} distributes the
+raw, uncompressed, and unbuffered data, {\em compression} uses the Snappy
+compressor to compress and distribute unbuffered data, {\em buffered} reuses
 uncompressed, serialised data for mappings from multiple nodes, and
-\textsf{compression buffered} reuses the compressed buffer for multiple nodes.
+{\em compression buffered} reuses the compressed buffer for multiple nodes.
 
 \begin{benchmark}[t]\center
 \includegraphics[height=.245\textwidth]{images/benchmark_eqPly2}\hfil
@@ -3383,11 +3367,11 @@ observed in profiling.
 
 \chapter{Applications}\label{sApplications}
 
-A key performance measure for a good design of any framework is the acceptance
-by developers, for which a good indicator is the usage by third-party
-applications. While the evaluation and architecture of applications build on
-Equalizer is outside of the scope of this thesis, we name a few examples here
-to illustrate the variety of use cases supported by our framework.
+A key performance indicator for a good design of any framework is the
+acceptance by developers, for which a good measure is the usage by third-party
+applications. While the evaluation and architecture of applications build with
+Equalizer is outside of the scope of this thesis, we provide a few examples
+here to illustrate the variety of use cases supported by our framework.
 
 \section{Livre}
 
@@ -3408,7 +3392,7 @@ RAW or compressed files, as well as to on-the-fly generated volume data (e.g.
 such as from event simulations or surface meshes).
 
 High-level state information, e.g., camera position and rendering settings, is
-shared in Livre through \textsf{Collage} objects between the application and
+shared in Livre through {\em Collage} objects between the application and
 rendering threads. Sort-first decomposition is efficiently supported through
 octree traversal and culling, both for scalability as well as for driving
 large-scale tiled display walls.
@@ -3417,8 +3401,8 @@ large-scale tiled display walls.
 
 RTT Deltagen (now Dassault 3D Excite) is a commercial application for
 interactive, high quality rendering of CAD data. The RTT Scale module,
-delivering multi-GPU and distributed execution, is based on \textsf{Equalizer}
-and \textsf{Collage}, and has driven many of the features implemented in
+delivering multi-GPU and distributed execution, is based on {\em Equalizer}
+and {\em Collage}, and has driven many of the features implemented in
 Equalizer.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
@@ -3427,9 +3411,9 @@ Equalizer.
 \end{wrapfloat}
 
 RTT Scale uses a master-slave execution mode, were a single Deltagen instance
-can go into ``Scale mode'' at any time by launching an \textsf{Equalizer}
+can go into ``Scale mode'' at any time by launching an {\em Equalizer}
 configuration. Consequently, the internal representation needed for rendering
-is based on a \textsf{Collage}-based data distribution. The rendering clients
+is based on a {\em Collage}-based data distribution. The rendering clients
 are separate, smaller applications which will map their scenes during startup.
 At runtime, any change performed in the main application is committed as a
 delta at the beginning of the next frame. Multicast is used to keep data
@@ -3494,8 +3478,8 @@ Bino is a stereoscopic 3D video player capable of running on very large display
 systems. Originally written for the immersive semi-cylindrical projection
 system at the University of Siegen, it has been used in many installations
 thanks to its flexibility of configuration. Bino decodes the video on each
-Equalizer rendering process, and only synchronises the time step globally,
-therefore providing a scalable solution to video playback.
+rendering thread, and only synchronises the time step globally, providing a
+scalable solution to video playback.
 
 \section{Omegalib}
 
