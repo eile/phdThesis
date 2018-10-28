@@ -1560,10 +1560,10 @@ allows data distribution with minimal application logic.
 \section{Overview}
 
 Scalable rendering is a subset of parallel rendering which aims to improve the
-framerate of a rendering task by decomposing it over multiple rendering
+framerate of a rendering work load by decomposing it over multiple rendering
 resources. Parallel rendering includes other use cases, for example to use
-multiple GPUs to drive individual displays of a tiled display wall. Scalable
-rendering addresses the research question on how we can improve the rendering
+multiple GPUs to drive individual displays of a tiled display wall. This
+chapter addresses the research question on how we can improve the rendering
 performance of visualisation applications to enable users to explore more data.
 
 Scalable rendering research has put a lot of focus on two of the three
@@ -1679,7 +1679,7 @@ rendering code, for example to jitter or tilt the frustum based on the subpixel
 executed in the current rendering pass.
 
 Subpixel compounds increase the amount of pixels to be composited linearly with
-the number of source channels, they can use the same parallel compositing
+the number of source channels. They can use the same parallel compositing
 algorithms as sort-last rendering. Since the compositing logic is decoupled
 from the task decomposition, it reuses the same code as sort-last parallel
 compositing except for the combination step on each GPU.
@@ -1696,10 +1696,10 @@ offset for each source in this range.
 \end{wrapfloat}
 
 Tile (\fig{fTile}) decompositions are a variant of sort-first rendering. They
-decompose the scene into a predefined set of fixed-size image tiles. These
-tasks, or work packages, are queued and processed by all source channels by
-polling a server-central queue. Prefetching ensures that the task communication
-overlaps with rendering.
+decompose the scene into a set of fixed-size image tiles. These tasks, or work
+packages, are queued and processed by all source channels by polling a
+server-central queue. Prefetching ensures that the task communication overlaps
+with rendering.
 
 As shown in~\cite{SPEP:16}, work packages can provide better performance due to
 being implicitly load balanced, as long as there is an insignificant overhead
@@ -1733,11 +1733,6 @@ tile compounds.
 
 \section{Time-Multiplex}
 
-\begin{wrapfloat}{figure}{O}{.618\textwidth}
-\includegraphics[width=.618\textwidth]{images/DPlex}
-{\caption{\label{fDPlex}Time-Multiplex Compound}}
-\end{wrapfloat}
-
 Time-multiplexing distributes full frames over the available resources, such
 that each resource only renders a subset of the visible frames (\fig{fDPlex}).
 This mode is also called alternate frame rate or DPlex, was first implemented in
@@ -1747,6 +1742,11 @@ concurrent rendering of different frames much easier to implement. While it
 increases the framerate almost linearly, it does not decrease the latency
 between user input and the corresponding output. Consequently, this
 decomposition mode is mostly useful for non-interactive film generation.
+
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+\includegraphics[width=.618\textwidth]{images/DPlex}
+{\caption{\label{fDPlex}Time-Multiplex Compound}}
+\end{wrapfloat}
 
 DPlex is very well load balanced, since most applications observe a strong
 frame-to-frame coherence with respect to the rendering load. This decomposition
@@ -1767,17 +1767,40 @@ $0..n-1$. While this generalization may seem artificial, it opens up different
 use cases, for example giving a fast GPU a smaller period, thus giving it more
 work.
 
+\section{Stereo-Selective Compounds}
+
+Stereo-selective compounds have different configurations, depending on the
+current rendering mode. Each compound sub-tree can restrict the eye passes it
+renders from the default left, right, cyclop passes. Depending on the active
+stereo mode (stereo or mono), restricted compound trees may be skipped or
+activated. This is used on one hand to configure stereo compounds, but may also
+be used to configure different decompositions depending on the stereo mode.
+\fig{fStereoSwitch} shows a simple example: A dual-GPU setup is used with
+eye-parallel rendering during stereo rendering, and a standard sort-first
+parallel rendering during monoscopic rendering. Note that the rendering mode is
+runtime-configurable, that is, the application can switch the view from
+monoscopic to stereoscopic rendering at any time, activating and deactivating
+the configured compounds and attached resources. It is also possible to
+configure a different set of resources (nodes and GPUs) per stereo mode,
+triggering the launch and exit of render client processes during the stereo
+switch.
+
+\begin{figure}[h!t]\center
+ \includegraphics[width=\columnwidth]{images/stereoSwitch}
+ {\caption{\label{fStereoSwitch}Stereo-Selective Compound}}
+\end{figure}
+
 \section{Mixed Mode Compounds}
 
 A major contribution of our parallel rendering system is the flexible system
 architecture. While many applications and frameworks implement a subset of the
-features mentioned above, most of them hardcode the algorithms to a certain
-degree, predetermining the number of possible configurations. In Equalizer, both
-the decomposition and the recomposition of the rendering task are derived
-through a number of orthogonal parameters, which are easily combined to
-configure common scalable rendering modes. For advanced usage, they can also be
-configured for many other use cases. We have seen many interesting and
-unforeseen configurations, for example:
+features mentioned above, most of them hardcode the algorithms, predetermining
+the number of possible configurations. In Equalizer, both the decomposition and
+the recomposition of the rendering task are derived through a number of
+orthogonal parameters, which are easily combined to configure common scalable
+rendering modes. For advanced usage, they can also be configured for many other
+use cases. During deployment of Equalizer, we have seen many interesting and
+unforeseen configurations:
 
 \begin{compactitem}
 
@@ -1785,8 +1808,8 @@ unforeseen configurations, for example:
 in a DPlex compound, an underpowered control workstation for a large tiled
 display wall was configured to render only every other frame using a period of
 two. Due to the standard latency of one frame, this meant that the display wall
-rendering became the bottleneck, but could render at a substantially higher
-framerate than before.
+rendering became the bottleneck. It could now render at a substantially higher
+framerate than before, when the control host was the bottleneck.
 
 \item Rerouting one of the eye passes of a head-mounted display to a large
 display using an output and input frame, external users could observe the
@@ -1810,27 +1833,6 @@ the compositing step. Combining both modes enables to balance these constraints
 for better scalability.
 
 \end{compactitem}
-
-\section{Stereo-Selective Compounds}
-
-Each compound sub-tree can restrict the eye passes it renders from the default
-left, right, cyclop passes. Depending on the active stereo mode (stereo or
-mono), restricted compound trees may be skipped or activated. This is used on
-one hand to configure stereo compounds, but may also be used to configure
-different decompositions depending on the stereo mode. \fig{fStereoSwitch} shows
-a simple example: A dual-GPU setup is used with eye-parallel rendering during
-stereo rendering, and a standard sort-first parallel rendering during monoscopic
-rendering. Note that the rendering mode is runtime-configurable, that is, the
-application can switch the view from monoscopic to stereoscopic rendering at any
-time, activating and deactivating the configured compounds and attached
-resources. It is also possible to configure a different set of resources (nodes
-and GPUs) per stereo mode, triggering the launch and exit of render client
-processes during the stereo switch.
-
-\begin{figure}[h!t]\center
- \includegraphics[width=\columnwidth]{images/stereoSwitch}
- {\caption{\label{fStereoSwitch}Stereo-Selective Compound}}
-\end{figure}
 
 \section{Benchmarks}
 
