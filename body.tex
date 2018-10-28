@@ -2793,7 +2793,7 @@ independent open source project. In the following sections we highlight core
 features and show how they are different from other distribution mechanisms,
 e.g., the MPI library.
 
-The Collage(fancy format?) network library was conceived with the requirements of a dynamic
+The {\em Collage} network library was conceived with the requirements of a dynamic
 parallel rendering system in mind. Some of the features implemented by Collage
 emerged with the growing complexity of Equalizer and its applications, and are
 often layered on top of the basic primitives. The core requirements are:
@@ -2831,15 +2831,15 @@ performance, it has proven useful in supporting a large set of transports, from
 standard Ethernet sockets, SDP for InfiniBand, native Verbs for InfiniBand, UDT
 to a fully-featured reliable multicast implementation. In particular the ease
 of integration of multicast transport is strong evidence for the usefulness of
-this abstraction. (why?)
+this abstraction.
 
 \item[Convenient to use for existing applications:] The history and code
 structure of visualisation applications is often very different from other
 distributed applications, such as simulation codes. They have been developed for
-years for desktop systems, arenoften single-threaded and have data models and
+years for desktop systems, are often single-threaded and have data models and
 object hierarchies built for their domain-specific problems and algorithms. The
 network library needs to provide primitives which match this reality as closely
-as possible by providing a modern, object-oriented C++ APIs.
+as possible by providing a modern, object-oriented C++ API.
 
 \end{compactdesc}
 
@@ -2868,7 +2868,7 @@ a set of endpoints for multicast connections.
 \item[OCommand:] Extends DataOStream to implement the protocol between Collage
   nodes by adding node and command type routing information to the stream.
 \item[DataIStream:] Decodes a buffer of received data into C++ objects and PODs
-  by implementing (3x) input stream operators. Performs endian swapping if the
+  by implementing input stream operators. Performs endian swapping if the
   endianness differs between the originating and local node.
 \item[ICommand:] The other side of OCommand, extending DataIStream.
 \item[Node and LocalNode:] The abstraction of a process in the cluster. Nodes
@@ -3000,7 +3000,7 @@ bound function.
 \section{Reliable Stream Protocol}\label{sec:RSP}
 
 RSP is an implementation of a reliable multicast protocol over unreliable UDP
- transport. RSP behaves similarly to TCP; in contrast to the underlying
+multicast transport. RSP behaves similarly to TCP; in contrast to the underlying
 UDP transport, it is not message-oriented, but implements byte stream semantics.
 RSP provides full reliability and ordering of the data, and slow receivers will
 eventually throttle the sender through a sliding window algorithm. This behaviour
@@ -3015,7 +3015,7 @@ RSP combines various established multicast
 algorithms~\cite{adamson2004negative,Gau:2002} in an open source implementation
 capable of delivering wire speed transmission rates on high-speed LAN
 interfaces. The following will outline the RSP protocol and implementation,
-as well as motivatipn for the design decisions. Any defaults given below are for Linux
+as well as the motivation for the design decisions. Any defaults given below are for Linux
 or Mac OS X, the Windows UDP stack requires different default values which can be
 found in the implementation.
 
@@ -3025,7 +3025,7 @@ protocol handling and communicates with the application threads through
 thread-safe queues. The queues contain datagrams filled with the application
 byte stream, prefixed by a header of at most eight bytes. Each connection has a
 configurable number of buffers (1024 by default) of a configurable MTU (1470
-bytes default), which are either free or in transmission?. The header contains
+bytes default), which are either free or in transmission. The header contains
 two bytes for the datagram type (connection handshake, data, acknowledgement,
 negative acknowledgement, acknowledgement request), and up two six bytes of
 datagram-specific information (e.g. for acknowledgement: two bytes read node
@@ -3037,7 +3037,7 @@ datagrams to the multicast socket. For each found member, a receiving
 connection instance is created and, similar to a TCP socket, passed to the
 application upon {\em accept}. Each connection instance has a fixed number
 (1024 by default) of fixed-size (1470 by default) buffers, each used directly
-as/for an UDP datagram. The listening connection uses these buffers for writing
+for an UDP datagram. The listening connection uses these buffers for writing
 data, and each receiving connection uses its buffers for received data. These
 buffers are continuously cycled through two sets of queues: a blocking,
 thread-safe queue used on the application side for reading and writing data,
@@ -3082,11 +3082,11 @@ well-known additive increase, multiplicative decrease algorithm, we have chosen
 a more aggressive congestion control algorithm of additive increase and additive
 decrease. Experimentally this has proven to be more optimal: UDP is often
 rate-limited by switches; packets are discarded regularly and not
-exceptionally/occasionally. Only slowly backing off the current send rate helps to stay close
+occasionally. Only slowly backing off the current send rate helps to stay close
 to this limit. Furthermore, our RSP traffic is limited to the local subnet,
 making cooperation between multiple data stream less of an issue. Send rate
 limiting uses a bucket algorithm, where over time the bucket fills with send
-credits, from which sends? are subtracted. If there are no available credits,
+credits, from which send datagrams are subtracted. If there are no available credits,
 the sender sleeps until sufficient credits are available.
 
 In \cite{ESP:18} we provide experimental results showing that our
@@ -3120,7 +3120,7 @@ e.g., MPI.
 
 Distributed objects in {\em Collage} provide powerful, object-oriented data
 distribution for C++ objects. They facilitate the implementation of data
-distribution in a cluster environment. (2x one?) Distributed objects are created by
+distribution in a cluster environment. Distributed objects are created by
 subclassing from {\em co::Serializable} or {\em co::Object}. The
 application programmer implements serialisation and deserialisation. Distributed
 objects can be static (immutable) or dynamic. Objects have a universally unique
@@ -3156,7 +3156,7 @@ brings the object into a consistent state with respect to the rendered frame.
 
 Serialisation is facilitated using output or input streams, which abstract the
 data transmission and are used like a {\em std::stream}. The data streams
-implement efficient buffering and compression, automatically selecting the best
+implement efficient buffering and compression, and automatically select the best
 connection for data transport. Custom data type serialisers can be implemented
 by providing the appropriate serialisation functions. No pointers should be
 directly transmitted through the data streams. For pointers, the corresponding
@@ -3224,7 +3224,7 @@ for a number of compression libraries, such as FastLZ~\cite{jesperfast},
 Snappy~\cite{snappy} and ZStandard~\cite{zstd}. It also contains a custom,
 virtually zero-cost RLE compressor. Pression parallelises the compression and
 decompression using data decomposition. The compression is generic and
-lossless, implemented transparently for the application. Applications can also
+lossless, available transparently to the application. Applications can also
 use data-specific compression.
 
 \bench{rCompressorDetail}~(top left) shows the compression ratio and speed for
@@ -3240,7 +3240,7 @@ network transmission time due data reduction.
   \caption{\label{rCompressorDetail}Compression Performance for Binary Data, the PLY Data and Raw Volumes used in \bench{rMapping}}
 \end{benchmark}
 
-On current? CPUs (the benchmark was executed on a 12-core node), modern
+On current CPUs (the benchmark was executed on a 12-core node), modern
 compression libraries provide performance benefits even on fast interconnects
 such as 10 Gb/s Ethernet. In particular, the modern Snappy and ZStandard
 libraries deliver impressive performance.
@@ -3259,7 +3259,7 @@ accelerate data distribution in Equalizer applications.
 The data streaming interface implements chunking, which pipelines the
 serialisation code with the network transmission. After a configurable number of
 bytes has been serialised to the internal buffer, it is transmitted and
-serialisation continues. This is used both for the initial mapping data,? and for
+serialisation continues. This is used both for the initial mapping data, and for
 commit data.
 
 \subsubsection{Caching and Preloading}
@@ -3270,7 +3270,7 @@ by ``snooping'' on multicast transmissions or by an explicit preloading when
 master objects are registered. Preloading sends instance data of recently
 registered master objects to all connected nodes during idle time of the
 corresponding node. These nodes simply enter the received data to their cache.
-Preloading uses multicast when available/configured?.
+Preloading uses multicast when available.
 
 \subsubsection{Multicast}
 
@@ -3343,8 +3343,7 @@ which is reflected by the results. Compression for this data is beneficial for
 transmitting data over a 10~Gb/s link, even for a single slave process.
 Buffering has little benefit, since the serialisation of volume data is trivial.
 Buffered compression shows a significant difference, since the compression cost
-can be amortised over many nodes, reaching raw data transmission rates of 3.7~
-GB/s with the default Snappy compressor, and at best 4.4 GB/s with ZStandard at
+can be amortised over many nodes, reaching raw data transmission rates of 3.7~GB/s with the default Snappy compressor, and at best 4.4 GB/s with ZStandard at
 level 1. The distribution of the beechnut data set also behaves as expected:
 Due to the larger object size, uncompressed transmission is slightly faster
 compared to the Spike data set at 700MB/s, and compressed transmission does not
@@ -3363,7 +3362,7 @@ performance after four nodes due to the better compression ratio.
 protocols. This benchmark measures the data synchronisation time of the Spike volume
 data set. Buffering is enabled, and compression is disabled to
 focus on the raw network performance. For the benchmark, eight physical nodes
-are used, that is?, after eight processes two client processes will run on some
+are used, that is, after eight processes two client processes will run on some
 nodes, sharing CPU and network resources.
 
 TCP over the faster InfiniBand link outperforms the cheaper Ten Gigabit
