@@ -520,7 +520,7 @@ this publication.
 
 A generic parallel rendering framework has to cover a wide range of use cases,
 target systems, and configurations. This requires a strong separation between
-the implementation of the application and its configuration. Linked with a
+the implementation of the application and its configuration, linked with a
 careful design to allow the resulting program to scale up to hundreds of nodes,
 while providing a minimally invasive API for the developer. In this section we
 present the system architecture of the Equalizer parallel rendering framework,
@@ -529,7 +529,7 @@ and motivate its design in contrast to related work.
 The motivation to use parallel rendering is either driven by the need to drive
 multiple displays or projectors from multiple GPUs and potentially multiple
 nodes, or by the need to increase rendering performance to visualise
-more data, or use a more demanding rendering algorithm for higher visual quality. (itemise?)
+more data, or use a more demanding rendering algorithm for higher visual quality.
 Occasionally both needs coincide, e.g., for the analysis for large data
 sets on high fidelity visualisation systems.
 
@@ -593,7 +593,7 @@ Equalizer.
 
 \end{compactitem}
 
-In the following document/description/text we will first describe the execution model and resource
+In this chapter, we will first describe the execution model and resource
 configuration, followed by how the generic configuration is used to model
 the desired visualisation setup, and finally introduce specifics of scalable
 and distributed rendering.
@@ -604,7 +604,7 @@ The core execution model for parallel rendering was pioneered by CAVELib
 \cite{DACNCCGHPSNS:97}, refined by OpenGL Multipipe SDK for shared memory
 systems and scalable rendering, and substantially extended by Equalizer for
 asynchronous and distributed execution. By analysing the typical architecture of
-a visualisation application we see an initialization phase, a main rendering
+a visualisation application we observe an initialization phase, a main rendering
 loop, and an exit phase. Equalizer decomposes these steps for parallel
 execution.
 
@@ -639,10 +639,10 @@ frame instead of no latency in a sort-first configuration.
 \end{figure}
 
 Another critical design parameter are synchronisation points. Most
-implementations, including OpenGL Multipipe SDK, use a per-frame barrier, or
-similar synchronisation, to manage parallel execution. In larger installations,
+implementations, including OpenGL Multipipe SDK, use a per-frame barrier or
+similar synchronisation to manage parallel execution. In larger installations,
 this is detrimental to scalability, as even slight load imbalances limit
-parallel speedup?. The Equalizer execution model is fully asynchronous, and only
+parallel speedup. The Equalizer execution model is fully asynchronous, and only
 introduces synchronisation points when strictly required. The main
 synchronisation points are: configured swap barriers between a set of output
 channels which have to display simultaneously, the availability of input frames
@@ -651,7 +651,7 @@ main loop execution. By default, Equalizer keeps up to one frame of latency in
 execution, that is, some resources might render the next frame while others are
 still finishing the current frame. Nonetheless, finished resources will
 immediately display their result. This asynchronous execution architecture,
-coupled with a frame latency, allows pipelining of many operations, such as
+coupled with a frame of latency, allows pipelining of many operations, such as
 the application event processing, task computation and load balancing,
 rendering, image readback, compression, network transmission, and compositing.
 It also hides small imbalances in the task distribution, as they usually average
@@ -670,23 +670,23 @@ tasks, and then uses a second pass to synchronize their execution and results.
 \bench{rLaunch} shows the startup time of eqPly, our parallel polygon renderer.
 This benchmarks simply measures the time taken by {\em Config::init}, which
 includes the render client process creation using ssh from the application
-node, shared library loading from a shared filesystem, network setup, OpenGL
-and window initialisation, object data mapping for the Equalizer resource
+node, library loading from a shared filesystem, network setup, OpenGL and
+window initialisation, and object data mapping for the Equalizer resource
 instances and a few internal objects used by eqPly. The benchmark confirms that
-the application launch is scaling nicely to a medium cluster size (clear? meaning?). A slight
+the application launch is scaling nicely to a medium cluster size. A slight
 increase in startup time with larger configurations is expected, since more
-processes increase the load on the shared filesystem, as well as data
-distribution and synchronisation overheads. Due to the shared filesystem used
-for the executable, the startup times observe a large uncertainty, shown by the
-standard deviation bars. explanation?
+processes increase the load on the shared filesystem and worsen distribution
+and synchronisation overheads. Due to the shared filesystem used for the
+executable, the startup times observe a large uncertainty, shown by the
+standard deviation bars.
 
 \begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/cr}
  {\caption{\label{rCR}Driving a Tiled Display Wall}}
 \end{wrapfloat}
 
-In comparison to interception approaches used by Chromium, our asynchronous
-programming model inherently (sure?) provides better performance. \bench{rCR} tests
+In comparison to interception approaches as used by Chromium, our asynchronous
+programming model inherently provides better performance. \bench{rCR} tests
 the rendering performance for driving a simple tiled display wall configuration
 with a static model, rotating about its vertical axis, placed such that it
 nicely covers the different screens.
@@ -704,7 +704,7 @@ each rendered frame.
 
 Chromium initially increases performance when adding nodes, but it quickly
 stagnates, and even decreases, when more nodes are added. In contrast, Equalizer
-continually improves? performance with more added nodes and exhibits a smooth
+continually improves performance with more added nodes and exhibits a smooth
 drop-off in speed-up, due to the expected synchronisation and network overhead
 as the rendered data gets negligible in size per node. This performance
 difference is also due to the fact that Equalizer can benefit from distributed
@@ -737,21 +737,20 @@ runtime. All processes communicate with each other through a common network
 library (Collage) and a client library implementing the Equalizer API, as shown
 in \fig{fProcessing}.
 
-The administrative API can connect to a server (why cool, change stuff at runtime?), and modify some aspects of the
-resource hierarchy, e.g., to create new output channels. Its description is
-outside of the scope of this thesis, and is mentioned here for
-completeness.
+The administrative API connects to a server, and allows some changes to the
+running configuration,, e.g., to create new output channels. Its description is
+outside of the scope of this thesis, and is mentioned here for completeness.
 
 \subsection{Application}
 
 The main application thread in Equalizer drives the rendering, that is, it
 carries out the main event loop, but does not actually execute any rendering.
 Depending on the configuration, the application process often hosts one or more
-render client threads. These render client threads are identical in behaviour
-and implementation to render threads on the render client nodes. When a
-configuration has no additional nodes besides the application node, we have a
+render client threads. These application render threads are identical in
+behaviour and implementation to render threads on the render client nodes. When
+a configuration has no additional nodes besides the application node, we have a
 single-process, multi-threaded rendering application: all application code is
-executed in the same process, and no network data distribution is
+executed in the same process, and no network data distribution has to be
 implemented.
 
 The main rendering loop is simple: The application requests a new frame
@@ -778,13 +777,13 @@ the rendering client can be another executable which only contains the
 application-specific rendering code. The server deploys this rendering client
 on all nodes specified in the configuration. Render clients may run on a
 different architecture or operating system from the main application, the
-underlying network library ensures type safety and Endian ordering.
+underlying network library ensures type safety and endian ordering.
 
 In contrast to the application process, the rendering client main loop is
-completely controlled by Equalizer, using application commands. A render
+completely controlled by Equalizer, based on application commands. A render
 client consists of the following threads: The node main thread, one network
 receive thread, one thread for each graphic card (GPU) to execute rendering
-tasks, and /optionally one thread for asynchronous compositing per GPU. If a
+tasks, and optionally one thread for asynchronous readback per GPU. If a
 configuration also uses the application node for rendering, then the
 application process uses one or more render threads, consistent with render
 client processes. The Equalizer client library implements the main loop, which
@@ -813,7 +812,7 @@ rendering algorithm from the system-specific configuration. It specifies:
 
  \item[Viewport] Two-dimensional pixel viewport restricting the rendering area.
  The pixel viewport is influenced by the destination viewport definition and
- viewport set for sort-first/2D decompositions.
+ viewports set for sort-first decompositions.
 
  \item[Frustum] Frustum parameters as defined by {\em glFrustum}. Typically
  the frustum is used to set up the OpenGL projection matrix. The frustum is
@@ -884,7 +883,7 @@ the cores of the processor closest to the respective GPU.
 
 \fig{fNumaThreads} shows the thread placement for the node used in
 \fig{fNumaNode}. Threads are bound to all cores of the respective socket, and
-the ratio of cores to threads varies/is balanced with the used hardware and software
+the ratio of cores to threads varies with the used hardware and software
 configuration. Many of the threads do not occupy a full core at runtime,
 especially node threads are mostly idle on a rendering client.
 
@@ -901,7 +900,7 @@ one of the node threads.
 \end{wrapfloat}
 
 We tested the influence of thread placement by explicitly placing the threads
-either on the correct or incorrect (closest furthest?) processor. A low-level memory bandwidth test
+either on the correct or incorrect processor. A low-level memory bandwidth test
 shows a $2\times$ performance difference between these two settings. We found
 that this leads to a performance improvement of more than 6\% in real-world
 rendering loads, as shown in \bench{rNuma}. This benchmark uses the
@@ -909,7 +908,7 @@ aforementioned cluster nodes, and renders polygonal data using sort-first
 scalable rendering. The exact experiment setup is described in
 \cite{EBAHMP:12}. While this is a relatively small influence, it becomes more
 important with higher frame rates as the relative draw time decreases, and the
-memory-intensive compositing step increases?. Thread placement is therefore one
+memory-intensive compositing step importance increases. Thread placement is therefore one
 of the components to achieve scalability on larger visualisation clusters with
 NUMA nodes.
 
@@ -931,7 +930,7 @@ windows, and channels (2D rendering area in a window).
 Physical layouts of display systems are configured using canvases with
 segments, which represent 2D rendering areas composed of multiple displays or
 projectors. Logical layouts are applied to canvases and define the views on a
-canvas. Observers observe (Wodden wood) multiple views and represent a head-tracked user in a
+canvas. Observers observe multiple views and represent a head-tracked user in a
 visualisation application.
 
 Scalable resource usage is configured using a compound tree, which is a
@@ -984,7 +983,7 @@ surfaces. They group a set of segments (displays or projectors) into a 2D
 projection surface. A canvas uses layouts describing logical views.
 Typically, a desktop window uses one canvas, one segment, one layout and one
 view. One configuration might drive multiple canvases, for example a projection
-wall with an operator station. Planar surfaces, e.g., a display wall, configures
+wall with an operator station. Planar surfaces, e.g., a display wall, configure
 a frustum for the respective canvas. For non-planar surfaces, the frustum will
 be configured on each display segment. The application rendering code has
 access to the 2D area being updated, for example to draw 2D menus on top of the
@@ -997,7 +996,7 @@ access to the 2D area being updated, for example to draw 2D menus on top of the
 
 The frustum can be specified as a wall or projection description in the global
 reference system, which is shared with the head-tracking matrix of the
-application. A wall is defined by the bottom-left, bottom-right and top-left (3, not top-right? is in pic)
+application. A wall is defined by the bottom-left, bottom-right and top-left
 coordinates relative to the origin. A projection is defined by the position and
 head-pitch-roll orientation of the projector, as well as the horizontal and
 vertical field-of-view and distance to the projection wall. \fig{fFrusta}
@@ -1025,7 +1024,7 @@ hardware synchronisation based on NVidia's G-Sync hardware.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/canvas.pdf}
-  {\caption{\label{fCanvas}A Canvas using four segments}}
+  {\caption{\label{fCanvas}A Canvas using four Segments}}
 \end{wrapfloat}
 
 A segment covers a two-dimensional region of its parent canvas, configured by
@@ -1062,17 +1061,17 @@ head-tracked.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/layout.png}
- {\caption{\label{fLayout}Layout with four views}}
+ {\caption{\label{fLayout}Layout with four Views}}
 \end{wrapfloat}
 
-\fig{fLayout} shows an example layout using four views on a single segment, where
+\fig{fLayout} shows an example layout using four views on a single segment.
 \fig{fDisplay} shows a real-world setup of a single canvas with six segments
-using underlap(?) for the display bezels, with a two-view layout. This
+using underlap for the display bezels, with a two-view layout. This
 configuration generates eight destination channels.
 
 \begin{figure}[t]\center
  \includegraphics[width=\textwidth]{images/wallLayout.jpg}
- {\caption{\label{fDisplay}Tiled Display Wall using one canvas with six segments and a layout with two views}}
+ {\caption{\label{fDisplay}Tiled Display Wall using one Canvas with six Segments and a Layout with two Views}}
 \end{figure}
 
 An {\em observer} represents an actor looking at one or multiple views. It
@@ -1099,16 +1098,16 @@ parallel. A compound may provide output frames from the readback task to
 others, and can request input frames from others for its own assembly task.
 Output frames are linked to input frames by name.
 
-Compound (repeat previous absatz) trees are a logical description of the rendering pipeline, and only
+Compound trees are a logical description of the rendering pipeline, and only
 reference the actual physical resources through their channels. This allows
 mapping a compound tree to different physical configurations by simply
 replacing the channel references. For example, one can test the functionality
 of a sort-last configuration by using channels of different windows on a
 single-GPU workstation before deploying it to multiple physical GPUs.
 
-A simple leaf compound description for rendering a part of the data set, marked
+A simple leaf compound description for rendering a part of the data set, given
 by the data {\em range}, into a particular region of the {\em viewport} is
-given (repeat) in \fig{FIG_leaf_compound}. The data range is a logical mapping of the
+shown in \fig{FIG_leaf_compound}. The data range is a logical mapping of the
 data set onto the unit interval and is left to the application to interpret
 appropriately. Hence, the range [0 $\frac{1}{2}$] indicates that the first half
 of the data set should be rendered, for example the first $\frac{n}{2}$
@@ -1133,12 +1132,12 @@ compounds by the name left\_half.
  \caption{Compound Rendering half of the Data Set into half of the Viewport\label{FIG_leaf_compound}}
 \end{figure}
 
-A non-leaf compound performing some? image assembly and compositing task is
+A non-leaf compound performing image assembly and compositing task is
 provided in \fig{FIG_inner_compound}. Framebuffer data is read from two other
-compounds, which supposedly???????????????? execute rendering for part\_a and part\_b of the data
+compounds, which did execute rendering for part\_a and part\_b of the data
 set in parallel. The compound itself executes by default $z$-depth visibility
 compositing of the two input images on its channel and returns the resulting
-colour framebuffer in the output frame named frame.display(format nicely).
+colour framebuffer in the output frame named {\em frame.display}.
 
 \begin{figure}[h!t]\center {\begin{tabbing} \ \ \ \ \ \=\ \ \ \=\ \ \ \=\ \ \
 \=\ \ \ \=\ \ \ \= \kill \> {\bf compound} \{ \\ \>\> {\bf channel} "display"
@@ -1153,8 +1152,8 @@ resulting image data on to other compounds for further compositing. While
 leaf compounds execute the rendering in parallel, non-leaf compounds often
 correspond to, but are not restricted to, the (parallel) image compositing and
 assembly part. The readback or assemble tasks are only active if output or input
-frames have been specified, respectively?. Otherwise the rendered image frame is
-left in-place for further processing in a parent compound, sharing the same
+frames have been specified, respectively. Otherwise the rendered image frame is
+left in-place for further processing in a parent compound sharing the same
 channel.
 
 Note that non-leaf nodes in the compound tree structure traverse their children
@@ -1170,7 +1169,7 @@ not specified otherwise. The {\em viewport}, {\em data range} and {\em eye}
 attributes are used to describe the decomposition of the parents' 2D viewport,
 database range, temporal, pixel, subpixel and eye passes, respectively.
 
-A more formal classification of compound entities:
+A more formal classification of compound entities is:
 
 \begin{compactdesc}
  \item [Root compound] is the top-level compound of a compound tree. It might
@@ -1179,21 +1178,21 @@ A more formal classification of compound entities:
 
 \item [Destination compound(s)] are the top-most compounds referencing a
 channel, which becomes the destination channel. This destination channel
-determines the rendering context for the whole subtree, including compounds and
-their channels lower in the hierarchy contributing to the rendering of the
+determines the rendering context for the whole subtree, that is, compounds and
+their channels lower in the hierarchy contribute to the rendering of the
 destination channel by executing part of the destination render context and
 providing output frames which will eventually be composited onto the
 destination channel.
 
  \item [Source compounds] are the leaf nodes in a compound tree. They typically
- use a different channel from the destination channel and configure? scalability
+ use a different channel from the destination channel and configure scalability
  by overriding render context parameters. This decomposes the rendering of the
  destination channel. By adding output and input frames, the partial results are
  collected and composited:
  \begin{compactdesc}
   \item[Decomposition] On each child compound the rendering task of that
   child can be limited by setting the {\em viewport}, {\em range},
-  {\em period}, {\em phase}, {\em pixel}, {\em subpixel},
+  {\em period} and {\em phase}, {\em pixel}, {\em subpixel},
   {\em eye} or {\em zoom} as desired.
 
   \item[Compositing] Source compounds define an {\em output\_frame} to read
@@ -1223,7 +1222,7 @@ these installations, motivated by application use cases.
 
 Head tracking is the minimal feature needed to support immersive installations.
 {\em Equalizer} does support multiple, independent tracked views through
-observer abstraction. Built-in VRPN 9abbr) support enables the direct,
+observer abstraction. Built-in VRPN support enables the direct,
 application-transparent configuration of a VRPN tracker device. Alternatively,
 applications can provide a $4\times 4$ tracking matrix. Both CAVE-style tracking
 with fixed projection surfaces, and HMD tracking with moving displays are
@@ -1279,7 +1278,7 @@ Simulations performed on today’s high performance supercomputers produce
 massive amounts of data, which are often too expensive to move to another
 system. Tiled display walls have proven to help understand complex data due
 to their size, resolution and collaborative usage. Often the two systems are
-not located in the same facility by cause of power constraints or other factors.
+not located in the same facility because of power constraints or other factors.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/tide}
@@ -1287,18 +1286,18 @@ not located in the same facility by cause of power constraints or other factors.
 \end{wrapfloat}
 
 Software for driving tiled display walls has converged on the collaborative
-aspect of these installations. Sage, Sage~2, DisplayCluster and, to a certain
-extent, Omegalib, implement a multi-window environment around a shared
-framebuffer concept. DisplayCluster provides a dynamic, desktop-like windowing
-system with built-in media viewing capability, that supports ultra
-high-resolution imagery and video content, as well as remote streaming allowing
-arbitrary applications from remote sources to be shown. \fig{fTide} shows our
-evolution of DisplayCluster called Tide~\cite{tide} running on a 24~megapixel,
-$4\times 3$ tiled display wall.
+aspect of these installations. Sage, Sage~2, DisplayCluster and Omegalib
+implement a multi-window environment around a shared framebuffer concept.
+DisplayCluster provides a dynamic, desktop-like windowing system with built-in
+media viewing capability, that supports ultra high-resolution imagery and video
+content, as well as remote streaming allowing arbitrary applications from
+remote sources to be shown. \fig{fTide} shows our evolution of DisplayCluster
+called Tide~\cite{tide} running on a 24~megapixel, $4\times 3$ tiled display
+wall.
 
 Streaming to a Tide wall is implemented using the Deflect~\cite{deflect} client
-library. The application provides an image buffer to Deflect,
-compressed by using libjpeg-turbo, and sent asynchronously and in parallel by the
+library. The application provides an image buffer to Deflect, which will be
+compressed using libjpeg-turbo, and sent asynchronously and in parallel by the
 stream library. Multiple stream sources from multiple processes can provide
 content to a single wall window, enabling parallel streaming for parallel
 rendering applications. Deflect also implements an event model, where the
@@ -1307,7 +1306,7 @@ from the wall.
 
 We integrated the stream library into Equalizer to send the framebuffer of each
 destination channel of a view to DisplayCluster, using a direct FBO download
-(if possible), or a texture download. We use asynchronous transmission to
+(if possible) or a texture download. We use asynchronous transmission to
 pipeline compression, streaming, and rendering. Received events from
 DisplayCluster are converted and forwarded to Equalizer’s event system. This
 integration allows all Equalizer applications to benefit from streaming without
@@ -1346,55 +1345,62 @@ compression delivers the best performance in most cases. Based on the
 experiments we settled on a $512^2$ tile size and 100\% compression quality to
 avoid artefacts as the default settings in Equalizer.
 
+Decoupling the display system and software from the rendering system has many
+benefits. It increases robustness, provides reliably performance on a shared,
+collaborative device, facilitates media and device inteagration, and minimises
+data movement.
+
 \section{Compositing}
 
 In contrast to most other parallel rendering frameworks, Equalizer decouples the
 compositing algorithm from the task decomposition. This is a key aspect of our
 architecture, allowing a flexible configuration, often in many unforeseen
 ways. The compound tree with its task decomposition, input and output frames, is
-a specialised description ``programming'' offering scalable rendering across parallel
+a specialised description to ``program''  scalable rendering across parallel
 resources.
-
-\begin{wrapfloat}{figure}{O}{.618\textwidth}
-  \includegraphics[width=.618\textwidth]{images/directSend}
-  {\caption{\label{fDirectSend}Direct Send Compositing}}
-\end{wrapfloat}
 
 Compositing is configured using output frames connected to input frames,
 compound tasks and eye passes, as well as frame parameters. In its simplest
 form, a sort-first source compound provides an output frame, which is routed
 to an input frame using the same name on the destination compound. The source
 viewport decomposes the task, and the output frame collects this partial result
-from the source channel and composites it using the correct offset onto the
+from the source channel to composite it using the correct offset onto the
 destination channel.
 
-Frame parameters allow the customisation of pixel handling. They include the
-transfer buffers (colour, depth), partial channel viewport, and pixel zooming
-(up- and downscale). An output frame may be connected to multiple input
-frames. Frame parameters are used together with compound tasks for
-parallel compositing, and advanced features such as monitoring and dynamic frame
-resolution were introduced later.
+Frame parameters customise pixel handling. They include the transfer buffers
+(colour, depth), partial channel viewport, pixel zooming (upscale and
+downscale), and transport method (on-GPU texture or CPU memory). An output
+frame may be connected to multiple input frames. Frame parameters are used
+together with compound tasks for parallel compositing, and advanced features
+such as monitoring and dynamic frame resolution, introduced in
+\cref{sLoadBalancing}.
+
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/directSend}
+  {\caption{\label{fDirectSend}Direct Send Compositing}}
+\end{wrapfloat}
 
 \fig{fDirectSend} shows the pixel flow of direct send compositing for a three-way
 sort-last decomposition, where the destination channel also contributes to the
-rendering. In the first step, each channel exchanges two colour+depth tiles with
+rendering. In the first step, each channel exchanges two colour$+$depth tiles with
 its neighbours, and then $z$-composites its own tile. This yields one complete
 tile on each channel, of which two colour tiles are then assembled on the
 destination channel, where the third tile is already in place.
+
+The corresponding compound tree is shown schematically in \fig{fDirectSendCmp}.
+Each of the three channels has a child compound to execute the rendering and
+read back two incomplete tiles for sort-last compositing on the corresponding
+two sibling compounds. These three leaf compounds represent the first step in
+\fig{fDirectSend}. One level up, each channel receives two tiles and assembles
+them onto its partially rendered result, creating a complete tile (middle step
+in \fig{fDirectSend}). For the two source-only channels, a final colour-only
+output image is connected to the destination channel. The arrows illustrate the
+pixel flow for one of the tiles.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/directSendCompound}
   {\caption{\label{fDirectSendCmp}Direct Send Compound}}
 \end{wrapfloat}
-
-The corresponding compound tree is shown schematically in \fig{fDirectSendCmp}.
-Each of the three channels has a child compound to execute the rendering and
-read back two incomplete tiles for sort-last compositing. These three leaf
-compounds represent the first step in the left-hand diagram. One level up, each
-channel receives two tiles and assembles them onto its partially rendered
-result, creating a complete tile. For the two source-only channels, a final
-colour-only output image is connected to the destination channel. The arrows
-illustrate the pixel flow for one of the tiles.
 
 For most rendering applications even a relatively complex setup such as this
 example requires very little programmer involvement. The abstractions provided
@@ -1412,7 +1418,7 @@ optimisations:
 \begin{compactdesc}
 \item[Unordered Compositing:] Unless overwritten by the application, Equalizer
 will composite all input frames by default in the order they become available, not in the
-order they are configured. In the \fig{fDirectSend} example, the
+order they are configured. In the example in  \fig{fDirectSend}, the
 destination channel will assemble its four input frames one by one as the output
 frame is received. Due to asynchronous execution and resulting pipelining of
 operations, the availability changes each frame depending on the runtime of
@@ -1443,7 +1449,7 @@ application-accessible parameters to tune their behaviour. Resource
 equalisation is the critical component for scalable parallel rendering, and
 therefore the eponym for the {\em Equalizer} project name.
 
-Compounds are a static snapshot of a configuration, and equalisers? provide
+Compounds are a static snapshot of a configuration, and equalizers provide
 dynamic configuration on top. This separation of responsibilities is an
 important architectural component of our parallel rendering framework. In
 \cref{sLoadBalancing} we provide an extensive overview over the available
@@ -1452,7 +1458,7 @@ equalizers.
 \section{Runtime Reconfiguration}
 
 Supported by the distributed execution layer, introduced in the next section,
-Equalizer(fancy format?) implements dynamic reconfiguration of a running visualisation
+Equalizer implements dynamic reconfiguration of a running visualisation
 application. This functionality is used by runtime layout switches and runtime
 reliability.
 
@@ -1510,14 +1516,14 @@ Collage:
   line. Connections
   transmit raw data reliably between two endpoints for unicast connections, and
   between a set of endpoints for multicast connections. For unicast,
-  process-local pipes, TCP and Infiniband RDMA are implemented. For multicast,
+  process-local pipes, TCP and InfiniBand RDMA are implemented. For multicast,
   a reliable, UDP-based protocol is discussed in \sref{sec:RSP}.
 \item[DataI/OStream] Abstracts the marshalling of C++ classes from or to
   a set of connections by implementing output stream operators. Uses buffering
   to aggregate data for network transmission. Performs byte swapping during
   input if the endianness differs between the remote and local node.
 \item[Node and LocalNode] The abstraction of a process in the cluster. Nodes
-  communicate with each other using connections. A LocalNode(fancy format) listens on various
+  communicate with each other using connections. A {\em LocalNode} listens on various
   connections and processes requests for a given process. Received data is
   wrapped in ICommands and dispatched to command handler methods. A Node is a
   proxy for a remote LocalNode.
@@ -1534,7 +1540,7 @@ Collage:
 {\em Equalizer} and other applications. A barrier is a distributed primitive
 used for software swap synchronisation. Its implementation follows a simple
 master-slave approach, which has shown to by sufficient for this use case.
-Queues are distributed, single producer, multiple consumer FIFO queues are? used for
+Queues are distributed, single producer, multiple consumer FIFO queues are used for
 tile and chunk compounds (\sref{sTile}). To hide network latencies, consumers
 prefetch items.
 
@@ -2771,28 +2777,28 @@ of the channels is resized.
 
 Most research in parallel rendering does not look into the problem of managing
 application state in a distributed rendering session. For basic parallel
-rendering research this problem is trivially to solve, whereas in real-world
+rendering research this problem is trivial to solve, whereas in real-world
 applications it is often one of the major challenges for using a distributed
 rendering cluster. Researching and improving the system behaviour of
-non-trivial applications is however critical for meaningful parallel rendering
+non-trivial applications is critical for meaningful parallel rendering
 research, and therefore providing a distributed network library is a key
 component of a parallel rendering system.
 
-For this reason, we have spend significant effort in researching, designing and
-implementing a distributed execution layer which is used by Equalizer and
-applications built on Equalizer. This {\em Collage} network library is an
+For this reason we have spend significant effort in researching, designing and
+implementing a distributed execution layer used by Equalizer and
+applications built on Equalizer. The {\em Collage} network library is an
 independent open source project. In the following sections we highlight core
 features and show how they are different from other distribution mechanisms,
 e.g., the MPI library.
 
-The Collage network library was conceived with the requirements of a dynamic
+The Collage(fancy format?) network library was conceived with the requirements of a dynamic
 parallel rendering system in mind. Some of the features implemented by Collage
 emerged with the growing complexity of Equalizer and its applications, and are
 often layered on top of the basic primitives. The core requirements are:
 
 \begin{compactdesc}
 
-\item[Peer-to-peer network:] While the execution model of an Equalizer
+\item[Peer-to-peer network:] Whilst the execution model of an Equalizer
 application follows a master-slave approach, and Equalizer internally uses a
 client-server model, the core transport layer should be agnostic to these
 higher-level abstractions. In Collage, each communicating process is equal to
@@ -2803,16 +2809,16 @@ peer-to-peer sub-network.
 
 \item[Dynamic connection management:] As a consequence of the peer-to-peer
 network, all nodes in a cluster are equivalent. Due to the heterogeneous nature
-of a parallel rendering application we furthermore imposed no constraints on
+of a parallel rendering application, we furthermore imposed no constraints on
 the management of connections between nodes. Nodes are identified and addressed
 by an universally unique identifier. The network layer lazily establishes a
-connection to any given node, by querying its known neighbours or a zeroconf
+connection to any given node by querying its known neighbours or a zeroconf
 network for connection parameters. Connections may be established concurrently
 by both sides of a node pair (e.g. during parallel compositing), which requires
 a robust handshake protocol during connection establishment. For larger cluster
-installations, a fully connected peer-to-peer network would be suboptimal, for
+installations, a fully connected peer-to-peer network would be suboptimal. For
 example on Windows operating systems there is a latency penalty once more than
-64 connections are needed due to low-level implementation details. This feature
+64 connections are needed by cause of low-level implementation details. This feature
 also allowed us to implement runtime configuration switches involving a
 changing set of rendering resources.
 
@@ -2820,18 +2826,18 @@ changing set of rendering resources.
 by an API defining byte-oriented stream semantics. While this choice of
 abstraction makes it harder for RDMA-based protocols to deliver full
 performance, it has proven useful in supporting a large set of transports, from
-standard Ethernet sockets, SDP for InfiniBand, native Verbs for Infiniband, UDT
+standard Ethernet sockets, SDP for InfiniBand, native Verbs for InfiniBand, UDT
 to a fully-featured reliable multicast implementation. In particular the ease
 of integration of multicast transport is strong evidence for the usefulness of
-this abstraction.
+this abstraction. (why?)
 
 \item[Convenient to use for existing applications:] The history and code
 structure of visualisation applications is often very different from other
-distributed applications such as simulation codes. They have been developed for
-years for desktop systems, often are single-threaded and have data models and
+distributed applications, such as simulation codes. They have been developed for
+years for desktop systems, arenoften single-threaded and have data models and
 object hierarchies built for their domain-specific problems and algorithms. The
 network library needs to provide primitives which match this reality as closely
-as possible by providing a modern, object-oriented C++ API.
+as possible by providing a modern, object-oriented C++ APIs.
 
 \end{compactdesc}
 
@@ -2842,7 +2848,7 @@ Our Collage network library provides a peer-to-peer communication
 infrastructure, offering different abstraction layers which gradually provide
 higher level functionality to the programmer. Collage is used by Equalizer to
 communicate between the application node, the server and the render clients.
-Many resources entities described in \cref{sArchitecture} are distributed
+Many resource entities described in \cref{sArchitecture} are distributed
 Collage objects. \fig{fCollageUML} provides an overview of the major Collage
 classes and their relationship. The main classes, in ascending abstraction
 level, are:
@@ -2850,7 +2856,7 @@ level, are:
 \begin{compactdesc}
 
 \item[Connection:] A stream-oriented point-to-point communication line.
-Different implementations of a connection exists. A connection transmits a raw
+Different implementations of a connection exist. A connection transmits a raw
 byte stream reliably between two endpoints for unicast connections, and between
 a set of endpoints for multicast connections.
 
@@ -2860,7 +2866,7 @@ a set of endpoints for multicast connections.
 \item[OCommand:] Extends DataOStream to implement the protocol between Collage
   nodes by adding node and command type routing information to the stream.
 \item[DataIStream:] Decodes a buffer of received data into C++ objects and PODs
-  by implementing input stream operators. Performs Endian swapping if the
+  by implementing (3x) input stream operators. Performs endian swapping if the
   endianness differs between the originating and local node.
 \item[ICommand:] The other side of OCommand, extending DataIStream.
 \item[Node and LocalNode:] The abstraction of a process in the cluster. Nodes
@@ -2883,33 +2889,33 @@ a set of endpoints for multicast connections.
 A {\em Connection} is the basic primitive used for communication between
 processes in Collage. It provides a stream-oriented communication between two
 endpoints. A connection is either closed, connected or listening. A closed
-connection cannot be used for communications. A connected connection can be
+connection cannot be used for communication. A connected connection can be
 used to read or write data to the communication peer. A listening connection
 can accept connection requests leading to new, connected connections.
 
 A {\em ConnectionSet} is used to manage multiple connections. The typical use
 case is to have one or more listening connections for the local process, and a
 number of connected connections for communicating with other processes. The
-connection set is used to select one connection which requires some action.
+connection set is used to select one connection requiring some action.
 This can be a connection request on a listening connection, pending data on a
-connected connection or the notification of a disconnect. It is an
+connected connection, or the notification of a disconnect. It is an
 encapsulation of the {\em poll} or {\em WaitForMultipleObject} system calls.
 
 The connection and connection set can be used by applications to implement
 other network-related functionality, e.g., to communicate with a sound server
 on a different machine. They do not require a particular wire protocol. A
-{\em LocalNode} has a connection set and uses this to manage connections
+{\em LocalNode} has a connection set and uses it to manage connections
 with other nodes.
 
 \subsection{Data Streams}
 
-Data streams implement serialization and buffering on top of connections. They
+Data streams implement serialisation and buffering on top of connections. They
 use output and input stream operators (\textless\textless\ and
-\textgreater\textgreater) with function overloads to provide serialization for
+\textgreater\textgreater) with function overloads to provide serialisation for
 all common data types. The input stream will perform byte swapping if the
 endianness differs between the sending and receiving node. Applications can
-easily provide overloads for their own classes for serialization. All
-serialised data is assembled in a memory buffer and send over the connection
+easily provide overloads for their own classes for serialisation. All
+serialised data is assembled in a memory buffer and sent over the connection
 once the data is complete. An output data stream might send its data to many
 connections, e.g., when an object update is sent to all subscribed slave nodes.
 
@@ -2949,7 +2955,7 @@ Nodes use connections to communicate with each other by sending
 The {\em LocalNode} is the specialisation of the node for the given process.
 It encapsulates the communication logic for connecting remote nodes, as well as
 object registration and mapping. Local nodes are set up in the listening state
-during initialization.
+during initialisation.
 
 A remote {\em Node} can either be connected explicitly by the application,
 or implicitly due to a connection from a remote node. The explicit connection
@@ -2969,7 +2975,7 @@ Each {\em LocalNode} provides a {\em Zeroconf} communicator, which allows
 node and resource discovery. The zeroconf service "\_collage.\_tcp" is used to
 announce the presence of a listening {\em LocalNode} using the ZeroConf
 protocol to the network. The node identifier and all listening connection
-descriptions are announced, which is used to connect unknown nodes by using the
+descriptions are announced, used to connect unknown nodes by using the
 node identifier alone.
 
 \subsubsection{Communication between Nodes}
@@ -2992,23 +2998,23 @@ bound function.
 \section{Reliable Stream Protocol}\label{sec:RSP}
 
 RSP is an implementation of a reliable multicast protocol over unreliable UDP
-multicast transport. RSP behaves similarly to TCP; in contrast to the underlying
-UDP transport, it is not message-oriented but implements byte stream semantics.
+ transport. RSP behaves similarly to TCP; in contrast to the underlying
+UDP transport, it is not message-oriented, but implements byte stream semantics.
 RSP provides full reliability and ordering of the data, and slow receivers will
 eventually throttle the sender through a sliding window algorithm. This behaviour
 is needed to guarantee delivery of data in all situations. Pragmatic generic
 multicast (PGM~\cite{pgm}) provides full ordering, but slow clients will
 disconnect from the multicast session instead of throttling the send rate. Since
-we use multicast for distributing application data to all rendering clients we
-want semantics similar to TCP, that is, waiting for a client to read data is
-preferable over loosing this client.
+we use multicast for distributing application data to all rendering clients, we
+want semantics similar to TCP, expressly waiting for a client to read data is
+preferable over losing this client.
 
 RSP combines various established multicast
 algorithms~\cite{adamson2004negative,Gau:2002} in an open source implementation
 capable of delivering wire speed transmission rates on high-speed LAN
-interfaces. In the following we will outline the RSP protocol and implementation
-as well as motivate the design decisions. Any defaults given below are for Linux
-or OS X, the Windows UDP stack requires different default values which can be
+interfaces. The following will outline the RSP protocol and implementation,
+as well as motivatipn for the design decisions. Any defaults given below are for Linux
+or Mac OS X, the Windows UDP stack requires different default values which can be
 found in the implementation.
 
 Our RSP implementation uses a separate protocol thread for each RSP group, which
@@ -3017,7 +3023,7 @@ protocol handling and communicates with the application threads through
 thread-safe queues. The queues contain datagrams filled with the application
 byte stream, prefixed by a header of at most eight bytes. Each connection has a
 configurable number of buffers (1024 by default) of a configurable MTU (1470
-bytes default), which are either free or in transmission. The header contains
+bytes default), which are either free or in transmission?. The header contains
 two bytes for the datagram type (connection handshake, data, acknowledgement,
 negative acknowledgement, acknowledgement request), and up two six bytes of
 datagram-specific information (e.g. for acknowledgement: two bytes read node
@@ -3029,7 +3035,7 @@ datagrams to the multicast socket. For each found member, a receiving
 connection instance is created and, similar to a TCP socket, passed to the
 application upon {\em accept}. Each connection instance has a fixed number
 (1024 by default) of fixed-size (1470 by default) buffers, each used directly
-as an UDP datagram. The listening connection uses these buffers for writing
+as/for an UDP datagram. The listening connection uses these buffers for writing
 data, and each receiving connection uses its buffers for received data. These
 buffers are continuously cycled through two sets of queues: a blocking,
 thread-safe queue used on the application side for reading and writing data,
@@ -3045,47 +3051,47 @@ When writing data, the application thread pops empty buffers from its queue
 (blocking when the data cannot be written fast enough), fills in the
 {\em data} datagram header and copies the application data piece-wise into
 the datagram. The datagrams are then pushed onto the protocol thread buffer
-queue. The protocol thread writes the datagrams unto the UDP multicast socket,
+queue. The protocol thread writes the datagrams into the UDP multicast socket,
 and reads and handles any incoming datagrams. On the receiver side, the protocol
 receives the data, and pushes them in order to the corresponding application
-thread queue. Out-of-order datagrams are stored aside and queued in order later,
-and a negative acknowledgements (nack) are immediately sent for missing
+thread queue. Out-of-order datagrams are stored aside and queued in order later.
+Negative acknowledgements (nack) are immediately sent for missing
 datagrams. The writer will repeat nack'd datagrams, recycle fully acknowledged
 datagrams to the application queue, and ask for missing acknowledgements if
 needed. When reading data, the application pops full buffers from the
-corresponding connection's queue (blocking when no data is available), copies
-the data piece-wise out of datagram into the application buffer, and recycles
+corresponding connection queue (blocking when no data is available), copies
+the data piece-wise out of the datagram into the application buffer, and recycles
 the cleared buffers onto the protocol thread queue.
 
 Handling a smooth packet flow is critical for performance. RSP uses active flow
 control to advance the byte stream buffered by the implementation. Each incoming
 connection actively acknowledges every $n$ (17 by default) packets fully
-received. The incoming connections offset this acknowledgement by their
-connection identifier to avoid bursts of acks. Any missed datagram is actively
+received. The incoming connection offset this acknowledgement by their
+connection identifier to avoid ack bursts. Any missed datagram is actively
 nack'd as soon as detected. Write connections continuously retransmit packets
 for nack datagrams, and advance their window upon reception of all acks from the
 group. The writer will explicitly request an ack or nack when it runs out of
 empty buffers or finishes its write queue. Nack datagrams may contain multiple
-ranges of missed datagrams, which is motivated by the observation that UDP
+ranges of missed datagrams, motivated by the observation that UDP
 implementations often drop multiple contiguous packets.
 
 Congestion control is necessary to optimise bandwidth usage. While TCP uses the
 well-known additive increase, multiplicative decrease algorithm, we have chosen
 a more aggressive congestion control algorithm of additive increase and additive
-decrease. This has proven experimentally to be more optimal: UDP is often
-rate-limited by switches; that is, packets are discarded regularly and not
-exceptionally. Only slowly backing of the current send rate helps to stay close
+decrease. Experimentally this has proven to be more optimal: UDP is often
+rate-limited by switches; packets are discarded regularly and not
+exceptionally/occasionally. Only slowly backing off the current send rate helps to stay close
 to this limit. Furthermore, our RSP traffic is limited to the local subnet,
 making cooperation between multiple data stream less of an issue. Send rate
 limiting uses a bucket algorithm, where over time the bucket fills with send
-credits, from which sends are subtracted. If there are no available credits,
+credits, from which sends? are subtracted. If there are no available credits,
 the sender sleeps until sufficient credits are available.
 
-In \cite{ESP:18} we provide experimental results, showing that our
-implementation can achieve above 90\% wire speed on 10~GBit/s Ethernet, shows
-good scalability with respect to the multicast group size, and is very effective
-for distributing structured and unstructured application data to a large number
-of rendering clients concurrently, as shown in \bench{rNetwork}.
+In \cite{ESP:18} we provide experimental results showing that our
+implementation can achieve above 90\% wire speed on 10~GBit/s Ethernet,
+good scalability with respect to multicast group size, and is very effective
+for concurrently distributing structured and unstructured application data to a large number
+of rendering clients (see \bench{rNetwork}).
 
 
 \section{Distributed, Versioned Objects}
@@ -3094,12 +3100,12 @@ of rendering clients concurrently, as shown in \bench{rNetwork}.
 
 Adapting an existing application for parallel rendering requires the
 synchronisation of application data across the processes in the parallel
-rendering setup. Existing parallel rendering frameworks address this often
+rendering setup. Existing parallel rendering frameworks often address this
 poorly, at best they rely on MPI to distribute data. Real-world, interactive
 visualisation applications are typically written in C++ and have complex data
 models and class hierarchies to represent their application state. As outlined
 in \cite{EMP:09}, the parallel rendering code in an {\em Equalizer}
-application only needs access to the data needed for rendering, as all
+application only requires access to the data needed for rendering, as all
 application logic is centralised in the application main thread. We have
 encountered two main approaches to address this distribution: Using a shared
 filesystem for static data, or using data distribution for static and dynamic
@@ -3112,9 +3118,9 @@ e.g., MPI.
 
 Distributed objects in {\em Collage} provide powerful, object-oriented data
 distribution for C++ objects. They facilitate the implementation of data
-distribution in a cluster environment. Distributed objects are created by
-subclassing from {\em co::Serialisable} or {\em co::Object}. The
-application programmer implements serialization and deserialisation. Distributed
+distribution in a cluster environment. (2x one?) Distributed objects are created by
+subclassing from {\em co::Serializable} or {\em co::Object}. The
+application programmer implements serialisation and deserialisation. Distributed
 objects can be static (immutable) or dynamic. Objects have a universally unique
 identifier (UUID) as cluster-wide address. A master-slave model is used to
 establish mapping and data synchronisation across processes. Typically, the
@@ -3123,7 +3129,7 @@ the render clients, which map their instance to the given identifier. The
 following object types are available:
 
 \begin{compactdesc}
-\item[Static] The object is not versioned nor buffered. The instance data is
+\item[Static] The object is neither versioned nor buffered. The instance data is
   serialised whenever a new slave instance is mapped. No additional data is
   stored.
 \item[Unbuffered] The object is versioned and unbuffered. No data is stored, and
@@ -3141,21 +3147,21 @@ Instance and delta objects have a memory overhead on the master instance to
 store past data. The number of old versions retained is configurable per
 object. For Equalizer applications, this overhead typically occurs on the
 application node holding the master instances, and is configured based on the
-configuration's latency. When using unbuffered objects, applications only
+configurations' latency. When using unbuffered objects, applications only
 observe inconsistent state during the initial mapping, when a too recent
 version is used by a render client. The push-based commit-sync logic eventually
 brings the object into a consistent state with respect to the rendered frame.
 
-Serialization is facilitated using output or input streams, which abstract the
+Serialisation is facilitated using output or input streams, which abstract the
 data transmission and are used like a {\em std::stream}. The data streams
-implement efficient buffering and compression, and automatically select the best
+implement efficient buffering and compression, automatically selecting the best
 connection for data transport. Custom data type serialisers can be implemented
-by providing the appropriate serialization functions. No pointers should be
+by providing the appropriate serialisation functions. No pointers should be
 directly transmitted through the data streams. For pointers, the corresponding
-object is typically a distributed object as well, and its UUID and version are
-transmitted in place of a pointer.
+object is typically also a distributed object , and its UUID and version are
+transmitted in lieu of a pointer.
 
-Dynamic objects are versioned, and on {\em commit} the delta data from the
+Dynamic objects are versioned, and on {\em commit} the delta data to the
 previous version is sent, if available using multicast, to all mapped slave
 instances. The data is queued on the remote node, and is applied when the
 application calls {\em sync} to synchronise the object to a new version. The
@@ -3177,7 +3183,7 @@ by default, or to the version specified when calling {\em mapObject}.
 
 \end{compactitem}
 
-Blocking commits allow to limit the number of outstanding, queued versions on
+Blocking commits allows limiting the number of outstanding, queued versions on
 the slave nodes. A token-based protocol will block the commit on the master
 instance if too many unsynchronised versions exist. This is useful to limit the
 amount of memory consumed by slave instance, and too prohibit run-away
@@ -3194,10 +3200,10 @@ during the next commit. Setters of the class mark the appropriate dirty bit,
 and the accumulated bits are used to compute deltas during commit.
 
 For serialization, the application developer implements {\em serialize} or
-{\em deserialise}, which are called with the bit mask specifying which data
+{\em deserialize}, which are called with the bit mask specifying which data
 has to be transmitted or received. During a commit or sync, the current dirty
 bits are given, whereas during object mapping all dirty bits are passed to the
-serialization methods. A commit will clear the dirty mask after serialization.
+serialisation methods. A commit will clear the dirty mask after serialisation.
 
 
 \subsection{Optimisations}
@@ -3208,19 +3214,19 @@ chunking, caching, preloading and multicast.
 
 \subsubsection{Compression}
 
-The most obvious optimisation is compression. Recently, many new compression
-algorithms have been developed which exploit modern CPU architectures and
-deliver compression rates well above one gigabyte per second. {\em Collage}
-uses the Pression library~\cite{pression}, which provides a unified interface
+The most obvious optimisation is compression. Recently many new compression
+algorithms have been developed, exploiting modern CPU architectures and
+deliver compression rates well above one Gigabyte per second. {\em Collage}
+uses the Pression library~\cite{pression}, which provides an unified interface
 for a number of compression libraries, such as FastLZ~\cite{jesperfast},
 Snappy~\cite{snappy} and ZStandard~\cite{zstd}. It also contains a custom,
 virtually zero-cost RLE compressor. Pression parallelises the compression and
-decompression using data decomposition. This compression is generic and
+decompression using data decomposition. The compression is generic and
 lossless, implemented transparently for the application. Applications can also
 use data-specific compression.
 
 \bench{rCompressorDetail}~(top left) shows the compression ratio and speed for
-generic binary data from \cite{ESP:18}. While the structure of the transmitted
+generic binary data from \cite{ESP:18}. Whilst the structure of the transmitted
 data varies with each application, this micro-bench\-mark gives a reasonable
 estimation of the expected performance. In our context of interactive
 distributed rendering applications, it is important to use the right tradeoff
@@ -3232,12 +3238,12 @@ network transmission time due data reduction.
   \caption{\label{rCompressorDetail}Compression Performance for Binary Data, the PLY Data and Raw Volumes used in \bench{rMapping}}
 \end{benchmark}
 
-On modern CPUs (the benchmark was executed on a 12-core node), modern
+On current? CPUs (the benchmark was executed on a 12-core node), modern
 compression libraries provide performance benefits even on fast interconnects
 such as 10 Gb/s Ethernet. In particular, the modern Snappy and ZStandard
 libraries deliver impressive performance.
 
-In \cite{ESP:18}, we also evaluated the compression performance for concrete
+In \cite{ESP:18} we also evaluated the compression performance for concrete
 application data. The results are shown in \bench{rCompressorDetail}. Polygonal
 data is difficult to compress with a generic lossless compressor, due to the
 floating point format used for the vertices. A data-specific compressor aware
@@ -3249,9 +3255,9 @@ accelerate data distribution in Equalizer applications.
 \subsubsection{Chunking}
 
 The data streaming interface implements chunking, which pipelines the
-serialization code with the network transmission. After a configurable number of
+serialisation code with the network transmission. After a configurable number of
 bytes has been serialised to the internal buffer, it is transmitted and
-serialization continues. This is used both for the initial mapping data and for
+serialisation continues. This is used both for the initial mapping data,? and for
 commit data.
 
 \subsubsection{Caching and Preloading}
@@ -3262,7 +3268,7 @@ by ``snooping'' on multicast transmissions or by an explicit preloading when
 master objects are registered. Preloading sends instance data of recently
 registered master objects to all connected nodes during idle time of the
 corresponding node. These nodes simply enter the received data to their cache.
-Preloading uses multicast when available.
+Preloading uses multicast when available/configured?.
 
 \subsubsection{Multicast}
 
@@ -3293,7 +3299,7 @@ benchmarking. The details of the benchmark algorithm can be found in
 \end{benchmark}
 
 We used three different data sets, and ran the benchmark on up to eight
-physical nodes, that is, after eight processes nodes start to run two processes
+physical nodes, specifically, after eight process nodes start to run two processes
 per node, which share CPU, memory and network interface bandwidth. Object
 mapping is measured using the following settings: {\em none} distributes the
 raw, uncompressed, and unbuffered data, {\em compression} uses the Snappy
@@ -3311,18 +3317,18 @@ only have to be serialised and compressed once, and can then be sent directly
 to all mapped slave nodes. Slave nodes queue this data and consume it during
 synchronisation. In contrast, object mapping needs to wait for each slave node
 to request the mapping, and then may need to reserialise and compress the
-object data. We test the time to commit and sync the data using the compression
+object data. We tested the time to commit and sync the data using the compression
 engines discussed above.
 
-The David statue at 2 mm resolution is organised in a k-d tree for rendering.
-Each k-d tree node is a separate distributed object, which has two child node
+The David statue at a 2 mm resolution is organised in a k-d tree for rendering.
+Each k-d tree node is a separate distributed object, having two child node
 objects. A total of 1023 objects are distributed and synchronised. Due to
 limited compressibility of the data, the results are relatively similar.
 Compressing the data repeatedly for each client leads to decreased performance,
-since the compression overhead cannot be amortised by the decreased
+since the compression overhead cannot be amortised by a decreased
 transmission time. Buffering data slightly improves performance by reducing the
 CPU and copy overhead. Combining compression and buffering leads to the best
-performance, although only by about 10\%. During synchronisation, data is
+performance, although only by about 10\%. During synchronisation data is
 pushed from the master process to all mapped slaves using a unicast connection
 to each slave. While the results are relatively close to each other, we can
 still observe how the tradeoff between compression ratio and speed influences
@@ -3332,12 +3338,12 @@ overall performance when amortised over many send operations.
 The volume data sets are distributed in a single object, serialising the raw
 volume buffer. The Spike volume data set has a significant compression ratio,
 which is reflected by the results. Compression for this data is beneficial for
-transmitting data over a 10 Gb/s link, even for a single slave process.
-Buffering has little benefit since the serialization of volume data is trivial.
-Buffered compression makes a significant difference, since the compression cost
-can be amortised over many nodes, reaching raw data transmission rates of 3.7
-GB/s with the default Snappy compressor and at best 4.4 GB/s with ZStandard at
-level 1. The distribution of the beechnut data set also behaves as expected.
+transmitting data over a 10~Gb/s link, even for a single slave process.
+Buffering has little benefit, since the serialisation of volume data is trivial.
+Buffered compression shows a significant difference, since the compression cost
+can be amortised over many nodes, reaching raw data transmission rates of 3.7~
+GB/s with the default Snappy compressor, and at best 4.4 GB/s with ZStandard at
+level 1. The distribution of the beechnut data set also behaves as expected:
 Due to the larger object size, uncompressed transmission is slightly faster
 compared to the Spike data set at 700MB/s, and compressed transmission does not
 improve the mapping performance, likely due to increased memory pressure caused
@@ -3352,10 +3358,10 @@ performance after four nodes due to the better compression ratio.
 \end{wrapfloat}
 
 \bench{rNetwork} compares data distribution speed using different network
-protocols. In this benchmark, data synchronisation time of the Spike volume
-data set is measured. Buffering is enabled, and compression is disabled to
+protocols. This benchmark measures the data synchronisation time of the Spike volume
+data set. Buffering is enabled, and compression is disabled to
 focus on the raw network performance. For the benchmark, eight physical nodes
-are used, that is, after eight processes two client processes will run on some
+are used, that is?, after eight processes two client processes will run on some
 nodes, sharing CPU and network resources.
 
 TCP over the faster InfiniBand link outperforms the cheaper Ten Gigabit
@@ -3363,7 +3369,7 @@ Ethernet link by more than a factor of two. Unexpectedly, the native RDMA
 connection performs worse, even though it outperforms IPoIB in a simple
 peer-to-peer connection benchmark. This needs further investigation, but we
 suspect the abstraction of a byte stream connection chosen by Collage is not
-well suited for remote DMA semantics; that is, one needs to design the network
+well suited for remote DMA semantics; one needs to design the network
 API around zero-copy semantics with managed memory for modern high-speed
 transports. Both InfiniBand connections show significant measurement jitter.
 
