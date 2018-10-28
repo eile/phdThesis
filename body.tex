@@ -2320,29 +2320,29 @@ constraints make the arrival not fully random or network-constrained).
 
 \section{Overview}
 
-Load balancing is the resource assignment per source channel based on the
+Load balancing is resource assignment per source channel based on
 workload, with the goal of equalising resource utilisation. Static load
 balancing, shown in \fig{floadbalancing} top, performs this assignment once
-during initialization. Dynamic load balancing can either be reactive or
+during initialisation. Dynamic load balancing can either be reactive or
 predictive (middle and bottom of \fig{floadbalancing}). Reactive load balancing
-utilises statistics from previous frames to predict future load distribution.
-Predictive load balancing uses an application-provided load estimation (also
-called cost function) to estimate the load distribution of the current frame.
+utilises statistics from previous frames to estimate future load distribution.
+Predictive load balancing uses an application-provided load estimate (also
+called cost function) to predict the load distribution for the current frame.
 Both approaches reassign resources dynamically, typically for each rendered
 frame. Implicitly load balanced algorithms achieve a good load balance by other
-means, for example through work stealing between resources.
+means, for example by work stealing between resources.
 
 \begin{figure}[h!t]
   \includegraphics[width=\textwidth]{images/loadBalancing}
   \caption{\label{floadbalancing}Static, Reactive and Predictive Load Balancing}
 \end{figure}
 
-Load balancing is implemented by {\em Equalizers} in our framework, which are
+In our framework load balancing is implemented by {\em Equalizers}, which are
 an addition to compound trees. They modify parameters of their respective
 compound subtree at runtime to dynamically optimise the resource usage, by
 tuning one aspect of the decomposition or recomposition. Due to their nature,
 they are transparent to application developers, but might have
-application-accessible parameters to tune their behaviour. Resource
+application-accessible parameters to tune their behaviour with. Resource
 equalisation is the critical component for scalable rendering, and therefore
 the eponym for the {\em Equalizer} project name.
 
@@ -2364,12 +2364,12 @@ display systems.
 
 Sort-first (\fig{floadeq}) and sort-last load balancing are the most obvious
 optimisations for these parallel rendering modes. Our load equalizers are fully
-transparent for application developers; that is, they use a reactive approach
-based on past rendering times. This requires a reasonable frame-to-frame
-coherence for good results, which is the case with most rendering applications.
-Equalizer implements two different algorithms, a {\em load\_equalizer} and a
-{\em tree\_equalizer}, which have shown to each have their advantage
-depending on the type of rendering load.
+transparent for application developers; they use a reactive approach
+based on past rendering times. This requires a good frame-to-frame
+coherence for optimal results, which is the case with most rendering applications.
+Equalizer implements two different algorithms: A {\em load\_equalizer} and a
+{\em tree\_equalizer}, which have shown advantageous
+for different types of rendering load.
 
 Both equalizers extract their load metrics from statistics collected by the
 rendering clients, which are sent asynchronously from the clients to the
@@ -2382,11 +2382,11 @@ The {\em load\_equalizer} builds a model of the rendering load in screen space
 or data space. It stores a 2D (for sort-first) or 1D (for sort-last) grid of
 the load, mapping the load of each channel. The load is stored in normalised
 2D/1D coordinates using $\frac{time}{area}$ as its measure. The contributing
-source channels are organised in a binary kD-tree, and then the algorithm
+source channels are organised in a binary kD-tree.  The algorithm then
 balances the two branches of each level by equalising the integral over the
 cost area map on each side. This algorithm is similar to \cite{ACCC:04}, which
 uses a dual-level tree. Our binary split tree provides more compact tiles for
-larger cluster configurations since the split direction alternates on each
+larger cluster configurations, since the split direction alternates on each
 level.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
@@ -2396,19 +2396,19 @@ level.
 \end{wrapfloat}
 
 The load balancer has to operate on the assumption that the load is uniform
-within one load grid tile. This leads naturally to estimation errors, since in
+within one load grid tile. Naturally this leads to estimation errors, since in
 reality the load is not uniformly distributed, e.g., it tends to increase
-towards the centre of the screen in \fig{fROI}. We reuse the region of interest
+towards the centre of the screen in \fig{fROI}. We reuse the Region of Interest
 (ROI) from compositing of each source channel to automatically refine the load
-grid as shown \fig{fROI}, top. In cases where the rendered data projects only
+grid as shown in \fig{fROI}, top. In cases where the rendered data projects only
 to a limited screen area, this ROI refinement provides the load balancer with a
-more accurate load estimation leading to a better load prediction during the
+more accurate load estimation, leading to a better load prediction during the
 balancing step.
 
 The {\em tree\_equalizer} uses the same binary kD-tree structure as the
 {\em load\_equalizer} for recursive load balancing. It computes the
-accumulated render time of all children for each node of the tree, and uses
-this to allocate an equal render time to each subtree. It makes no assumption
+accumulated render time of all children for each node of the tree and uses
+the result to allocate an equal render time to each subtree. It makes no assumption
 of the load distribution in 2D or 1D space, it only tries to correct the
 imbalance in render time.
 
@@ -2418,8 +2418,8 @@ algorithm. These parameters are accessible through an API from the application
 main thread:
 
 \begin{compactdesc}
-\item[Split Mode] configures the tile layout: horizontal or vertical stripes,
-and 2D, a binary tree split alternating the split axis on each level, resulting
+\item[Split Mode] configures the tile layout: horizontal stripes, vertical stripes,
+or 2D, a binary tree split alternating the split axis on each level, resulting
 in compact 2D tiles.
 \item[Damping] reduces frame-to-frame oscillations. The equal load distribution
 within the region of interest assumed by the load balancers is in reality not
@@ -2428,13 +2428,13 @@ defining how much of the computed delta from the previous position is applied to
 the new split.
 
 \item[Resistance] eliminates small deltas in the load balancing step, i.e., it
-only changes the viewport or range if the change is over the configured limit.
-This can help the application to cache visibility computations since the
-frustum does not change each frame.
+only changes the viewport or range, if the change is over the configured limit.
+This can help the application to cache visibility computations, since the
+frustum does not change with each frame.
 
 \item[Boundaries] define the modulo factor in pixels onto which a load split may
 fall. Some rendering algorithms produce artefacts related to the OpenGL raster
-position, e.g., screen door transparency, which can be eliminated by aligning
+position, e.g., screen door transparency. It can be eliminated by aligning
 the boundary to the pixel repetition. Furthermore, some rendering algorithms are
 sensitive to cache alignments, which can again be exploited by choosing the
 corresponding boundary.
@@ -2442,61 +2442,60 @@ corresponding boundary.
 \item[Usage] is a per-child normalised resource utilisation coefficient. The
 equalizer will assign proportional work to this resource, and deactivate it if
 the usage is 0. This parameter is primarily used by the cross-segment load
-balancer to reassigning resources between destination channels, but can also be
+balancer to reassign resources between destination channels. Can also be
 used to configure heterogeneous GPU resources more efficiently.
 
 \end{compactdesc}
 
 \subsection{Dynamic Work Packages}
 
-Load balancing can be classified into explicit and implicit approaches, where
-explicit methods centrally compute a task decomposition up-front, before a new
+Load balancing can be classified into explicit and implicit approaches.
+Explicit methods centrally compute a task decomposition up-front, before a new
 frame is rendered, while implicit methods decompose the workload into task
-units that can dynamically be assigned to the resources during rendering, based
+units that can be dynamically assigned to the resources during rendering, based
 on the work progress of the individual resources. Explicit load balancing
 typically assigns a single task to each resource to minimise static per-task
-costs. The aforementioned equalizers implement explicit reactive load
+cost. The aforementioned load and tree equalizers implement explicit reactive load
 balancing.
 
-Implicit load balancing generally uses a finer granularity of many more tasks
-than resources to minimise the load imbalance due to a fixed coarse task
-granularity. Implicit load balancing uses central task distribution or
-distributed task stealing between resources. Implicit algorithms are more
-commonly used for off-line raytracing compared to real-time rasterisation
-algorithms due to the practically non-existent per-tile cost in raytracing.
-Furthermore, since each rendered task directly sends its result for
+Implicit load balancing uses a finer granularity of significantly more rendering tasks
+to resources. These tasks are assigned using central task distribution, or
+ task stealing between resources. Implicit algorithms are more
+commonly used in offline raytracing compared to real-time rasterisation,
+ because of practically non-existent per-tile cost in raytracing.
+Since each rendered task directly sends its result for
 compositing, work packages exhibit a better pipelining of rendering and
 compositing operations.
 
 Our work package implementation uses a task pulling mechanism, an approach that
 has been employed before in distributed computing. Rather than having the
 server push tasks to the rendering clients, our dynamic work packages approach
-works by managing fine grained tasks on a server side queue, while the clients
+manages fine grained tasks on a server-side queue, while the clients
 request and execute the tasks as they become available. Every rendering client
 employs a small local, prefetched queue of work packages to hide the round-trip
 latency to fetch new packages. During rendering, a client first works on
 packages from its local queue and concurrently requests packages from the
-server whenever the amount of available packages sinks below some threshold.
-In~\cite{SPEP:16}, this basic, random task assignment was extended with
+server whenever the amount of available packages sinks below a threshold.
+In~\cite{SPEP:16} this basic, random task assignment was extended with
 client-affinity models.
 
 Depending on the sort-first or sort-last decomposition mode, a {\em
 tile\_equalizer} or {\em chunk\_equalizer} generates tiles or database ranges
-of a configurable size and enqueues them at the beginning of each frame. This
-equalizer is the central component of the tile and chunk compounds introduced
+of a configurable size, and enqueues them at the beginning of each frame. This
+equalizer is the central component of the tile and chunk compounds, introduced
 in \sref{sTile}.
 
 
 \subsection{Benchmarks}
 
-\bench{rCompounds} shows the performance of static and load balanced sort-first
+\bench{rCompounds} shows the performance of static and dynamic sort-first
 and sort-last rendering. The experiment setup is described in \cite{ESP:18}.
 The results show that, as expected, load balancing improves the performance
 over a static task decomposition significantly. The simpler
 {\em tree\_equalizer} outperforms the load grid-driven
-{\em load\_equalizer} in most cases, except for sort-first volume rendering
+{\em load\_equalizer} in most cases, except for sort-first volume rendering,
 where the load in the region of interest is relatively uniform. This result is
-counterintuitive since the {\em load\_equalizer} operates with more
+counter-intuitive, since the {\em load\_equalizer} operates with more
 information and should be able to produce better results. It seems to confirm
 that simple algorithms often outperform theoretically better, but more complex
 implementations. The decoupling of the load balancing algorithm from the rest
@@ -2510,11 +2509,11 @@ more research in this area.
 
 \bench{rEqualizers} provides a more detailed analysis of the different
 equalizers. Using volume rendering, we measure the performance of decomposition
-modes under heterogeneous load, which was easily achievable by varying the
+modes under heterogeneous load, which was achieved by varying the
 number of volume samples used for each fragment (1-7) while rendering. This
 allowed for a consistent linear scaling of rendering load, which was randomly
-varied either per frame or per node. Such a linear scaling of load per node
-corresponds to a scaling of resources, e.g., doubling the rendering load on a
+varied either per frame, or per node. The linear scaling of load per node
+corresponds to a scaling of resources. Doubling the rendering load on a
 specific node corresponds to halving its available rendering resources. To the
 system this node would then contribute the value 0.5 in terms of normalised
 compute resources.
@@ -2532,24 +2531,24 @@ resources. \bench{rEqualizers} (right), on the other hand, illustrates how the
 decomposition modes perform on a system where compute resources fluctuate
 randomly every frame, as can be the case for shared rendering nodes in
 virtualised environments. For this scenario tile equalizer seems best suited,
-as it performs load balancing implicitly and does not assume coherence of
+as it load balances implicitly and does not assume coherence of
 available resources between frames. The simpler tree equalizer outperforms the
 load equalizer in this experiment.
 
-The {\em tile\_equalizer} often outperforms {\em tree\_equalizer}. This
+The {\em tile\_equalizer} often outperforms the {\em tree\_equalizer}. This
 suggests that the underlying implicit load balancing of task queues can be
 superior to the explicit methods of {\em load\_equalizer} and
-{\em tree\_equalizer} in high load situations, where the additional overhead
+{\em tree\_equalizer} in high load situations. where the additional overhead
 of tile generation and distribution is more justified. The relatively simple
-nature of our benchmark application's rendering algorithms is also favouring
+nature of our benchmark applications' rendering algorithm is also favouring
 work packages, since they have a near-zero static overhead per rendering pass.
 \cite{SPEP:16} contains additional experiments.
 
 \section{Cross-Segment Load Balancing}
 
 A serious challenge for all distributed rendering systems driving large
-multi-display installations is to deal with the varying rendering load per
-display, and thus the graphics load on its driving GPUs. Cross-segment load
+multi-display installations is dealing with the varying rendering load per
+display, therefore the graphics load on its driving GPUs. Cross-segment load
 balancing (CSLB) is a novel dynamic load balancing approach to dynamically
 allocate $n$ rendering resources to $m$ output channels (with $n\geq m$), as
 shown in \fig{fvieweq}.
@@ -2574,15 +2573,15 @@ immersive installations.
 
 Dynamic resource assignment is performed through load balancing components that
 exploit statistical data from previous frames for the decision of optimal GPU
-usage for each segment as well as optimal distribution of workload among them.
+usage for each segment, as well as optimal distribution of work among them.
 The algorithm is also compatible with predictive load balancing based on a load
 estimation given by the application.
 
 CSLB is implemented in Equalizer as two layers of hierarchically organised
-components, specified in the configuration. The first level globally assigns
+components specified in the configuration. The first level globally assigns
 fractions of resources to each destination channel, and the second level
 consist of {\em load\_equalizer}s or {\em tree\_equalizer}s balancing the
-assigned resources for each destination channel.
+assigned resources for each destination segment.
 
 \begin{figure}[h!t] \center
   \subfigure[CSLB resources setup.]{\includegraphics[width=0.47\textwidth]{images/viewEqualizerSetup}
@@ -2636,8 +2635,8 @@ multi-projector view. Each projector is driven by a distinct GPU, constituting
 the source channels {\em Source1} and {\em Source2}. Each source channel GPU
 can contribute to the rendering of the other destination channel segment. For
 each destination channel, a set of potential resources are allocated. A
-top-level {\em view\_equalizer} assigns the usage of each resource, based on
-which a per-segment {\em load\_equalizer} computes the 2D split to balance the
+top-level {\em view\_equalizer} assigns the usage to each resource, based on
+which per-segment {\em load\_equalizer} computes the 2D split to balance the
 assigned resources within the display. The left segment of the display has a
 higher workload, so, both {\em Source1} and {\em Source2} are used to render
 for {\em Channel1}, whereas {\em Channel2} uses only {\em Source2} to render
@@ -2645,25 +2644,25 @@ the image for the right segment. The schematic also shows the current usage of
 the four potential source compounds, where only three have an active draw pass
 at this point in time.
 
-CSLB uses a two-stage approach: a {\em view\_equalizer} at the top level of the
+CSLB uses a two-stage approach, where a {\em view\_equalizer} at the top level of the
 compound hierarchy handles the resource assignment. Each child of this root
-compound has one destination (segment) channel, constituting one of the $m$
-display segments, with a {\em load\_equalizer} or {\em tree\_equalizer} each.
+compound has one destination (segment) channel, corresponding to one of the $m$
+display segments, using a {\em load\_equalizer} or {\em tree\_equalizer}.
 The {\em view\_equalizer} supervises the different destination channels of a
 multi-display setup; the {\em load\_equalizer}s on the other hand are
 responsible for the partitioning of the rendering task of each segment among
 its child compounds. They use the precomputed usage of each child to allocate a
 corresponding amount of work for the child. Therefore, each destination channel
 of a display segment has its source channel leaf nodes sharing the actual
-rendering load. One physical GPU) being assigned to a source channel, can be
-referenced in multiple leaf nodes and thus contribute to different displays.
+rendering load. One physical GPU) being assigned to a source channel can be
+referenced in multiple leaf nodes, and thus contribute to different displays.
 
-For performance reason, the view equalizer assigns each resource to at most two
+For performance reasons the view equalizer assigns each resource to at most two
 rendering tasks, e.g., to update itself and to contribute to another display.
 Furthermore, it gives priority to the source compound using the same channel as
-the output channel of each segment, thus minimising pixel transfers.
+the output channel of each segment to minimise pixel transfers.
 
-Cross-segment load balancing thus allows for optimal resource usage of multiple
+Cross-segment load balancing allows for optimal resource usage of multiple
 GPUs used for driving the display segments themselves, as well as any additional
 source GPUs for rendering. It combines multi-display parallel rendering with
 scalable rendering for optimal performance.
@@ -2673,7 +2672,7 @@ scalable rendering for optimal performance.
   \caption{\label{rCSLBFPS}Cross-Segment Load Balancing}
 \end{wrapfloat}
 
-\cite{EEP:11} provide experimental results for a six-monitor tiled display wall
+\cite{EEP:11} provide experimental results for a six-monitor tiled display wall,
 driven by twelve GPUs. \bench{rCSLBFPS} shows an overview for the achievable
 performance improvements. The first two configurations use a static assignment
 of two GPUs to one output channel, where the first one statically assigns one
@@ -2690,10 +2689,10 @@ segment almost doubles the performance over the state-of-the-art sort-first
 load balanced setup.
 
 \bench{rCSLB} shows the rendering time over a fixed camera path of 540 frames.
-In the static case, two GPUs are responsible for each of the six outputs of the
+In the static case two GPUs are responsible for each of the six outputs of the
 tiled display wall used. For the CSLB graph, up to eight GPUs were dynamically
 reassigned each frame to each of the six output channels, depending on the
-current load distribution. Except for a few camera positions where the model is
+current load distribution. Except for a few camera positions, where the model is
 positioned evenly over all outputs, CSLB outperforms the fixed assignment.
 
 \begin{benchmark}[h!t]
@@ -2704,18 +2703,18 @@ positioned evenly over all outputs, CSLB outperforms the fixed assignment.
 \end{benchmark}
 
 A strength of this algorithm lies in its flexibility. On one hand, it can
-perform dynamic resource assignment not only for a planar display system as
+perform dynamic resource assignment not only for a planar display system ,as
 some approaches which built a single virtual framebuffer for all output
 displays, but also for curved displays and CAVE installations. On the other
 hand, it allows a flexible assignment of potential contributing GPUs to each
-output channel individually, that is, each output may have a different,
+output channel individually. Each output may have a different,
 potentially overlapping, set of GPUs which may contribute to its rendering.
 
 \section{Dynamic Frame Resolution}
 
 
 Dynamic Frame Resolution (DFR) (\fig{fdfr}) provides a functionality similar to
-dynamic video resizing \cite{MBDM:97}, that is, it maintains a constant
+dynamic video resizing \cite{MBDM:97}, specifically it maintains a constant
 framerate by adapting the rendering resolution of a fill-limited application.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
@@ -2727,7 +2726,7 @@ While the aforementioned uses a now-obsolete hardware implementation, our
 implementation works on commodity hardware and is purely implemented in
 software.
 
-DFR works by rendering into a source channel (typically on a FBO) separate to
+DFR works by rendering into a source channel (often on a FBO) separate from
 the destination channel, and then scaling the rendering during the transfer
 (typically through an on-GPU texture) to the destination channel. The DFR
 equalizer monitors the rendering performance and accordingly adapts the
@@ -2749,7 +2748,7 @@ by instructing the corresponding window to delay its buffer swap to a minimum
 time between swaps. This is regularly used for time-multiplexed decompositions,
 where source channels tend to drift and finish their rendering unevenly
 distributed over time. This equalizer is however fully independent of DPlex
-compounds, and may be used to smooth irregular application rendering
+compounds, and may be used to smooth the framerate of irregular rendering
 algorithms. Due to the artificial sleep time before swap, it may incur a small
 performance penalty, but it greatly improves the perceived rendering quality for
 users in DPlex compounds.
@@ -2761,7 +2760,7 @@ users in DPlex compounds.
   \caption{\label{fmonitor}Monitoring}
 \end{wrapfloat}
 
-The monitor equalizer (\fig{fmonitor}) allows to reuse the rendering from one
+The monitor equalizer (\fig{fmonitor}) allows reusing of the rendering from one
 or more channels on another channel, typically for monitoring a larger display
 setup on a control workstation. Output frames on the display channels are
 connected to input frames on the monitoring channel. The monitor equalizer
@@ -3391,10 +3390,10 @@ observed in profiling.
 \chapter{Applications}\label{sApplications}
 
 A key performance indicator for a good design of any framework is the
-acceptance by developers, for which a good measure is the usage by third-party
+acceptance by developers. A good measure is the adoption by third-party
 applications. While the evaluation and architecture of applications build with
 Equalizer is outside of the scope of this thesis, we provide a few examples
-here to illustrate the variety of use cases supported by our framework.
+here to illustrate the variety of use cases supported in our framework.
 
 \section{Livre}
 
@@ -3410,14 +3409,14 @@ management~\cite{EHKRW:06}.
 
 Hierarchical and out-of-core LOD data management is supported by an implicit
 volume octree, accessed asynchronously by the renderer from a data source on a
-shared file system. Different data sources provide an octree-conform access to
+shared file system. Different data sources provide octree-conform access to
 RAW or compressed files, as well as to on-the-fly generated volume data (e.g.
 such as from event simulations or surface meshes).
 
-High-level state information, e.g., camera position and rendering settings, is
+High-level state information, e.g., camera position and rendering settings, are
 shared in Livre through {\em Collage} objects between the application and
 rendering threads. Sort-first decomposition is efficiently supported through
-octree traversal and culling, both for scalability as well as for driving
+octree traversal and culling, both for scalability, as well as for driving
 large-scale tiled display walls.
 
 \section{RTT Deltagen}
@@ -3438,15 +3437,15 @@ can go into ``Scale mode'' at any time by launching an {\em Equalizer}
 configuration. Consequently, the internal representation needed for rendering
 is based on a {\em Collage}-based data distribution. The rendering clients
 are separate, smaller applications which will map their scenes during startup.
-At runtime, any change performed in the main application is committed as a
+At runtime any change performed in the main application is committed as a
 delta at the beginning of the next frame. Multicast is used to keep data
 distribution times during session launch reasonable for larger cluster sizes
 (tens to hundreds of nodes).
 
-RTT Scale is used for a wide variety of use cases. In virtual reality, the
+RTT Scale is applied? for a wide variety of use cases. In virtual reality, the
 application is used for virtual prototyping and design reviews in front of
-high-resolution display walls and CAVEs, as well as for virtual prototyping of
-human-machine interactions using CAVEs and HMDs. For scalability, sort-first and
+high-resolution display walls and CAVEs. It is also used for virtual prototyping of
+human-machine interactions in? CAVEs and HMDs. For scalability, sort-first and
 tile compounds are used to achieve fast, high-quality rendering, primarily for
 interactive raytracing, both based on CPUs and GPUs. For CPU-based raytracing,
 often Linux-based rendering clients are used with a Windows-based application
@@ -3460,11 +3459,11 @@ node.
 \end{wrapfloat}
 
 RTNeuron \cite{HBBES:13} is a scalable real-time rendering tool for the
-visualisation of neuronal simulations based on cable models. It is based on
-OpenSceneGraph for data management and Equalizer for parallel rendering, and
-focuses not only on fast rendering times, but also on fast loading times with no
+visualisation of neuronal simulations based on cable models. It uses
+OpenSceneGraph for data management and Equalizer for parallel rendering.
+The focus is not only on fast rendering times, but also on fast loading times with no
 offline preprocessing. It provides level of detail (LOD) rendering, high quality
-anti-aliasing based on jittered frusta and accumulation during still views,
+anti-aliasing based on jittered frusta,? accumulation during still views, and
 interactive modification of the visual representation of neurons on a per-neuron
 basis (full neuron vs. soma only, branch pruning depending on the branch level,
 \dots). RTNeuron implements both sort-first and sort-last rendering with order
@@ -3477,13 +3476,12 @@ independent transparency.
   {\caption{\label{fRaster}RASTeR running on a 3x2 Tiled Display Wall}}
 \end{wrapfloat}
 
-RASTeR~\cite{BGP:09} is an out-of-core and view-dependent real-time
-multi-resolution terrain rendering approach using a patch-based restricted
-quadtree triangulation. For load balanced parallel rendering~\cite{GMBP:10} it
+RASTeR~\cite{BGP:09} uses an out-of-core and view-dependent real-time
+multi-resolution terrain rendering algorithm. For load balanced parallel rendering~\cite{GMBP:10} it
 exploits fast hierarchical view-frustum culling of the level-of-detail (LOD)
 quadtree for sort-first decomposition, and uniform distribution of the visible
 LOD triangle patches for sort-last decomposition. The latter is enabled by a
-fast traversal of the patch-based restricted quadtree triangulation hierarchy
+fast traversal of the patch-based restricted quadtree triangulation hierarchy,
 which results in a list of selected LOD nodes, constituting a view-dependent cut
 or \emph{front of activated nodes} through the LOD hierarchy. Assigning and
 distributing equally sized segments of this active LOD front to the concurrent
@@ -3499,9 +3497,9 @@ frame.
 
 Bino is a stereoscopic 3D video player capable of running on very large display
 systems. Originally written for the immersive semi-cylindrical projection
-system at the University of Siegen, it has been used in many installations
-thanks to its flexibility of configuration. Bino decodes the video on each
-rendering thread, and only synchronises the time step globally, providing a
+system at the University of Siegen, its flexibility of configuration enabled? its
+use in many installations. Bino decodes video on each
+rendering thread and only synchronises the time step globally, providing a
 scalable solution to video playback.
 
 \section{Omegalib}
@@ -3512,19 +3510,19 @@ scalable solution to video playback.
 \end{wrapfloat}
 
 Omegalib \cite{Omegalib} is a software framework built on top of Equalizer that
-facilitates application development for hybrid reality environments such as the
+facilitates application development for hybrid reality environments, like the
 Cave 2. Hybrid reality environments aim to create a seamless 2D/3D environment
-that supports both information-rich analysis (traditionally done on tiled
-display wall) as well as virtual reality simulation exploration (traditionally
+supporting both information-rich analysis (traditionally done on tiled
+display wall), as well as virtual reality simulation exploration (traditionally
 done in VR systems) at a resolution matching human visual acuity. Omegalib
 supports dynamic reconfigurability of the display environment, so that areas of
 the display can be interactively allocated to 2D or 3D workspaces as needed. It
-makes it possible to have multiple immersive applications running on a
+is possible to have multiple immersive applications running on a
 cluster-controlled display system, have different input sources dynamically
 routed to applications, and have rendering results optionally redirected to a
-distributed compositing manager. Omegalib supports pluggable front-ends, to
+distributed compositing manager. Omegalib supports pluggable front-ends to
 simplify the integration of third-party libraries like OpenGL, OpenSceneGraph,
-and the visualisation Toolkit (VTK).
+and the Visualisation Toolkit (VTK).
 
 
 \chapter{Conclusion}\label{sConclusion}
