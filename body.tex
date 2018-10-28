@@ -2312,16 +2312,16 @@ constraints make the arrival not fully random or network-constrained).
 
 \section{Overview}
 
-Load balancing is the resource assignment per source channel based on resource
-load, with the goal of optimising resource utilisation. Static load balancing,
-shown in \fig{floadbalancing} top, performs this assignment during
-initialization. Dynamic load balancing can either be reactive or predictive
-(middle and bottom of \fig{floadbalancing}). Reactive load balancing utilises
-statistics from previous frames to predict future load distribution. Predictive
-load balancing uses an application-provided load estimation (also called cost
-function) to estimate the load distribution of the current frame. Both
-approaches reassign resources dynamically, typically for each rendered frame.
-Implicitly load balanced algorithms achieve a good load balance by other
+Load balancing is the resource assignment per source channel based on the
+workload, with the goal of equalising resource utilisation. Static load
+balancing, shown in \fig{floadbalancing} top, performs this assignment once
+during initialization. Dynamic load balancing can either be reactive or
+predictive (middle and bottom of \fig{floadbalancing}). Reactive load balancing
+utilises statistics from previous frames to predict future load distribution.
+Predictive load balancing uses an application-provided load estimation (also
+called cost function) to estimate the load distribution of the current frame.
+Both approaches reassign resources dynamically, typically for each rendered
+frame. Implicitly load balanced algorithms achieve a good load balance by other
 means, for example through work stealing between resources.
 
 \begin{figure}[h!t]
@@ -2329,14 +2329,14 @@ means, for example through work stealing between resources.
   \caption{\label{floadbalancing}Static, Reactive and Predictive Load Balancing}
 \end{figure}
 
-Load balancing is implemented by {\em Equalizers}. Equalizers are an addition
-to compound trees. They modify parameters of their respective compound subtree
-at runtime to dynamically optimise the resource usage, by each tuning one
-aspect of the decomposition or recomposition. Due to their nature, they are
-transparent to application developers, but might have application-accessible
-parameters to tune their behaviour. Resource equalisation is the critical
-component for scalable parallel rendering, and therefore the eponym for the
-{\em Equalizer} project name.
+Load balancing is implemented by {\em Equalizers} in our framework, which are
+an addition to compound trees. They modify parameters of their respective
+compound subtree at runtime to dynamically optimise the resource usage, by
+tuning one aspect of the decomposition or recomposition. Due to their nature,
+they are transparent to application developers, but might have
+application-accessible parameters to tune their behaviour. Resource
+equalisation is the critical component for scalable rendering, and therefore
+the eponym for the {\em Equalizer} project name.
 
 In this section we present various {\em equalizer} implementations: two
 variants for reactive load balancing for sort-first and sort-last rendering,
@@ -2349,8 +2349,8 @@ display systems.
 
 \section{Sort-First and Sort-Last Load Balancing}\label{sLoadEqualizer}
 
-\begin{wrapfloat}{figure}{O}{.618\textwidth}
-  \includegraphics[width=.618\textwidth]{images/loadeq}
+\begin{wrapfloat}{figure}{O}{.382\textwidth}
+  \includegraphics[width=.382\textwidth]{images/loadeq}
   \caption{\label{floadeq}Load Balancing}
 \end{wrapfloat}
 
@@ -2370,16 +2370,16 @@ of each frame, the server triggers all equalizers on all compound trees, which
 enables them to set new decomposition parameters before the rendering tasks are
 computed.
 
-The {\em load\_equalizer} builds a model of the rendering load in screen
-space or data space. It stores a 2D (for sort-first) or 1D (for sort-last) grid
-of the load, mapping the load of each channel. The load is stored in normalised
-2D/1D coordinates using $\frac{time}{area}$ as the load, the contributing source
-channels are organised in a binary kD-tree, and then the algorithm balances the
-two branches of each level by equalising the integral over the cost area map on
-each side. This algorithm is similar to \cite{ACCC:04}, which uses a dual-level
-tree, first decomposed into horizontal tiles and then each horizontal tile into
-vertical sub-tiles. Our binary split tree provides more compact tiles for larger
-cluster configurations.
+The {\em load\_equalizer} builds a model of the rendering load in screen space
+or data space. It stores a 2D (for sort-first) or 1D (for sort-last) grid of
+the load, mapping the load of each channel. The load is stored in normalised
+2D/1D coordinates using $\frac{time}{area}$ as its measure. The contributing
+source channels are organised in a binary kD-tree, and then the algorithm
+balances the two branches of each level by equalising the integral over the
+cost area map on each side. This algorithm is similar to \cite{ACCC:04}, which
+uses a dual-level tree. Our binary split tree provides more compact tiles for
+larger cluster configurations since the split direction alternates on each
+level.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/roi}
@@ -2441,7 +2441,7 @@ used to configure heterogeneous GPU resources more efficiently.
 
 \subsection{Dynamic Work Packages}
 
-load balancing can be classified into explicit and implicit approaches, where
+Load balancing can be classified into explicit and implicit approaches, where
 explicit methods centrally compute a task decomposition up-front, before a new
 frame is rendered, while implicit methods decompose the workload into task
 units that can dynamically be assigned to the resources during rendering, based
@@ -2472,11 +2472,11 @@ server whenever the amount of available packages sinks below some threshold.
 In~\cite{SPEP:16}, this basic, random task assignment was extended with
 client-affinity models.
 
-Depending on the sort-first or sort-last decomposition mode, a
-{\em tile\_equalizer} or {\em chunk\_equalizer} generates tiles or
-database ranges of a configurable size and enqueues them at the beginning of
-each frame. This active equalizer is the central component of the tile and chunk
-compounds introduced in \sref{sTile}.
+Depending on the sort-first or sort-last decomposition mode, a {\em
+tile\_equalizer} or {\em chunk\_equalizer} generates tiles or database ranges
+of a configurable size and enqueues them at the beginning of each frame. This
+equalizer is the central component of the tile and chunk compounds introduced
+in \sref{sTile}.
 
 
 \subsection{Benchmarks}
@@ -2522,7 +2522,7 @@ priori define how much usage it should make of individual nodes, i.e., bias the
 allocation of rendering time in accordance with the (simulated) compute
 resources. \bench{rEqualizers} (right), on the other hand, illustrates how the
 decomposition modes perform on a system where compute resources fluctuate
-randomly every frame, as can arguably be the case for shared rendering nodes in
+randomly every frame, as can be the case for shared rendering nodes in
 virtualised environments. For this scenario tile equalizer seems best suited,
 as it performs load balancing implicitly and does not assume coherence of
 available resources between frames. The simpler tree equalizer outperforms the
