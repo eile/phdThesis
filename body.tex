@@ -1273,7 +1273,7 @@ and run both monoscopic and stereoscopic views concurrently. This switch does
 potentially involve the start and stop of resources and processes for passive
 stereo or stereo-dependent task decompositions.
 
-\section{Tiled Display Walls}
+\section{Tiled Display Walls}\label{sTIDE}
 
 Simulations performed on today’s high performance supercomputers produce
 massive amounts of data, which are often too expensive to move to another
@@ -2071,14 +2071,16 @@ Equalizer provides an API for the programmer to provide the region of interest
 rendered by a single resource, which can be easily computed by computing the
 screen-space projection of the model's bounding volume. We have extended the
 core parallel rendering framework to use this application-provided ROI to
-optimise the {\em load\_equalizer} as well as the image compositing.
+optimise the {\em load\_equalizer} and {\em tree\_equalizer} as well as the image compositing.
 
-The compositing code uses the ROI to minimise image readback size, and
-consequently network transmission. The ROI is an output frame parameter, and is
-transmitted to all input frames together with the pixel data. On the input
-frame, the compositing code respects this parameter to place the pixel data on
-the right position. The usage of ROI for load balancing is described in
-\sref{sLoadEqualizer}.
+\fig{fDBStream} outlines the region of interest of each source. The compositing
+code uses the ROI to minimise image readback size, and consequently network
+transmission. The ROI is an output frame parameter, and is transmitted to all
+input frames together with the pixel data. On the input frame, the compositing
+code respects this parameter to place the pixel data on the right position.
+Furthermore, the ROI of the rendering pass is automatically merged with the ROI
+of the composited frames for readback. The usage of ROI for load balancing is
+described in \sref{sLoadEqualizer}.
 
 Applying ROI for sort-first rendering provides a small improvement for the
 rendering performance, as shown in \bench{rROI}(a) from \cite{EBAHMP:12}. As the
@@ -2088,7 +2090,7 @@ decreases. With ROI enabled we observed performance improvements between
 5-20\%, reaching 60~Hz when using 33 GPUs. Without ROI, the framerate peaked at
 less than 50~Hz when using 27 GPUs.
 
-\begin{benchmark}[t]\center
+\begin{benchmark}[h!t]\center
     \includegraphics[width=.48\textwidth]{results/roiSF}\hfil
     \includegraphics[width=.48\textwidth]{results/roiSL}\\{\small(a)\hspace{.5\textwidth}(b)}\\
  {\caption{\label{rROI}Region of Interest for Sort-First and Sort-Last Rendering}}
@@ -2107,11 +2109,18 @@ developers' life, and can also easily detect holes in the rendered framebuffer.
 
 \section{Asynchronous Compositing}
 
-Compositing in a distributed parallel rendering system is decomposed into
-readback of the produced pixel data (1), optional compression of this pixel data
-(2), transmission to the destination node consisting of send (3) and receive
-(4), optional decompression (5) and composition consisting of upload (6) and
-assembly (7) in the destination framebuffer.
+Asynchronous compositing pipelines pixel transfers with rendering operations by
+moving them to a separate thread. Compositing in a distributed parallel
+rendering system is decomposed into readback of the produced pixel data (1),
+optional compression of this pixel data (2), transmission to the destination
+node consisting of send (3) and receive (4), optional decompression (5) and
+composition consisting of upload (6) and assembly (7) in the destination
+framebuffer.
+
+\begin{wrapfloat}{benchmark}{O}{.618\textwidth}
+ \includegraphics[width=.618\textwidth]{images/syncReadback}
+ {\caption{\label{fSyncRB}Synchronous Readback and Upload}}
+\end{wrapfloat}
 
 In a naive implementation, operations 1 to 3 are executed serially on one
 core, and 4 to 7 on another. In our parallel rendering system, operations 2
@@ -2138,23 +2147,15 @@ needed.
 \end{wrapfloat}
 
 Asynchronous compositing is, together with region of interest, one of the most
-influential optimisations for scalable rendering. For sort-first rendering,
-shown in \bench{rAsync} from \cite{EBAHMP:12}, pipelining the readback with the
-rendering yields a performance again of about 10\%. At higher frame rates, when
-the rendering time of a single resource decreases, asynchronous readback has
-even a higher impact, of over 25\% for large node counts.
+influential optimisations for scaling rendering to larger cluster sizes. For
+sort-first rendering, shown in \bench{rAsync} from \cite{EBAHMP:12}, pipelining
+the readback with the rendering yields a performance again of about 10\%. At
+higher frame rates, when the rendering time of a single resource decreases,
+asynchronous readback has even a higher impact of over 25\%.
 
 \begin{figure}[t]\center
-  \subfigure[]{
-    \includegraphics[scale=0.6]{images/syncReadback}
-    \label{fSyncRB}
-  }\\
-  \subfigure[]{
-    \includegraphics[scale=0.6]{images/asyncReadback}
-    \label{fAsyncRB}
-  }
-  \caption{Synchronous Readback and Upload (a) versus
-    Asynchronous Readback and Upload (b) for two Overlapping Frames}
+  \includegraphics[scale=0.6]{images/asyncReadback}
+  \caption{Asynchronous Readback and Upload\label{fAsyncRB}}
 \end{figure}
 
 
@@ -2165,23 +2166,25 @@ by the GPU-to-node and node-to-node image throughput. Therefore, efficient
 image coding, compression and transmission must be considered to minimise that
 bottleneck.
 
-Basic run-length encoding (RLE) has been used as a fast standard to improve
+Basic run-length encoding (RLE) has been used as a fast algorithm to improve
 network throughput for interactive image transmission. However, it only gives
 sufficient results in specific rendering contexts and fails to provide a
 general improvement as shown in \cite{MEP:10}. RLE only works to compact large
 empty or uniform colour areas but is often useless for non-trivial full frame
 colour results. We developed two enhancements to improve RLE: per-component RLE
 compression and reordering of colour bits. These preconditioning steps exploit
-typical characteristics of image data.
+typical characteristics of image data for run-length encoding.
 
-Equalizer also integrates more complex compression algorithms such as
-{\em lib-jpeg-turbo}, which are however of little practical use on modern
+Equalizer also integrates more complex compression algorithms such as {\em
+lib-jpeg-turbo}, which are however of little practical use on modern cluster
 interconnects. Their compression overhead is often too high to be amortised by
 the decreased network transmission time on 10 GBit/s or faster interconnects.
+For remote image streaming, as discussed in \sref{sTIDE}, they remain a
+viable compression algorithm.
 
-\cite{MEP:10} implemented GPU-based YUV subsampling before the image download,
-which has negligible overhead, reasonable compression artefacts, and a good
-compression ratio.
+Based on our work, \cite{MEP:10} implemented GPU-based YUV subsampling before
+the image download, which has negligible overhead, reasonable compression
+artefacts, and a good compression ratio.
 
 \subsection{Enhanced RLE Compression}
 
@@ -2191,22 +2194,23 @@ compression in visualisation applications, we can exploit some characteristics
 of the data to improve the compression ratio over the standard RLE compression.
 
 Our basic RLE implementation is a fast 64-bit version that compares two pixels
-at the same time (8 bit per channel RGBA format). While this method is very
-fast, it shows poor compression results in most practical settings since it can
-only compress adjacent pixels of the same colour. We have observed a compression
-rate of up to 10\% in practical scenarios.
+at the same time (8 bit per channel RGBA format). This choice is motivated by
+the fact that modern processors have 64 bit registers, thus using 64 bit tokens
+optimises throughput. While this method is very fast, it shows poor compression
+results in most practical settings since it can only compress adjacent pixels
+of the same colour. We have observed a compression rate of up to 10\% in
+practical scenarios.
+
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
+  \includegraphics[width=.618\textwidth]{images/RLE}
+  \caption{64 bit and Per-Component RLE Compression}
+  \label{fRLE}
+\end{wrapfloat}
 
 The first improvement is to treat each colour component separately by producing
 four independent RLE-compressed output streams as illustrated in \fig{fRLE}.
 This per-component RLE improves the compression rate from 10\% to about 25\%
-since individual colour components change less often than full pixels (based on
-results from \cite{MEP:10}).
-
-\begin{wrapfloat}{figure}{O}{.618\textwidth}
-  \includegraphics[width=.618\textwidth]{images/RLE}
-  \caption{32 bit, 64 bit and Per-Component RLE Compression}
-  \label{fRLE}
-\end{wrapfloat}
+since individual colour components change less often than full pixels.
 
 The second improvement is {\em bit-swizzling} of colour values before
 per-component compression. This swizzling step is a data pre-conditioner, which
@@ -2229,9 +2233,9 @@ operations, it is entirely executed in registers and has no measurable
 impact on performance, since the whole algorithm is memory bound on modern CPUs.
 
 All RLE compressors perform a data decomposition on the input image, and
-parallelise the compression of data chunks across multiple threads. This
-parallel execution improves the performance by saturating multiple memory
-channels compared to a single-threaded implementation.
+parallelise the compression of the resulting sub-images across multiple
+threads. This parallel execution improves the performance by saturating
+multiple memory channels compared to a single-threaded implementation.
 
 \begin{wrapfloat}{benchmark}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{results/rle}
