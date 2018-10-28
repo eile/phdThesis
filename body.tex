@@ -2772,7 +2772,7 @@ of the channels is resized.
 Most research in parallel rendering does not look into the problem of managing
 application state in a distributed rendering session. For basic parallel
 rendering research this problem is trivially to solve, whereas in real-world
-applications it often is one of the major challenges for using a distributed
+applications it is often one of the major challenges for using a distributed
 rendering cluster. Researching and improving the system behaviour of
 non-trivial applications is however critical for meaningful parallel rendering
 research, and therefore providing a distributed network library is a key
@@ -2842,15 +2842,17 @@ Our Collage network library provides a peer-to-peer communication
 infrastructure, offering different abstraction layers which gradually provide
 higher level functionality to the programmer. Collage is used by Equalizer to
 communicate between the application node, the server and the render clients.
-\fig{fCollageUML} provides an overview of the major Collage classes and their
-relationship. The main classes, in ascending abstraction level, are:
+Many resources entities described in \cref{sArchitecture} are distributed
+Collage objects. \fig{fCollageUML} provides an overview of the major Collage
+classes and their relationship. The main classes, in ascending abstraction
+level, are:
 
 \begin{compactdesc}
 
-\item[Connection:] A stream-oriented point-to-point communication line. Different
-implementations of a connection exists. The connections transmit a raw byte
-stream reliably between two endpoints for unicast connections, and between a set
-of endpoints for multicast connections.
+\item[Connection:] A stream-oriented point-to-point communication line.
+Different implementations of a connection exists. A connection transmits a raw
+byte stream reliably between two endpoints for unicast connections, and between
+a set of endpoints for multicast connections.
 
 \item[DataOStream:] Abstracts the output of C++ data types onto a set of
   connections by implementing output stream operators. Uses buffering to
@@ -2887,10 +2889,11 @@ can accept connection requests leading to new, connected connections.
 
 A {\em ConnectionSet} is used to manage multiple connections. The typical use
 case is to have one or more listening connections for the local process, and a
-number of connected connections for communicating with other processes.
-The connection set is used to select one connection which requires some action.
+number of connected connections for communicating with other processes. The
+connection set is used to select one connection which requires some action.
 This can be a connection request on a listening connection, pending data on a
-connected connection or the notification of a disconnect.
+connected connection or the notification of a disconnect. It is an
+encapsulation of the {\em poll} or {\em WaitForMultipleObject} system calls.
 
 The connection and connection set can be used by applications to implement
 other network-related functionality, e.g., to communicate with a sound server
@@ -2912,10 +2915,10 @@ connections, e.g., when an object update is sent to all subscribed slave nodes.
 
 \subsection{Thread-aware Command Dispatch}
 
-Collage sends commands over connections. A command is identified by its type
-(typically the C++ class handling it) and a command identifier. These fields
-are used to implement thread-aware dispatching of received commands to handler
-functions.
+Collage sends commands over connections to implement remote procedure calls. A
+command is identified by its type (typically the C++ class handling it) and a
+command identifier. These fields are used to implement thread-aware dispatching
+of received commands to handler functions.
 
 Nodes and objects communicate using commands derived from data streams. The
 basic command dispatch is implemented in the {\em Dispatcher} class, from
@@ -2929,10 +2932,11 @@ processing thread, the registered command method is invoked.
 
 This dispatch and invocation functionality is used within Equalizer to dispatch
 commands from the receiver thread to the appropriate node or pipe thread, and
-then to call a specific method when it is processed by these threads. This
-dispatching provides object-oriented semantics, since C++ instances can
-register themselves on the dispatcher, and get automatically invoked in the
-correct thread when an appropriate command arrives.
+then to call a specific method when it is processed by these threads. All
+Equalizer task methods available to the application are triggered by this
+mechanism. This dispatch provides object-oriented semantics, since C++
+instances can register themselves on the dispatcher, and get automatically
+invoked in the correct thread when an appropriate command arrives.
 
 \subsection{Nodes}
 
@@ -2955,6 +2959,9 @@ also be done by connecting the remote node to the local node by using its
 {\em NodeID}. This will cause Collage to query connection information for
 this node from the already connected nodes and zeroconf, instantiating the node
 and connecting it. Both operations may fail.
+
+Each Equalizer entity has a {\em LocalNode} for communication, and one {\em
+Node} instance for each peer it communicates with.
 
 \subsubsection{\label{sZeroconf}Zeroconf Discovery}
 
@@ -3178,14 +3185,13 @@ conditions of the master instance.
 
 \subsection{Serialisable}
 
-\label{sec:Serializable}The {\em Collage} Serialisable implements one
-convenient usage pattern for object data distribution which emerged during
-deployment of Equalizer in applications. The {\em co::Serialisable} data
-distribution is based on the concept of dirty bits, allowing inheritance with
-data distribution. Dirty bits form a 64-bit mask which marks the parts of the
-object to be distributed during the next commit. Setters of the class mark the
-appropriate dirty bit, and the accumulated bits are used to compute deltas
-during commit.
+\label{sec:Serializable}The {\em Serializable} implements one convenient usage
+pattern for object data distribution which emerged during deployment of
+Equalizer in applications. The {\em Serializable} data distribution is based on
+the concept of dirty bits, allowing inheritance with data distribution. Dirty
+bits are a 64-bit mask tracking the parts of the object to be distributed
+during the next commit. Setters of the class mark the appropriate dirty bit,
+and the accumulated bits are used to compute deltas during commit.
 
 For serialization, the application developer implements {\em serialize} or
 {\em deserialise}, which are called with the bit mask specifying which data
@@ -3237,7 +3243,8 @@ data is difficult to compress with a generic lossless compressor, due to the
 floating point format used for the vertices. A data-specific compressor aware
 of the data semantics can provide much better results. Volume data on the other
 hand has shown to be well compressible, with typical $2:1$ compression ratios
-at interactive speeds.
+at interactive speeds. \sref{sObjectBench} discusses how these compressors
+accelerate data distribution in Equalizer applications.
 
 \subsubsection{Chunking}
 
@@ -3252,10 +3259,10 @@ commit data.
 Caching retains instance data of objects in a client-side cache, and reuses
 this data to accelerate mapping of objects. The instance cache is either filled
 by ``snooping'' on multicast transmissions or by an explicit preloading when
-the master objects are registered. The preloading sends instance data of
-recently registered master objects to all connected nodes during idle time of
-the corresponding node. These nodes simply enter the received data to their
-cache. Preloading uses multicast when available.
+master objects are registered. Preloading sends instance data of recently
+registered master objects to all connected nodes during idle time of the
+corresponding node. These nodes simply enter the received data to their cache.
+Preloading uses multicast when available.
 
 \subsubsection{Multicast}
 
@@ -3265,7 +3272,7 @@ multicast session, and more than one slave instance is mapped, {\em Collage}
 automatically uses the multicast connection to send the new version
 information.
 
-\subsection{Benchmarks}
+\subsection{Benchmarks}\label{sObjectBench}
 
 \bench{rMapping} analyses the performance of data distribution and
 synchronisation in real-world applications. We extracted the data distribution
@@ -3277,6 +3284,14 @@ measurement jitter due to other services running on the shared cluster during
 benchmarking. The details of the benchmark algorithm can be found in
 \cite{ESP:18}.
 
+\begin{benchmark}[h!t]\center
+\includegraphics[height=.245\textwidth]{images/benchmark_eqPly2}\hfil
+\includegraphics[height=.245\textwidth]{images/spikes512}\hfil
+\includegraphics[height=.245\textwidth]{images/beechnut}\vspace{1em}\\
+  \includegraphics[width=\textwidth]{results/mapping}
+  \caption{\label{rMapping}Object Mapping and Synchronisation}
+\end{benchmark}
+
 We used three different data sets, and ran the benchmark on up to eight
 physical nodes, that is, after eight processes nodes start to run two processes
 per node, which share CPU, memory and network interface bandwidth. Object
@@ -3285,14 +3300,6 @@ raw, uncompressed, and unbuffered data, {\em compression} uses the Snappy
 compressor to compress and distribute unbuffered data, {\em buffered} reuses
 uncompressed, serialised data for mappings from multiple nodes, and
 {\em compression buffered} reuses the compressed buffer for multiple nodes.
-
-\begin{benchmark}[t]\center
-\includegraphics[height=.245\textwidth]{images/benchmark_eqPly2}\hfil
-\includegraphics[height=.245\textwidth]{images/spikes512}\hfil
-\includegraphics[height=.245\textwidth]{images/beechnut}\vspace{1em}\\
-  \includegraphics[width=\textwidth]{results/mapping}
-  \caption{\label{rMapping}Object Mapping and Synchronisation}
-\end{benchmark}
 
 Unbuffered operations need to reserialise, and potentially recompress, the
 master object data for each slave node. Each slave instance needs to
@@ -3304,8 +3311,8 @@ only have to be serialised and compressed once, and can then be sent directly
 to all mapped slave nodes. Slave nodes queue this data and consume it during
 synchronisation. In contrast, object mapping needs to wait for each slave node
 to request the mapping, and then may need to reserialise and compress the
-object data. We test the time to commit and sync the data using different
-compression engines discussed under optimisations below.
+object data. We test the time to commit and sync the data using the compression
+engines discussed above.
 
 The David statue at 2 mm resolution is organised in a k-d tree for rendering.
 Each k-d tree node is a separate distributed object, which has two child node
