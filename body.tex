@@ -1893,8 +1893,8 @@ previous chapter, are dependent on the application rendering code, compositing
 is largely a generic problem and can be implemented and optimised in a parallel
 rendering framework. Consequently, this area of parallel rendering research has
 received significant attention. By integrating many state-of-the art
-optimizations into our parallel rendering framework we provide a generic
-solution which scales well on modern visualisation cluster architectures.
+optimisations into our parallel rendering framework, we provide a generic
+solution that scales well on modern visualisation cluster architectures.
 
 We present new insight into the behaviour of known sort-last parallel
 compositing algorithms on mid-size visualisation clusters (compared to high-end
@@ -1902,7 +1902,7 @@ HPC systems), the importance of streaming sort-last compositing and spatial
 sort-last polygonal rendering, the impact of state of the art optimisations
 such as region of interest and asynchronous compositing, as well as image
 compression algorithms for high-speed interconnects. This chapter addresses the
-research question on what new algorithms will decrease the time needed to
+research question which new algorithms will decrease the time needed to
 composite rendering results, in particular for sort-last rendering.
 
 \section{Parallel Compositing\label{sparcomp}}
@@ -1915,26 +1915,26 @@ result of other resources on a per-pixel level. This compositing step reduces
 the amount of information, either through depth-sorting or blending multiple
 input fragments into a single pixel. This loss of information in the
 compositing step can be exploited by distributing the work over multiple
-resources and then collecting the reduced image tiles, commonly called parallel
+resources, and then collecting the reduced image tiles, commonly called parallel
 compositing.
 
 \subsection{Spatial and Depth-Sorted Sort-Last Compositing}
 
-For sort-last rendering, there are two approaches to combine the partial
-results: $z$-sorting using the depth buffer, and spatial rendering
+For sort-last rendering, two approaches to combine the partial
+results exist: $z$-sorting using the depth buffer, and spatial rendering
 decomposition with ordered compositing.
 
-The first algorithm uses both the colour and depth buffer, and assigns the final
-pixel to the colour of the source with the front-most depth buffer values. It
-requires no spatial ordering of the data during rendering. It does not
-correctly composite pixels with transparent geometry, since no guarantee of the
-blending order can be made. Due to the use of the depth buffer, it is also more
-expensive since more pixel data needs to be processed. Furthermore, depth
-buffer readback tends to be slower, and compression algorithms for depth buffer
-data tend not to perform as well as colour buffer compression. Depth-sorted
-compositing is often used for polygonal data, as shown in \fig{fDepth} since
-these applications often do not sort their geometry into convex spatial
-regions.
+The first algorithm uses both the colour and depth buffer, and assigns the
+final pixel to the colour of the source with the front-most depth buffer
+values. It requires no spatial ordering of the data during rendering. It does
+not correctly composite pixels with transparent geometry, since there is no
+guarantee of the blending order. Owing to the use of the depth buffer, it is
+also more expensive, since more pixel data needs to be processed. Furthermore,
+depth buffer readback tends to be slower, and compression algorithms for depth
+buffer data do not to perform as well as colour buffer compression.
+Depth-sorted compositing is often used for polygonal data, as shown in
+\fig{fDepth}, since these applications often do not sort their geometry into
+convex spatial regions.
 
 \begin{figure}[h!t]\center
   \subfigure[]{
@@ -1948,25 +1948,21 @@ regions.
   \caption{Depth-Sorted and Back-to-Front Sort-Last Compositing}
 \end{figure}
 
-Spatial compositing is often used for direct volume rendering, and requires the
-application to render convex regions of data on each source, and then depth-sort
-the partial images produced by each source. The partial images are composited in
-order, typically with alpha-blending. Since the sorting happens at the image
-level, rather then the fragment level as in the first algorithm, it can operate
-using only the colour buffer, as shown in \fig{fSorted}.
+Spatial compositing is often used for direct volume rendering and requires the
+application to render convex regions of data on each source, and then
+depth-sort the partial images produced by each source. The partial images are
+composited in order, typically with alpha-blending. Since the sorting happens
+at the image level, rather then the fragment level as in the first algorithm,
+it can operate using only the colour buffer, as shown in \fig{fSorted}. This
+algorithm can produce correct transparency, since the convex regions allow
+ordered blending.
 
-This algorithm produces correct transparency, unless multi-sampling is used
-during rendering. Multi-sampling also incurs a loss of information, where
-multiple samples are collapsed into a single pixel. Pixels where samples are
-generated from different geometries are problematic, since the averaging
-operations blends them with incomplete information during sort-last rendering.
-
-Spatial compositing provides better performance, and provides better
-scalability for other optimisations such as region of interest and load
-balancing due to compact regions produced by the spatial sorting. Normally used
-for volume rendering, we have applied spatial sort-last rendering and
-compositing to polygonal data, by sorting the data spatially and using clipping
-planes to generate perfectly convex rendering subsets.
+Spatial compositing provides better performance, and better scalability when
+used with other optimisations, such as region of interest and load balancing
+due to compact regions produced by the spatial sorting. Typically used for
+volume rendering, we have applied spatial sort-last rendering and compositing
+to polygonal data, by sorting the data spatially and using clipping planes to
+generate perfectly convex rendering subsets.
 
 \begin{wrapfloat}{benchmark}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{results/dbSpatial}
@@ -1975,9 +1971,9 @@ planes to generate perfectly convex rendering subsets.
 
 \bench{rDBSpatial} shows the difference between spatial and depth-sorted
 sort-last rendering in RTNeuron (\sref{sRTNeuron}). Due to complexities in the
-application data model, and the disadvantageous geometrical structure of
-neurons, the spatial rendering in RTNeuron scales less well then the
-round-robin allocation used for the depth-sorted mode. Still, due to the
+application data model and the disadvantageous geometrical structure of
+neurons, the spatial rendering in RTNeuron scales less than the
+round-robin allocation used for the depth-sorted mode. Still, owing to the
 significantly reduced compositing load of this mode, both due to a smaller
 region of interest and no depth buffer transfers, spatial sort-last rendering
 has a significantly better framerate. The exact experiment setup can be found
@@ -1986,20 +1982,20 @@ in \cite{EBAHMP:12}.
 \subsection{Direct Send and Binary Swap}
 
 Contrary to most other implementations, parallel compositing algorithms in
-Equalizer are not hardcoded, but rather configured explicitly in the
-configuration. The transport of pixel data for compositing is expressed through
+Equalizer are not hardcoded, but rather configured explicitly. The transport
+of pixel data for compositing is expressed through
 connected output and input frames. Output and input frames are connected by
 name; they do not need to follow the compound hierarchy, and a single output
 frame may be consumed by multiple input frames. Output frame parameters
 configure a subset of the rendering (viewport and framebuffer attachments), and
-are read back after rendering and assembly. Besides this, every step of the
+are read back after rendering and assembly. Furthermore, every step of the
 compositing pipeline is implemented in Equalizer and transparent for the
 application developer. Some steps may be replaced with application code, for
-example to order frames during compositing.
+example ordering frames during compositing.
 
 Two commonly used parallel compositing algorithms are direct send and binary
 swap. Both distribute the compositing task equally over all available
-resources, and then collect the composited tiles on the destination channel.
+resources, then collect the composited tiles on the destination channel.
 
 Direct send, shown in \fig{fDirectSend}, uses one assemble operation on each
 resource to fully composite a single tile. Binary swap, shown in \fig{fBS},
@@ -2018,20 +2014,20 @@ compositions between groups of two or three nodes in the compositing tree.
 In \cite{EP:07} we have shown that on commodity clusters, direct send
 compositing provides better performance over binary swap commonly used on HPC
 systems. While it uses more messages in total, direct send has fewer
-synchronisation points than binary swap. Furthermore, due to the early assembly
-optimisation (\sref{sEarlyAss}), direct send can handle imbalances between
-nodes better since a late channel has a smaller penalty for the overall
+synchronisation points than binary swap. Moreover, as a result of the early
+assembly optimisation (\sref{sEarlyAss}), direct send can handle imbalances
+between nodes better, since a late channel has a smaller penalty on the overall
 execution time.
 
 \subsection{Streaming Sort-Last Compositing}
 
-Due to the asynchronous architecture of our framework, streaming sort-last
+As a result of the asynchronous architecture of our framework, streaming sort-last
 compositing is a viable alternative to more involved parallel compositing
 algorithms in smaller sort-last configurations.
 
 \fig{fDBStream} shows a streaming sort-last compound. The output of one source
 channel is copied to the next channel in the chain, which then composites it on
-top of his own rendering, and streams the combined frame on to the next source.
+top of its own rendering, streaming the combined frame on to the next source.
 At the end of the chain, the destination channel completes the input frame by
 compositing it with his rendering.
 
@@ -2046,7 +2042,7 @@ compositing it with his rendering.
 
 Equalizer only synchronises the input to the output frames, therefore this
 configuration creates a pipelined configuration, where the compositing
-operations form the ``critical path'', that is, each channel has his draw pass
+operations form the ``critical path''. Each channel has its draw pass
 delayed by the time taken by all preceding compositing operations, as shown
 schematically in \fig{fDBStreamFlow}. This pipelining emerges naturally due to
 the synchronisation points introduced by the compositing configuration.
@@ -2054,20 +2050,20 @@ the synchronisation points introduced by the compositing configuration.
 The total system latency for sort-last stream compounds is $t_{draw} + (n -
 1)\times (t_{readback} + t_{assemble})$. Note that the readback and assemble
 times are usually an order of magnitude smaller than the render time, which
-makes this compound attractive for small-to-medium sized decompositions since
+makes this compound attractive for small-to-medium sized decompositions, since
 it has minimal compositing overhead and less synchronization compared to
 parallel compositing algorithms.
 
 \section{Region of Interest}
 
-During scalable rendering, pixel data has to be copied from the source channel
+During scalable rendering pixel data has to be copied from the source channel
 framebuffer to either the destination channel framebuffer, or to an
 intermediate channel during parallel compositing. The associated distributed
 image compositing cost is directly dependent on how much data has to be sent
 over the network, which in turn is related to how much screen space is actively
 covered. For sort-last rendering every node potentially renders into the entire
 frame buffer, resulting in a linear increase in the amount of pixels composited
-for increasing number of nodes. However, depending on the data set and
+for an increasing number of nodes. Depending on the data set and
 viewpoint, only a subset of the framebuffer shows pixels generated from the
 data. With an increasing number of nodes, the set of affected pixels typically
 decreases, leaving blank areas that can be omitted for transmission and
@@ -2075,25 +2071,25 @@ compositing.
 
 Equalizer provides an API for the programmer to provide the region of interest
 (ROI). The ROI is the screen-space 2D bounding box fully enclosing the data
-rendered by a single resource, which can be easily computed by computing the
+rendered by a single resource, which can be easily computed by calculating the
 screen-space projection of the model's bounding volume. We have extended the
 core parallel rendering framework to use this application-provided ROI to
-optimise the {\em load\_equalizer} and {\em tree\_equalizer} as well as the image compositing.
+optimise the {\em load\_equalizer} and {\em tree\_equalizer}, as well as image compositing.
 
 \fig{fDBStream} outlines the region of interest of each source. The compositing
 code uses the ROI to minimise image readback size, and consequently network
 transmission. The ROI is an output frame parameter, and is transmitted to all
 input frames together with the pixel data. On the input frame, the compositing
-code respects this parameter to place the pixel data on the right position.
-Furthermore, the ROI of the rendering pass is automatically merged with the ROI
+code respects this parameter to place the pixel data in the right position.
+Further, the ROI of the rendering pass is automatically merged with the ROI
 of the composited frames for readback. The usage of ROI for load balancing is
 described in \sref{sLoadEqualizer}.
 
 Applying ROI for sort-first rendering provides a small improvement for the
 rendering performance, as shown in \bench{rROI}(a) from \cite{EBAHMP:12}. As the
 number of resources increases, the ROI becomes more important since the
-relative amount of time spent in compositing increases as the rendering load
-decreases. With ROI enabled we observed performance improvements between
+relative amount of time spent in compositing increases with the rendering load
+decreasing. With ROI enabled we observed performance improvements between
 5-20\%, reaching 60~Hz when using 33 GPUs. Without ROI, the framerate peaked at
 less than 50~Hz when using 27 GPUs.
 
@@ -2103,15 +2099,16 @@ less than 50~Hz when using 27 GPUs.
  {\caption{\label{rROI}Region of Interest for Sort-First and Sort-Last Rendering}}
 \end{benchmark}
 
-For sort-last rendering performance, ROI is crucial. In our experiments in
-\cite{EBAHMP:12}, we used a polygonal renderer which uses relatively compact
+ROI is crucial for sort-last rendering performance. In our experiments in
+\cite{EBAHMP:12}, we used a polygonal renderer creating relatively compact
 regions during sort-last decomposition, while still using depth-sorted
-compositing. This is a relatively common use case for sort-last rendering. In
-this mode, we can observe significant speedups with ROI (up to 4x), as shown in
-\bench{rROI}(b). In \cite{MEP:10}, this application-provided ROI was extended
-with an algorithm which automatically computes the ROI by analysing the
-framebuffer. This algorithm has the advantage of simplifying the application
-developers' life, and can also easily detect holes in the rendered framebuffer.
+compositing (cf. \fig{fDBStream}). This is a relatively common use case for
+sort-last rendering. In this mode, we can observe significant speedups with ROI
+(up to 4x), as shown in \bench{rROI}(b). In \cite{MEP:10} this
+application-provided ROI was extended by an algorithm which automatically
+computes the ROI by analysing the framebuffer. This algorithm has the advantage
+of simplifying the application developers' life, and can also conveniently
+detect holes in the rendered framebuffer.
 
 
 \section{Asynchronous Compositing}
@@ -2129,9 +2126,9 @@ framebuffer.
  {\caption{\label{fSyncRB}Synchronous Readback and Upload}}
 \end{wrapfloat}
 
-In a naive implementation, operations 1 to 3 are executed serially on one
-core, and 4 to 7 on another. In our parallel rendering system, operations 2
-to 5 are executed asynchronously to the rendering and operations 1, 6 and 7.
+In a naive implementation operations 1 to 3 are executed serially on one
+core, 4 to 7 on another. In our parallel rendering system, operations 2
+to 5 are executed asynchronously to the rendering operations 1, 6 and 7.
 Furthermore, we use a latency of one frame which means that two rendering frames
 are always in execution, allowing the pipelining of these operations, as shown
 in \fig{fSyncRB}. We have implemented asynchronous readback using OpenGL pixel
@@ -2141,11 +2138,11 @@ and pixel transfers, as shown in \fig{fAsyncRB}.
 In the asynchronous case, the rendering thread performs only
 application-specific rendering operations, since the overhead of starting an
 asynchronous readback becomes negligible. Equalizer uses a plugin system to
-implement GPU-CPU transfer modules which are runtime loadable. We extended this
+implement GPU-CPU transfer modules that are runtime loadable. We extended this
 plugin API to allow the creation of asynchronous transfer plugins, and
 implemented such a plugin using OpenGL pixel buffer objects (PBO). At runtime,
-one rendering thread and one download thread is used for each GPU, as well as
-one transmit thread per process. The download threads are created lazy, when
+one rendering thread and one download thread are used for each GPU, as well as
+one transmit thread per process. The download threads are created lazy when
 needed.
 
 \begin{wrapfloat}{benchmark}{O}{.618\textwidth}
@@ -2154,11 +2151,11 @@ needed.
 \end{wrapfloat}
 
 Asynchronous compositing is, together with region of interest, one of the most
-influential optimisations for scaling rendering to larger cluster sizes. For
+influential optimisations for scaling rendering to large cluster sizes. For
 sort-first rendering, shown in \bench{rAsync} from \cite{EBAHMP:12}, pipelining
-the readback with the rendering yields a performance again of about 10\%. At
+the readback with the rendering yields a performance gain of about 10\%. At
 higher frame rates, when the rendering time of a single resource decreases,
-asynchronous readback has even a higher impact of over 25\%.
+asynchronous readback has an even higher impact of over 25\%.
 
 \begin{figure}[t]\center
   \includegraphics[scale=0.6]{images/asyncReadback}
@@ -2169,21 +2166,21 @@ asynchronous readback has even a higher impact of over 25\%.
 \section{Compression for Image Compositing}
 
 The image compositing stages in distributed rendering are fundamentally limited
-by the GPU-to-node and node-to-node image throughput. Therefore, efficient
+by the GPU-to-node and node-to-node image data throughput. Efficient
 image coding, compression and transmission must be considered to minimise that
 bottleneck.
 
 Basic run-length encoding (RLE) has been used as a fast algorithm to improve
 network throughput for interactive image transmission. However, it only gives
 sufficient results in specific rendering contexts and fails to provide a
-general improvement as shown in \cite{MEP:10}. RLE only works to compact large
-empty or uniform colour areas but is often useless for non-trivial full frame
+general improvement as shown in \cite{MEP:10}. RLE only works in compacting large
+empty or uniform colour areas, but is often useless for non-trivial full frame
 colour results. We developed two enhancements to improve RLE: per-component RLE
 compression and reordering of colour bits. These preconditioning steps exploit
 typical characteristics of image data for run-length encoding.
 
 Equalizer also integrates more complex compression algorithms such as {\em
-lib-jpeg-turbo}, which are however of little practical use on modern cluster
+lib-jpeg-turbo}, which are of little practical use on modern cluster
 interconnects. Their compression overhead is often too high to be amortised by
 the decreased network transmission time on 10 GBit/s or faster interconnects.
 For remote image streaming, as discussed in \sref{sTIDE}, they remain a
@@ -2195,12 +2192,12 @@ artefacts, and a good compression ratio.
 
 \subsection{Enhanced RLE Compression}
 
-Run-length encoding (RLE) is a simple compression scheme, which on modern
-architectures is purely constrained by the available memory bandwidth. For image
+Run-length encoding (RLE) is a simple compression scheme and is on modern
+architectures purely constrained by the available memory bandwidth. For image
 compression in visualisation applications, we can exploit some characteristics
 of the data to improve the compression ratio over the standard RLE compression.
 
-Our basic RLE implementation is a fast 64-bit version that compares two pixels
+Our basic RLE implementation is a fast 64-bit version comparing two pixels
 at the same time (8 bit per channel RGBA format). This choice is motivated by
 the fact that modern processors have 64 bit registers, thus using 64 bit tokens
 optimises throughput. While this method is very fast, it shows poor compression
@@ -2216,16 +2213,16 @@ practical scenarios.
 
 The first improvement is to treat each colour component separately by producing
 four independent RLE-compressed output streams as illustrated in \fig{fRLE}.
-This per-component RLE improves the compression rate from 10\% to about 25\%
-since individual colour components change less often than full pixels.
+This per-component RLE improves the compression rate from 10\% to about 25\%,
+as individual colour components change less often than full pixels.
 
 The second improvement is {\em bit-swizzling} of colour values before
 per-component compression. This swizzling step is a data pre-conditioner, which
 reorders and interleaves the per-component bits as shown in \fig{fSwizzle} by
-grouping them by significance of the corresponding bits. Now the per-component
+grouping them by significance. Now the per-component
 RLE compression separately compresses the higher, medium and lower order bits
 in separate streams, thus achieving stronger compression for smoothly changing
-colour values since high-order bits change less often.
+colour values, since high-order bits change less often.
 
 \begin{figure}[h!t]
   \centering
@@ -2235,8 +2232,8 @@ colour values since high-order bits change less often.
 \end{figure}
 
 Swizzling improves the compression rate to up to 40\% for the same scenario as
-above. Since the preconditioning step only requires bit shift and mask
-operations, it is entirely executed in registers and has no measurable
+above. The preconditioning step only requires bit shift and mask
+operations, is entirely executed in registers and has no measurable
 impact on performance, since the whole algorithm is memory bound on modern CPUs.
 
 All RLE compressors perform a data decomposition on the input image, and
@@ -2252,17 +2249,17 @@ multiple memory channels compared to a single-threaded implementation.
 
 \bench{rRLE} summarises the compression results from \cite{MEP:10}. We have
 chosen sort-first rendering, since this highlights the results for the RLE
-compressor which is optimised for colour image data. This benchmark did run a
+compressor which is optimised for colour image data. This benchmark did run on a
 visualisation cluster with Gigabit Ethernet at a resolution of $1280\times
-1024$ pixels. It rendered the David statuette at 1mm resolution, which resulted
+1024$ pixels. It rendered the David statuette at 1mm resolution, resulting
 in a rendering time of about 28 ms on a single GPU. The theoretical maximum
 line shows the upper limit for sort-first compositing with uncompressed image
-data and no rendering time. It decreases since the destination channel
-contributes to the sort-first rendering, and does not require a pixel transfer.
-With an increasing number of remote source channels, its size decreases,
+data and no rendering time. It decreases as the destination channel
+contributes to the sort-first rendering and does not require a pixel transfer.
+With an increasing number of remote source channels its size decreases,
 requiring more pixels to be transferred.
 
-The graph shows how the various incremental improvements add up to significant
+The graph shows how various incremental improvements add up to significant
 performance gains. Even in a relatively difficult scenario with a fast
 rendering time, and, by modern standards, slow network interconnect, we were
 able to more than double the performance to above 60~Hz.
@@ -2277,7 +2274,7 @@ The YUV is compressor is an on-GPU compression plugin which performs a
 color space conversion and lossy chroma subsampling. It can be combined with the
 CPU-based RLE compressor, which then interleaves and compresses the Y, U and V
 channels, resulting in major performance improvements. Both compression steps
-have virtually no computational overhead, and are memory bandwidth bound. Since
+have virtually no computational overhead and are memory bandwidth bound. Since
 the YUV compressor runs on the GPU, it reduces the costly GPU to CPU transfer
 time over the PCI Express link.
 
@@ -2308,7 +2305,7 @@ Early assembly provides better pipelining when the frame assembly order is not
 important, for example for sort-first rendering and sort-last rendering with
 $z$-compositing. Our default compositing code uses a signal on all input
 frames, which is triggered for each input frame arrival. The compositing code
-then picks and composites this image, assembling images early, out of order as
+then picks and composites this image, assembling images early and out of order as
 they become available. This decreases the time to solution, since the assemble
 operation finishes once the last frame arrives, plus the time to assemble this
 last frame. In-order assembly would have a statistical probability of
