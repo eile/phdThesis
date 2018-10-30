@@ -3288,9 +3288,6 @@ benchmarking. The details of the benchmark algorithm can be found in
 \cite{ESP:18}.
 
 \begin{benchmark}[h!t]\center
-\includegraphics[height=.245\textwidth]{images/benchmark_eqPly2}\hfil
-\includegraphics[height=.245\textwidth]{images/spikes512}\hfil
-\includegraphics[height=.245\textwidth]{images/beechnut}\vspace{1em}\\
   \includegraphics[width=\textwidth]{results/mapping}
   \caption{\label{rMapping}Object Mapping and Synchronisation}
 \end{benchmark}
@@ -3488,15 +3485,16 @@ frame.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/bino}
-  {\caption{\label{fBino}Bino Video Player on a Semi-Cylindrical Multi-Projector Wall}}
+  {\caption{\label{fBino}Bino on a Semi-Cylindrical Multi-Projector Wall}}
 \end{wrapfloat}
 
 Bino is a stereoscopic 3D video player capable of running on very large display
 systems. Originally written for the immersive semi-cylindrical projection
-system at the University of Siegen, its flexibility enabled its
-use in many installations. Bino decodes video on each
-rendering thread and only synchronises the time step globally, providing a
-scalable solution to video playback.
+system at the University of Siegen, its flexibility enabled its use in many
+installations. Bino decodes video on each rendering thread and only
+synchronises the time step globally, providing a scalable solution to video
+playback. Bino uses the 2D information from the segment viewports to lay out
+the video tiles for each projector.
 
 \section{Omegalib}
 
