@@ -2751,21 +2751,23 @@ users in DPlex compounds.
 
 \section{Monitoring}
 
-\begin{wrapfloat}{figure}{R}{.618\textwidth}
+The monitor equalizer (\fig{fmonitor}) allows reusing of the rendering from one
+or more channels on another channel, typically for monitoring a larger display
+setup on a control workstation.
+
+\begin{wrapfloat}{figure}{O}{.618\textwidth}
   \includegraphics[width=.618\textwidth]{images/monitoreq}
   \caption{\label{fmonitor}Monitoring}
 \end{wrapfloat}
 
-The monitor equalizer (\fig{fmonitor}) allows reusing of the rendering from one
-or more channels on another channel, typically for monitoring a larger display
-setup on a control workstation. Output frames on the display channels are
-connected to input frames on the monitoring channel. The monitor equalizer
-changes the scaling factor and offset between the output and input, so that the
-monitor channel has the same, but typically downscaled view, as the originating
-segments. While this is not strictly a scalable rendering feature, it optimises
-resource usage by not needlessly rendering the same view multiple times. It
-reuses the zoom parameter of compositing frames, and adapts this every time one
-of the channels is resized.
+Output frames on the display channels are connected to input frames on the
+monitoring channel. The monitor equalizer changes the scaling factor and offset
+between the output and input, so that the monitor channel has the same, but
+typically downscaled view, as the originating segments. While this is not
+strictly a scalable rendering feature, it optimises resource usage by not
+needlessly rendering the same view multiple times. It reuses the zoom parameter
+of compositing frames, and adapts this every time one of the channels is
+resized.
 
 
 \chapter{Data Distribution and Synchronisation}\label{sCollage}
