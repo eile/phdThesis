@@ -2320,7 +2320,7 @@ constraints make the arrival not fully random or network-constrained).
 
 \section{Overview}
 
-Load balancing is resource assignment per source channel based on
+Load balancing performs resource assignment per source channel based on
 workload, with the goal of equalising resource utilisation. Static load
 balancing, shown in \fig{floadbalancing} top, performs this assignment once
 during initialisation. Dynamic load balancing can either be reactive or
@@ -2342,7 +2342,7 @@ an addition to compound trees. They modify parameters of their respective
 compound subtree at runtime to dynamically optimise the resource usage, by
 tuning one aspect of the decomposition or recomposition. Due to their nature,
 they are transparent to application developers, but might have
-application-accessible parameters to tune their behaviour with. Resource
+application-accessible parameters to tune their behaviour. Resource
 equalisation is the critical component for scalable rendering, and therefore
 the eponym for the {\em Equalizer} project name.
 
@@ -2397,7 +2397,7 @@ level.
 
 The load balancer has to operate on the assumption that the load is uniform
 within one load grid tile. Naturally this leads to estimation errors, since in
-reality the load is not uniformly distributed, e.g., it tends to increase
+reality the load is not uniformly distributed, it tends to increase
 towards the centre of the screen in \fig{fROI}. We reuse the Region of Interest
 (ROI) from compositing of each source channel to automatically refine the load
 grid as shown in \fig{fROI}, top. In cases where the rendered data projects only
@@ -2428,7 +2428,7 @@ defining how much of the computed delta from the previous position is applied to
 the new split.
 
 \item[Resistance] eliminates small deltas in the load balancing step, i.e., it
-only changes the viewport or range, if the change is over the configured limit.
+only changes the viewport or range if the change is over the configured limit.
 This can help the application to cache visibility computations, since the
 frustum does not change with each frame.
 
@@ -2442,7 +2442,7 @@ corresponding boundary.
 \item[Usage] is a per-child normalised resource utilisation coefficient. The
 equalizer will assign proportional work to this resource, and deactivate it if
 the usage is 0. This parameter is primarily used by the cross-segment load
-balancer to reassign resources between destination channels. Can also be
+balancer to reassign resources between destination channels. It can also be
 used to configure heterogeneous GPU resources more efficiently.
 
 \end{compactdesc}
@@ -2479,11 +2479,11 @@ server whenever the amount of available packages sinks below a threshold.
 In~\cite{SPEP:16} this basic, random task assignment was extended with
 client-affinity models.
 
-Depending on the sort-first or sort-last decomposition mode, a {\em
-tile\_equalizer} or {\em chunk\_equalizer} generates tiles or database ranges
-of a configurable size, and enqueues them at the beginning of each frame. This
-equalizer is the central component of the tile and chunk compounds, introduced
-in \sref{sTile}.
+At the beginning of each frame, the server generates tiles or database ranges
+of a configurable size for each compound with an output queue. Compounds with
+an input queue matching the name of the output queue generate a special draw
+task, which causes the render client to set up its input queue, and to call
+{\em frameDraw} and {\em frameReadback} for each received work package.
 
 
 \subsection{Benchmarks}
@@ -2538,9 +2538,9 @@ load equalizer in this experiment.
 The {\em tile\_equalizer} often outperforms the {\em tree\_equalizer}. This
 suggests that the underlying implicit load balancing of task queues can be
 superior to the explicit methods of {\em load\_equalizer} and
-{\em tree\_equalizer} in high load situations. where the additional overhead
+{\em tree\_equalizer} in high load situations, where the additional overhead
 of tile generation and distribution is more justified. The relatively simple
-nature of our benchmark applications' rendering algorithm is also favouring
+nature of our rendering algorithms is also favouring
 work packages, since they have a near-zero static overhead per rendering pass.
 \cite{SPEP:16} contains additional experiments.
 
@@ -2548,7 +2548,7 @@ work packages, since they have a near-zero static overhead per rendering pass.
 
 A serious challenge for all distributed rendering systems driving large
 multi-display installations is dealing with the varying rendering load per
-display, therefore the graphics load on its driving GPUs. Cross-segment load
+display, and therefore the graphics load on its driving GPUs. Cross-segment load
 balancing (CSLB) is a novel dynamic load balancing approach to dynamically
 allocate $n$ rendering resources to $m$ output channels (with $n\geq m$), as
 shown in \fig{fvieweq}.
@@ -2636,7 +2636,7 @@ the source channels {\em Source1} and {\em Source2}. Each source channel GPU
 can contribute to the rendering of the other destination channel segment. For
 each destination channel, a set of potential resources are allocated. A
 top-level {\em view\_equalizer} assigns the usage to each resource, based on
-which per-segment {\em load\_equalizer} computes the 2D split to balance the
+which per-segment {\em load\_equalizer}s compute the 2D split to balance the
 assigned resources within the display. The left segment of the display has a
 higher workload, so, both {\em Source1} and {\em Source2} are used to render
 for {\em Channel1}, whereas {\em Channel2} uses only {\em Source2} to render
@@ -2654,7 +2654,7 @@ responsible for the partitioning of the rendering task of each segment among
 its child compounds. They use the precomputed usage of each child to allocate a
 corresponding amount of work for the child. Therefore, each destination channel
 of a display segment has its source channel leaf nodes sharing the actual
-rendering load. One physical GPU) being assigned to a source channel can be
+rendering load. One physical GPU assigned to a source channel can be
 referenced in multiple leaf nodes, and thus contribute to different displays.
 
 For performance reasons the view equalizer assigns each resource to at most two
@@ -2672,7 +2672,7 @@ scalable rendering for optimal performance.
   \caption{\label{rCSLBFPS}Cross-Segment Load Balancing}
 \end{wrapfloat}
 
-\cite{EEP:11} provide experimental results for a six-monitor tiled display wall,
+\cite{EEP:11} provides experimental results for a six-monitor tiled display wall,
 driven by twelve GPUs. \bench{rCSLBFPS} shows an overview for the achievable
 performance improvements. The first two configurations use a static assignment
 of two GPUs to one output channel, where the first one statically assigns one
@@ -2703,12 +2703,12 @@ positioned evenly over all outputs, CSLB outperforms the fixed assignment.
 \end{benchmark}
 
 A strength of this algorithm lies in its flexibility. On one hand, it can
-perform dynamic resource assignment not only for a planar display system ,as
-some approaches which built a single virtual framebuffer for all output
-displays, but also for curved displays and CAVE installations. On the other
-hand, it allows a flexible assignment of potential contributing GPUs to each
-output channel individually. Each output may have a different,
-potentially overlapping, set of GPUs which may contribute to its rendering.
+perform dynamic resource assignment not only for a planar display system, as
+some approaches which built a single virtual framebuffer, but also for curved
+displays and CAVE installations. On the other hand, it allows a flexible
+assignment of potential contributing GPUs to each output channel individually.
+Each output may have a different, potentially overlapping, set of GPUs which
+may contribute to its rendering.
 
 \section{Dynamic Frame Resolution}
 
@@ -3442,10 +3442,10 @@ delta at the beginning of the next frame. Multicast is used to keep data
 distribution times during session launch reasonable for larger cluster sizes
 (tens to hundreds of nodes).
 
-RTT Scale is applied? for a wide variety of use cases. In virtual reality, the
+RTT Scale supports a wide variety of use cases. In virtual reality, the
 application is used for virtual prototyping and design reviews in front of
 high-resolution display walls and CAVEs. It is also used for virtual prototyping of
-human-machine interactions in? CAVEs and HMDs. For scalability, sort-first and
+human-machine interactions in CAVEs and HMDs. For scalability, sort-first and
 tile compounds are used to achieve fast, high-quality rendering, primarily for
 interactive raytracing, both based on CPUs and GPUs. For CPU-based raytracing,
 often Linux-based rendering clients are used with a Windows-based application
@@ -3463,7 +3463,7 @@ visualisation of neuronal simulations based on cable models. It uses
 OpenSceneGraph for data management and Equalizer for parallel rendering.
 The focus is not only on fast rendering times, but also on fast loading times with no
 offline preprocessing. It provides level of detail (LOD) rendering, high quality
-anti-aliasing based on jittered frusta,? accumulation during still views, and
+anti-aliasing based on jittered frusta, accumulation during still views, and
 interactive modification of the visual representation of neurons on a per-neuron
 basis (full neuron vs. soma only, branch pruning depending on the branch level,
 \dots). RTNeuron implements both sort-first and sort-last rendering with order
@@ -3497,7 +3497,7 @@ frame.
 
 Bino is a stereoscopic 3D video player capable of running on very large display
 systems. Originally written for the immersive semi-cylindrical projection
-system at the University of Siegen, its flexibility of configuration enabled? its
+system at the University of Siegen, its flexibility enabled its
 use in many installations. Bino decodes video on each
 rendering thread and only synchronises the time step globally, providing a
 scalable solution to video playback.
@@ -3511,7 +3511,7 @@ scalable solution to video playback.
 
 Omegalib \cite{Omegalib} is a software framework built on top of Equalizer that
 facilitates application development for hybrid reality environments, like the
-Cave 2. Hybrid reality environments aim to create a seamless 2D/3D environment
+Cave~2. Hybrid reality environments aim to create a seamless 2D/3D environment
 supporting both information-rich analysis (traditionally done on tiled
 display wall), as well as virtual reality simulation exploration (traditionally
 done in VR systems) at a resolution matching human visual acuity. Omegalib
