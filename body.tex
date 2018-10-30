@@ -1061,7 +1061,7 @@ head-tracked.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/layout.png}
- {\caption{\label{fLayout}Layout with four Views}}
+ {\caption{\label{fLayout}Layout with four Views}}\vspace{-0.5ex}
 \end{wrapfloat}
 
 \fig{fLayout} shows an example layout using four views on a single segment.
@@ -1235,11 +1235,6 @@ with the physical display surface. For better viewing comfort, we introduce a
 new dynamic focus mode, where the application defines the distance of the focal
 plane from the observer, based on the current \textit{lookat} distance.
 
-\begin{figure}[h!t]\center
- \includegraphics[width=.9\textwidth]{images/focus}
- {\caption{\label{fFocus}Dynamic Focus in a Cave}}
-\end{figure}
-
 \fig{fFocus} illustrates this feature in a top-down view of a Cave. The
 observed teapot is significantly behind the front projection wall in the
 virtual world. In a standard implementation (left side), the focal plane
@@ -1248,6 +1243,11 @@ configures a focus distance to coincide with the observed teapot (right side).
 The dotted line shows the focal plane for both projection walls. Initial
 experiments show that this provides better viewing comfort, in particular for
 objects placed in front of the physical displays.
+
+\begin{figure}[h!t]\center
+ \includegraphics[width=\textwidth]{images/focus}
+ {\caption{\label{fFocus}Dynamic Focus in a Cave}}
+\end{figure}
 
 \subsection{Asymmetric Eye Position}
 
@@ -1607,7 +1607,6 @@ we present other variants of sort-first rendering, each tailored to a certain
 use case.
 
 \subsection{Stereo}
-
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
  \includegraphics[width=.618\textwidth]{images/Stereo}
@@ -3236,7 +3235,7 @@ network transmission time due data reduction.
 
 \begin{benchmark}[h!t]\center
   \includegraphics[width=\textwidth]{results/compressorDetail}
-  \caption{\label{rCompressorDetail}Compression Performance for Binary Data, the PLY Data and Raw Volumes used in \bench{rMapping}}
+  \caption{\label{rCompressorDetail}Compression Performance for Binary Data and the Object Data used in \bench{rMapping}}
 \end{benchmark}
 
 On current CPUs (the benchmark was executed on a 12-core node), modern
