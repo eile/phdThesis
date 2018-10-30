@@ -2393,10 +2393,10 @@ level.
 
 The load balancer has to operate on the assumption that the load is uniform
 within one load grid tile. Naturally this leads to estimation errors, since in
-reality the load is not uniformly distributed, it tends to increase
-towards the centre of the screen in \fig{fROI}. We reuse the Region of Interest
-(ROI) from compositing of each source channel to automatically refine the load
-grid as shown in \fig{fROI}, top. In cases where the rendered data projects only
+reality the load is not uniformly distributed, it tends to increase towards the
+centre of the screen in \fig{fROI}. We reuse the Region of Interest (ROI) from
+compositing of each source channel to automatically refine the load grid as
+shown in \fig{fROI}, top left. In cases where the rendered data projects only
 to a limited screen area, this ROI refinement provides the load balancer with a
 more accurate load estimation, leading to a better load prediction during the
 balancing step.
@@ -2640,18 +2640,18 @@ the image for the right segment. The schematic also shows the current usage of
 the four potential source compounds, where only three have an active draw pass
 at this point in time.
 
-CSLB uses a two-stage approach, where a {\em view\_equalizer} at the top level of the
-compound hierarchy handles the resource assignment. Each child of this root
-compound has one destination (segment) channel, corresponding to one of the $m$
-display segments, using a {\em load\_equalizer} or {\em tree\_equalizer}.
-The {\em view\_equalizer} supervises the different destination channels of a
-multi-display setup; the {\em load\_equalizer}s on the other hand are
+CSLB uses a two-stage approach, where a {\em view\_equalizer} at the top level
+of the compound hierarchy handles the resource assignment. Each child of this
+root compound has one destination (segment) channel, corresponding to one of
+the $m$ display segments, using a {\em load\_equalizer} or {\em
+tree\_equalizer}. The view equalizer supervises the different destination
+channels of a multi-display setup; the load equalizers on the other hand are
 responsible for the partitioning of the rendering task of each segment among
 its child compounds. They use the precomputed usage of each child to allocate a
 corresponding amount of work for the child. Therefore, each destination channel
 of a display segment has its source channel leaf nodes sharing the actual
-rendering load. One physical GPU assigned to a source channel can be
-referenced in multiple leaf nodes, and thus contribute to different displays.
+rendering load. One physical GPU assigned to a source channel can be referenced
+in multiple leaf nodes, and thus contribute to different displays.
 
 For performance reasons the view equalizer assigns each resource to at most two
 rendering tasks, e.g., to update itself and to contribute to another display.
