@@ -572,14 +572,14 @@ and send to the output.
 The architecture of our parallel rendering framework addresses the following research questions:
 \begin{compactitem}
   \item How can we reduce end-to-end system latency for better user experience?
-  \item In a generic parallel rendering framework, how can we schedule the different rendering stages to minimize the latency for the user?
-  \item How can we architect the parallel rendering framework to minimize synchronization between threads?\\[\smallskipamount]
+  \item In a generic parallel rendering framework, how can we schedule the different rendering stages to minimise the latency for the user?
+  \item How can we architect the parallel rendering framework to minimise synchronisation between threads?\\[\smallskipamount]
 
 \sref{sAsyncExec} introduces our asynchronous execution model, which has been
 carefully designed to minimise synchronisation points, maximise pipelining and
 enables early display of rendered images.\\[\smallskipamount]
 
-\item How can we maximize the impact of this research on large data
+\item How can we maximise the impact of this research on large data
 scientists?\\[\smallskipamount]
 
 Ultimately, accessible applications determine the impact for large data
@@ -1525,7 +1525,7 @@ Collage:
 \item[Node and LocalNode] The abstraction of a process in the cluster. Nodes
   communicate with each other using connections. A {\em LocalNode} listens on various
   connections and processes requests for a given process. Received data is
-  wrapped in ICommands and dispatched to command handler methods. A Node is a
+  wrapped in {\em ICommand}s and dispatched to command handler methods. A Node is a
   proxy for a remote LocalNode.
 \item[Object] Provides object-oriented and versioned data distribution of C++
   objects between nodes. Objects are registered or mapped on a Local\-Node.
@@ -1861,7 +1861,7 @@ each GPU, depending on the current camera position.
 
 For volume rendering, this balance is reversed and sort-first performs better.
 Typically, a volume renderer is bound in fragment processing. Consequently,
-sort-first rendering scales better than sort-last, since the screenspace is
+sort-first rendering scales better than sort-last, since the screen-space is
 equally divided. For both rendering algorithms, one can observe static
 imbalances in the zig-zag graphs, where odd number of resources coincidentally
 split the rendering load less balanced than even numbers.
