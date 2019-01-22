@@ -74,36 +74,17 @@ current and future challenges.
 
 \section{Challenges}
 
-The motivation to visualise more data more efficiently through increased
-display fidelity and improved rendering performance creates a new set of
-research challenges. The key goal is to improve the rendering performance of
-existing and new visualisation applications to enable users to explore more
-data. This goal can be broken down in more concrete challenges, starting with
-formalising and implementing the architecture of a parallel rendering
-framework, which allows the decomposition of the problem into more manageable tasks.
+Increased display fidelity and faster rendering performance help to visualise
+large data sets efficiently. Parallel rendering is one approach to achieve this
+goal by using multiple GPUs, and often multiple computers, to improve the
+rendering performance. It creates a new set of research challenges, which can
+be broken down in more concrete challenges, starting with formalising and
+implementing the architecture of a parallel rendering framework.
 
-These sub-challenges to building a better scalable parallel rendering application
+These sub-challenges to build better scalable parallel rendering applications
 can be identified as finding better task decompositions, decreasing the cost
 for the result composition, reducing the latency of the overall system, and
 minimising synchronisation between the parallel execution threads.
-
-When starting from a given rendering problem, the first task of a parallel
-rendering system is to decompose (parallelise) this task into independent
-sub-tasks, each rendered by a separate resource in parallel. While the basics
-of this decomposition have been researched extensively, there are architectural
-challenges to make these decompositions easily available in a generic and
-structured manner. Load balancing these tasks for an optimal
-parallelisation present many still unaddressed challenges for modern
-visualisation cluster sizes, consisting of tens to hundreds of GPUs, and increasingly
-affordable high-fidelity visualisation systems with tens of displays and
-hundreds of millions of pixels.
-
-By scaling up the amount of resources employed to accelerate the
-rendering task, the task of combining the partial results from each resource
-becomes more challenging. In particular for sort-last rendering, where the
-amount of data to composite grows linearly with the amount of parallel resources
-used, keeping the compositing time within the available budget is a non-trivial
-problem.
 
 Interactive visualisation poses its own unique set of challenges. The goal is to
 present a believable alternate universe to the visual system of the user. This
@@ -120,13 +101,29 @@ increased immersion in the data, these parameters become more important --
 for Virtual Reality, a 60~Hz refresh rate and a latency below 50~ms is required,
 whereas for non-immersive desktop visualisation 10~Hz and 200~ms are acceptable.
 
-For parallel rendering, these constraints make building a
-parallel and distributed application harder compared to other distributed
-applications for simulations and cloud computing. In particular, one has to be
-careful with synchronisation and pipelining of operations to minimise latency.
-In addition, an interactive application has different requirements when it
-comes to resource allocation compared to other large-scale distributed
-computing domains.
+When starting from a given rendering problem, the first task of a parallel
+rendering system is to decompose (parallelise) this task into independent
+sub-tasks, each rendered by a separate resource in parallel. While the basics
+of this decomposition have been researched extensively, there are architectural
+challenges to make these decompositions easily available in a generic and
+structured manner. Load balancing these tasks for an optimal
+parallelisation present many still unaddressed challenges for modern
+visualisation cluster sizes, consisting of tens to hundreds of GPUs, and increasingly
+affordable high-fidelity visualisation systems with tens of displays and
+hundreds of millions of pixels.
+
+By scaling up the amount of resources employed to accelerate the rendering
+task, the task of combining the partial results from each resource becomes more
+challenging. For some decomposition algorithms, the amount of data to composite
+grows linearly with the amount of parallel resources used, and keeping the
+compositing time within the available budget is a non-trivial problem.
+
+For parallel rendering, these constraints make building a parallel and
+distributed application harder compared to other distributed applications for
+simulations and cloud computing. In particular, one has to be careful with
+synchronisation and pipelining of operations to minimise latency. In addition,
+an interactive application has different requirements when it comes to resource
+allocation compared to other large-scale distributed computing domains.
 
 Last, but not least, a significant challenge is how to make all this research
 available to the large data scientists with the actual needs and use cases for
@@ -152,7 +149,7 @@ faster or more hardware, or by better algorithms exploiting existing
 hardware and data. This thesis primarily focuses on the first approach, using
 parallel rendering to exploit the CPU and GPU parallelism available on a single
 system, or a distributed cluster. The early fundamental concepts have been laid
-down in \cite{MCEF:94} and \cite{Crockett:97} (\fig{fSorts}). A number of
+out in \cite{MCEF:94} and \cite{Crockett:97} (\fig{fSorts}). A number of
 domain specific parallel rendering algorithms and special purpose hardware
 solutions have been proposed in the past, however, only few generic parallel
 rendering frameworks have been developed.
@@ -162,27 +159,27 @@ rendering frameworks have been developed.
  \caption{Sort-Last, Sort-Middle and Sort-First Parallel Rendering\label{fSorts}}
 \end{figure}
 
-Sort-last rendering decomposes the rendering task at the data level, that is,
-each resource renders a part of the data. In the end partial fragments from
-each resource are composited into a final result. Sort-middle rendering
-also decomposes the rendering at the data level, but collects and sorts the
-unshaded primitives before or after rasterisation, and then performs the
-fragment shading on the sorted data. Sort-first rendering decomposes the
-rendering task in screen space, and the application needs either to be
-fill-rate bound or have efficient view frustum culling to scale the rendering
-performance. We will focus on sort-last and sort-first rendering, since
-sort-middle architectures are only feasible in a hardware implementation due to
-the large amount of data processed and transferred in the sorting stage.
+Sort-last rendering decomposes the rendering task in data space, that is, each
+resource renders a part of the data. In the end partial fragments from each
+resource are composited into a final result image. Sort-middle rendering also
+decomposes the rendering at the data level, but collects and sorts the unshaded
+primitives before or after rasterisation, and then performs the fragment
+shading on the sorted data. Sort-first rendering decomposes the rendering task
+in screen space, and the application needs either to be fill-rate bound or have
+efficient view frustum culling to scale the rendering performance. We will
+focus on sort-last and sort-first rendering, since sort-middle architectures
+are only feasible in a hardware implementation due to the large amount of data
+processed and transferred in the sorting stage.
 
 
 \subsection{Domain Specific Solutions}
 
 Cluster-based parallel rendering has been commercialised for off-line rendering
 (i.e. distributed ray-tracing) for computer generated animated films or special
-effects, since the ray-tracing technique is inherently amenable to
-parallelisation for off-line processing. Other special purpose solutions exist
-for parallel rendering in specific application domains such as volume rendering
-\cite{LWMT:97,Wittenbrink:98,HSCSM:00,SL:02,GS:02,NSJLYZ:05} or
+effects, since the typically used ray-tracing technique is inherently amenable
+to parallelisation for off-line processing. Other special purpose solutions
+exist for parallel rendering in specific application domains such as volume
+rendering \cite{LWMT:97,Wittenbrink:98,HSCSM:00,SL:02,GS:02,NSJLYZ:05} or
 geo-visualisation \cite{VR:91,AG:95,LDC:96,JLMV:06}. However, such specific
 solutions are typically not applicable as a generic parallel rendering paradigm
 and do not translate to arbitrary scientific visualisation and distributed
@@ -239,49 +236,50 @@ the parallelisation of the application rendering code (\fig{fChromium}).
 
 \begin{figure}[h!t]
  \includegraphics[width=\textwidth]{images/chromiumVsEq}
- \caption{Parallel Execution versus Transparent OpenGL Interception\label{fChromium}}
+ \caption{Parallel Execution  (left) versus Transparent OpenGL Interception (right)\label{fChromium}}
 \end{figure}
 
 \subsubsection{VRJuggler}
 
 VR Juggler \cite{BJHMBC:01,JBBC:98} is a graphics framework for virtual reality
-applications, shielding the application developer from the underlying
-hardware architecture, devices and operating system. Its main aim is ease of use
-in virtual reality configurations and use, without the need to know
-about the devices and hardware configuration details, but not specifically to
-provide scalable rendering. Extensions of VR Juggler, such as for example
+applications, shielding the application developer from the underlying hardware
+architecture, devices and operating system. Its main aim is ease of use in
+virtual reality configurations and use, without the need to know about the
+devices and hardware configuration details, but not specifically to provide
+scalable rendering. Extensions of VR Juggler, such as for example
 ClusterJuggler \cite{BC:03} and NetJuggler \cite{AGLMR:02}, are typically based
-on the replication of application and data on each cluster node and only
-take care of synchronisation issues, but fail to provide a flexible and
-powerful configuration mechanism that efficiently supports scalable rendering
-as also noted in \cite{SWNH:03}. VR Juggler does not support scalable parallel
+on the replication of application and data on each cluster node and only take
+care of synchronisation issues, but fail to provide a flexible and powerful
+configuration mechanism that efficiently supports scalable rendering as also
+noted in \cite{SWNH:03}. VR Juggler does not support scalable parallel
 rendering such as sort-first and sort-last task decomposition and image
-compositing, nor does it provide support for network swap barriers
-(synchronisation), distributed objects, image compression and transmission, or
-multiple rendering threads per process, important for multi-GPU systems.
+compositing, nor does it provide other important features for parallel
+rendering, such as network swap barriers (synchronisation), distributed
+objects, image compression and transmission, or multiple rendering threads per
+process.
 
 \subsubsection{Chromium}
 
 Chromium \cite{HHNFAKK:02} provides a powerful and transparent abstraction of
-the OpenGL API allowing a flexible configuration of display resources. Its
-main limitation with respect to scalable rendering is its focus on
-streaming OpenGL commands through a network of nodes, often initiated from a
-single source. This has also been observed in \cite{SWNH:03}.
-This is caused by the size of the OpenGL stream, due to not only containing OpenGL
-calls, but also geometry and image data. Only if the geometry and textures are
-mostly static and can be kept in GPU memory on the graphic card, no
-significant bottleneck can be expected, as the OpenGL stream is then composed of
-a relatively small number of rendering instructions. For typical
-real-world visualisation applications, display and object settings are
-interactively manipulated, data and parameters may change dynamically, and
-large data sets do not fit statically in GPU memory, but are often dynamically
-loaded from out-of-core and/or multi-resolution data structures. This can lead
-to frequent updates not only of commands and parameters which have to be
-distributed, but also of the rendered data itself (geometry and texture), thus
-causing the OpenGL stream to expand dramatically. Furthermore, this stream of
-function calls and data must be packaged and broadcast in real-time over the
-network to multiple nodes for each rendered frame. This makes CPU performance
-and network bandwidth more likely the limiting factor.
+the OpenGL API allowing a flexible configuration of display resources. It is
+limited in scalability, due to its focus on streaming OpenGL commands through a
+network of nodes, often initiated from a single source. This has also been
+observed in \cite{SWNH:03}, and is caused by the size of the OpenGL stream.
+This data stream not only contains OpenGL calls, but also geometry and image
+data. Only if the geometry and textures are mostly static and can be kept in
+GPU memory on the graphic card, no significant bottleneck can be expected, as
+the OpenGL stream is then composed of a relatively small number of rendering
+instructions. For typical real-world visualisation applications, display and
+object settings are interactively manipulated, data and parameters may change
+dynamically, and large data sets do not fit statically in GPU memory, but are
+often dynamically loaded from out-of-core and/or multi-resolution data
+structures. This can lead to frequent updates not only of commands and
+parameters which have to be distributed, but also of the rendered data itself
+(geometry and texture), thus causing the OpenGL stream to expand dramatically.
+Furthermore, this stream of function calls and data must be packaged and
+broadcast in real-time over the network to multiple nodes for each rendered
+frame. This makes CPU performance and network bandwidth more likely the
+limiting factor.
 
 The performance experiments in \cite{HHNFAKK:02} indicate that Chromium is
 working well when the rendering problem is fill-rate limited. This is due
@@ -289,15 +287,15 @@ to the fact that the OpenGL commands and a non-critical amount of rendering data
 can be distributed to multiple nodes without significant problems. The
 critical fill-rate work is then performed locally on the graphics hardware.
 
-Chromium also provides some facilities for parallel application development:
-A sort-last, binary-swap compositing SPU and an OpenGL extension
-providing synchronisation primitives, such as a barrier and semaphore. It leaves
-problems like configuration, task decomposition, process and
-thread management unaddressed. Parallel Chromium applications tend to be written
-for one specific parallel rendering use case, e.g. the sort-first
-distributed memory volume renderer in \cite{BHPB:03}, or the sort-last parallel
-volume renderer raptor \cite{Raptor}. We are not aware of a generic
-Chromium-based application using many-to-one sort-first or stereo
+Chromium also provides some facilities for parallel application development: A
+sort-last, binary-swap compositing stream processing unit and an OpenGL
+extension providing synchronisation primitives, such as a barrier and
+semaphore. It leaves problems like configuration, task decomposition, process
+and thread management unaddressed. Parallel Chromium applications tend to be
+written for one specific parallel rendering use case and configuration, e.g.
+the sort-first distributed memory volume renderer in \cite{BHPB:03}, or the
+sort-last parallel volume renderer raptor \cite{Raptor}. We are not aware of a
+generic Chromium-based application using many-to-one sort-first or stereo
 decompositions.
 
 The concept of transparent OpenGL interception popularised by WireGL and
@@ -548,7 +546,7 @@ system, typically a framerate between 10~Hz and 120~Hz is required for
 useful user interaction. In turn, this translates to a budget of 8~ms to
 100~ms to decompose the task to render a frame, perform parallel rendering,
 and to composite and display the result. In comparison, cloud computing and
-HPC typically have turnaround times of seconds to hours. Therefore many
+HPC typically have turnaround times of seconds to hours. Therefore, many
 algorithms for parallel rendering compute a suboptimal solution,
 but do so in at most a few milliseconds.
 
@@ -603,21 +601,21 @@ and distributed rendering.
 The core execution model for parallel rendering was pioneered by CAVELib
 \cite{DACNCCGHPSNS:97}, refined by OpenGL Multipipe SDK for shared memory
 systems and scalable rendering, and substantially extended by Equalizer for
-asynchronous and distributed execution. By analysing the typical architecture of
-a visualisation application we observe an initialization phase, a main rendering
-loop, and an exit phase. Equalizer decomposes these steps for parallel
-execution.
+asynchronous and distributed execution. By analysing the typical architecture
+of a visualisation application we observe an initialization phase, a main
+rendering loop, and an exit phase. Equalizer decomposes these steps for
+parallel execution.
 
 The main rendering loop typically consists of four phases: submitting the
 rendering commands to the graphics subsystem, displaying the rendered image,
-retrieving events from the operating system, based on which the application
-state is updated and a new image is rendered. Usually, the configuration of
-the rendering is largely hard-coded, with a few configurable parameters such as
-field of view or stereo separation. For parallel execution, we need to separate
-the rendering code from this main loop, and execute it in parallel with
-different rendering parameters, as shown in \fig{FIG_execution}. Similarly, the
-initialisation and exit phase also need to be decomposed to allow managing of
-multiple distributed resources.
+retrieving events from the operating system, and updating the application state
+before a new image is rendered. Usually, the configuration of the rendering is
+largely hard-coded, with a few configurable parameters such as field of view or
+stereo separation. For parallel execution, we need to separate the rendering
+code from this main loop, and execute it in parallel with different rendering
+parameters, as shown in \fig{FIG_execution}. Similarly, the initialisation and
+exit phase also need to be decomposed to allow managing of multiple distributed
+resources.
 
 \begin{figure}[ht]\center
  \includegraphics[width=.9\columnwidth]{images/executionFlow}
@@ -1675,7 +1673,7 @@ processing stage but cannot scale geometry processing. This feature is not
 fully transparent to the application, since it decomposes rendering algorithms
 which render multiple samples per pixel. Applications needs to adapt their
 rendering code, for example to jitter or tilt the frustum based on the subpixel
-executed in the current rendering pass.
+executed in the current subpixel rendering pass.
 
 Subpixel compounds increase the amount of pixels to be composited linearly with
 the number of source channels. They can use the same parallel compositing
@@ -1722,25 +1720,27 @@ knowledge, sort-last rendering always requires a compositing step, which is the
 challenging part for this decomposition mode. It is often addressed using
 parallel compositing, which we discuss in \sref{sparcomp}.
 
-Equalizer does support classical sort-last rendering with or without
-load balancing, where each resource renders one part of the applications
-database. Furthermore, we also implement chunk compounds, which are similar to
-tile compounds (\sref{sTile}), with which they share a lot of the
-infrastructure. Chunk compounds also produce work packages, although using a
-fixed-size subrange for each package instead of the tile coordinates used for
-tile compounds.
+Equalizer does support classical sort-last rendering with or without load
+balancing, where each resource renders one part of the applications database.
+Furthermore, we also implement chunk compounds, which are similar to tile
+compounds (\sref{sTile}), with which they share a lot of the infrastructure.
+Chunk compounds also produce work packages, although using a fixed-size
+subrange of data for each package instead of the tile coordinates used for tile
+compounds.
 
 \section{Time-Multiplex}
 
 Time-multiplexing distributes full frames over the available resources, such
 that each resource only renders a subset of the visible frames (\fig{fDPlex}).
-This mode is also called alternate frame rate or DPlex, was first implemented in
-\cite{BRE:05} for shared memory machines. The algorithm is however much better
-suited for distributed memory systems, since the separate memory space makes
-concurrent rendering of different frames much easier to implement. While it
-increases the framerate almost linearly, it does not decrease the latency
-between user input and the corresponding output. Consequently, this
-decomposition mode is mostly useful for non-interactive film generation.
+This mode is also called alternate frame rate or DPlex, was first implemented
+in \cite{BRE:05} for shared memory machines. The algorithm is however much
+better suited for distributed memory systems, since the separate memory space
+makes concurrent rendering of different frames much easier to implement. While
+it increases the framerate almost linearly, it cannot improve the latency
+between user input and the corresponding output. At best, it can achieve the
+same latency compared to the single-GPU case, when perfect linear scalability
+is achieved. Consequently, this decomposition mode is mostly useful for
+non-interactive film generation.
 
 \begin{wrapfloat}{figure}{O}{.618\textwidth}
 \includegraphics[width=.618\textwidth]{images/DPlex}
@@ -1754,7 +1754,7 @@ concurrent frames all finish simultaneously. To provide a smooth framerate, if
 so desired, a framerate equalizer can be installed on the destination compound.
 \sref{sFramerateEq} covers this functionality. It is transparent to
 {\em Equalizer} applications, but does require the configuration latency to
-be greater or equal than the number of source channels.
+be greater or equal to the number of source channels.
 
 DPlex rendering is not hard-coded into our framework, but configured by
 restricting the rendering task temporally on each source compound. This is
@@ -1840,9 +1840,9 @@ practical settings use some type of load balancing. They are however
 interesting in that they show how well different rendering algorithms are
 naturally load-balanced. In \cite{ESP:18}, we collected some data for polygonal
 and volume rendering. \bench{rStatic} provides a strong scalability benchmark
-for both types of rendering and a set of compounds. The solid line provides a
-theoretical linear scaling for the single-threaded, single-GPU rendering
-performance.
+for both types of rendering and a set of compounds. The linear scaling graph
+provides a theoretical limit for perfect scalability compared to the
+single-threaded, single-GPU rendering performance.
 
 \begin{benchmark}[h!t]\center
  \includegraphics[width=\columnwidth]{results/static}
@@ -1860,7 +1860,7 @@ frustum culling, but the remaining visible set will be relatively unbalanced on
 each GPU, depending on the current camera position.
 
 For volume rendering, this balance is reversed and sort-first performs better.
-Typically, a volume renderer is bound in fragment processing. Consequently,
+Typically, a volume renderer is bound by fragment processing. Consequently,
 sort-first rendering scales better than sort-last, since the screen-space is
 equally divided. For both rendering algorithms, one can observe static
 imbalances in the zig-zag graphs, where odd number of resources coincidentally
@@ -1929,12 +1929,12 @@ final pixel to the colour of the source with the front-most depth buffer
 values. It requires no spatial ordering of the data during rendering. It does
 not correctly composite pixels with transparent geometry, since there is no
 guarantee of the blending order. Owing to the use of the depth buffer, it is
-also more expensive, since more pixel data needs to be processed. Furthermore,
-depth buffer readback tends to be slower, and compression algorithms for depth
-buffer data do not to perform as well as colour buffer compression.
-Depth-sorted compositing is often used for polygonal data, as shown in
-\fig{fDepth}, since these applications often do not sort their geometry into
-convex spatial regions.
+also more expensive, since both color and depth data needs to be processed.
+Furthermore, depth buffer readback tends to be slower, and compression
+algorithms for depth buffer data do not to perform as well as colour buffer
+compression. Depth-sorted compositing is often used for polygonal data, as
+shown in \fig{fDepth}, since these applications often do not sort their
+geometry into convex spatial regions.
 
 \begin{figure}[h!t]\center
   \subfigure[]{
@@ -2817,8 +2817,8 @@ by both sides of a node pair (e.g. during parallel compositing), which requires
 a robust handshake protocol during connection establishment. For larger cluster
 installations, a fully connected peer-to-peer network would be suboptimal. For
 example on Windows operating systems there is a latency penalty once more than
-64 connections are needed by cause of low-level implementation details. This feature
-also allowed us to implement runtime configuration switches involving a
+64 connections are needed, caused by low-level implementation details. This
+feature also allowed us to implement runtime configuration switches involving a
 changing set of rendering resources.
 
 \item[Transport layer abstraction:] The actual network protocol is abstracted
@@ -2826,7 +2826,7 @@ by an API defining byte-oriented stream semantics. While this choice of
 abstraction makes it harder for RDMA-based protocols to deliver full
 performance, it has proven useful in supporting a large set of transports, from
 standard Ethernet sockets, SDP for InfiniBand, native Verbs for InfiniBand, UDT
-to a fully-featured reliable multicast implementation. In particular the ease
+to a fully-featured reliable multicast implementation. In particular, the ease
 of integration of multicast transport is strong evidence for the usefulness of
 this abstraction.
 
@@ -3016,17 +3016,18 @@ as well as the motivation for the design decisions. Any defaults given below are
 or Mac OS X, the Windows UDP stack requires different default values which can be
 found in the implementation.
 
-Our RSP implementation uses a separate protocol thread for each RSP group, which
-handles all reads and writes on the multicast UDP socket. It implements the
-protocol handling and communicates with the application threads through
+Our RSP implementation uses a separate protocol thread for each RSP group,
+which handles all reads and writes on the multicast UDP socket. It implements
+the protocol handling and communicates with the application threads through
 thread-safe queues. The queues contain datagrams filled with the application
 byte stream, prefixed by a header of at most eight bytes. Each connection has a
-configurable number of buffers (1024 by default) of a configurable MTU (1470
-bytes default), which are either free or in transmission. The header contains
-two bytes for the datagram type (connection handshake, data, acknowledgement,
-negative acknowledgement, acknowledgement request), and up two six bytes of
-datagram-specific information (e.g. for acknowledgement: two bytes read node
-identifier, two bytes write node identifier, two bytes sequence number).
+configurable number of buffers (1024 by default) of a configurable datagram
+size (1470 bytes default), which are either free or in transmission. The header
+contains two bytes for the datagram type (connection handshake, data,
+acknowledgement, negative acknowledgement, acknowledgement request), and up two
+six bytes of datagram-specific information (e.g. for acknowledgement: two bytes
+read node identifier, two bytes write node identifier, two bytes sequence
+number).
 
 \fig{fRSP} shows the data flow through the RSP implementation. Each member of
 the multicast group opens a listening connection, which will send query
@@ -3335,16 +3336,18 @@ The volume data sets are distributed in a single object, serialising the raw
 volume buffer. The Spike volume data set has a significant compression ratio,
 which is reflected by the results. Compression for this data is beneficial for
 transmitting data over a 10~Gb/s link, even for a single slave process.
-Buffering has little benefit, since the serialisation of volume data is trivial.
-Buffered compression shows a significant difference, since the compression cost
-can be amortised over many nodes, reaching raw data transmission rates of 3.7~GB/s with the default Snappy compressor, and at best 4.4 GB/s with ZStandard at
-level 1. The distribution of the beechnut data set also behaves as expected:
-Due to the larger object size, uncompressed transmission is slightly faster
-compared to the Spike data set at 700MB/s, and compressed transmission does not
-improve the mapping performance, likely due to increased memory pressure caused
-by the data size. The comparison of the various compression engines is
-consistent with the benchmarks in \bench{rCompressorDetail}; RLE, Snappy and the
-LZ variants are very close to each other, and ZSTD1 can provide better
+Buffering has little benefit, since the serialisation of volume data is
+trivial. Buffered compression shows a significant difference, since the
+compression cost can be amortised over many nodes, reaching raw data
+transmission rates of 3.7~GB/s with the default Snappy compressor, and at best
+4.4 GB/s with ZStandard at level 1. The distribution of the beechnut data set
+also behaves as expected: Due to the larger object size, uncompressed
+transmission is slightly faster compared to the Spike data set at 700~MB/s
+since static overheads are comparatively smaller. Compressed transmission does
+not improve the mapping performance, likely due to increased memory pressure
+caused by the data size. The comparison of the various compression engines is
+consistent with the benchmarks in \bench{rCompressorDetail}; RLE, Snappy and
+the LZ variants are very close to each other, and ZSTD1 can provide better
 performance after four nodes due to the better compression ratio.
 
 \begin{wrapfloat}{benchmark}{O}{.618\textwidth}
