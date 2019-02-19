@@ -1,0 +1,498 @@
+\begin{thebibliography}{}
+
+\bibitem[MPK, 2005]{MPK}
+ (2005).
+\newblock {OpenGL Multipipe SDK}.
+
+\bibitem[Abraham et~al., 2004]{ACCC:04}
+Abraham, F., Celes, W., Cerqueira, R., and Campos, J.~L. (2004).
+\newblock A load-balancing strategy for sort-first distributed rendering.
+\newblock In {\em Proceedings SIBGRAPI}, pages 292--299.
+
+\bibitem[Adamson et~al., 2004]{adamson2004negative}
+Adamson, B., Bormann, C., Handley, M., and Macker, J. (2004).
+\newblock Negative-acknowledgment (nack)-oriented reliable multicast (norm)
+  protocol.
+\newblock Technical report.
+
+\bibitem[Agranov and Gotsman, 1995]{AG:95}
+Agranov, G. and Gotsman, C. (1995).
+\newblock Algorithms for rendering realistic terrain image sequences and their
+  parallel implementation.
+\newblock {\em The Visual Computer}, 11(9):455--464.
+
+\bibitem[Ahrens and Painter, 1998]{AP:98}
+Ahrens, J. and Painter, J. (1998).
+\newblock Efficient sort-last rendering using compression-based image
+  compositing.
+\newblock In {\em Proceedings Eurographics Workshop on Parallel Graphics and
+  Visualization}.
+
+\bibitem[Allard et~al., 2002]{AGLMR:02}
+Allard, J., Gouranton, V., Lecointre, L., Melin, E., and Raffin, B. (2002).
+\newblock {NetJuggler}: Running {VR Juggler} with multiple displays on a
+  commodity component cluster.
+\newblock In {\em Proceeding IEEE Virtual Reality}, pages 275--276.
+
+\bibitem[Bethel et~al., 2003]{BHPB:03}
+Bethel, W.~E., Humphreys, G., Paul, B., and Brederson, J.~D. (2003).
+\newblock Sort-first, distributed memory parallel visualization and rendering.
+\newblock In {\em Proceedings IEEE Symposium on Parallel and Large-Data
+  Visualization and Graphics}, pages 41--50.
+
+\bibitem[Bhaniramka et~al., 2005]{BRE:05}
+Bhaniramka, P., Robert, P. C.~D., and Eilemann, S. (2005).
+\newblock {OpenGL Multipipe SDK}: A toolkit for scalable parallel rendering.
+\newblock In {\em Proceedings IEEE Visualization}, pages 119--126.
+
+\bibitem[Bierbaum and Cruz-Neira, 2003]{BC:03}
+Bierbaum, A. and Cruz-Neira, C. (2003).
+\newblock {ClusterJuggler}: A modular architecture for immersive clustering.
+\newblock In {\em Proceedings Workshop on Commodity Clusters for Virtual
+  Reality, IEEE Virtual Reality Conference}.
+
+\bibitem[Bierbaum et~al., 2001]{BJHMBC:01}
+Bierbaum, A., Just, C., Hartling, P., Meinert, K., Baker, A., and Cruz-Neira,
+  C. (2001).
+\newblock {VR Juggler}: A virtual platform for virtual reality application
+  development.
+\newblock In {\em Proceedings of IEEE Virtual Reality}, pages 89--96.
+
+\bibitem[Blanke et~al., 2000]{Blanke00}
+Blanke, W., Bajaj, C., D.Fussel, and Zhang, X. (2000).
+\newblock The metabuffer: A scalable multi-resolution 3-d graphics system using
+  commodity rendering engines.
+\newblock Technical Report TR2000-16, University of Texas at Austin.
+
+\bibitem[{Blue Brain Project}, 2016]{tide}
+{Blue Brain Project} (2016).
+\newblock {Tide: Tiled Interactive Display Environment}.
+\newblock https://github.com/BlueBrain/Tide.
+
+\bibitem[B{\"o}sch et~al., 2009]{BGP:09}
+B{\"o}sch, J., Goswami, P., and Pajarola, R. (2009).
+\newblock {RASTeR}: Simple and efficient terrain rendering on the {GPU}.
+\newblock In {\em Proceedings EUROGRAPHICS Areas Papers, Scientific
+  Visulization}, pages 35--42.
+
+\bibitem[Cavin and Mion, 2006]{CM:06}
+Cavin, X. and Mion, C. (2006).
+\newblock Pipelined sort-last rendering: Scalability, performance and beyond.
+\newblock In {\em Proceedings Eurographics Symposium on Parallel Graphics and
+  Visualization}.
+
+\bibitem[Cavin et~al., 2005]{CMF:05}
+Cavin, X., Mion, C., and Filbois, A. (2005).
+\newblock {COTS} cluster-based sort-last rendering: Performance evaluation and
+  pipelined implementation.
+\newblock In {\em Proceedings IEEE Visualization}, pages 111--118. Computer
+  Society Press.
+
+\bibitem[Correa et~al., 2002]{CKS:02}
+Correa, W.~T., Klosowski, J.~T., and Silva, C.~T. (2002).
+\newblock Out-of-core sort-first parallel rendering for cluster-based tiled
+  displays.
+\newblock In {\em Proceedings Eurographics Workshop on Parallel Graphics and
+  Visualization}, pages 89--96.
+
+\bibitem[Crockett, 1997]{Crockett:97}
+Crockett, T.~W. (1997).
+\newblock An introduction to parallel rendering.
+\newblock {\em Parallel Computing}, 23:819--843.
+
+\bibitem[DeFanti et~al., 1998]{DACNCCGHPSNS:97}
+DeFanti, T.~A., Adamczyk, D., Cruz-Neira, C., Czernuszenko, M., Ghazisaedy, M.,
+  Hayakawa, H., Pape, D., Sandin, D.~J., Nickless, B., and Sherman, B. (1998).
+\newblock {CAVELib}.
+\newblock http://www.evl.uic.edu/pape/CAVE/prog/.
+
+\bibitem[Doerr and Kuester, 2011]{DK:11}
+Doerr, K.-U. and Kuester, F. (2011).
+\newblock {CGLX}: A scalable, high-performance visualization framework for
+  networked display environments.
+\newblock {\em IEEE Transactions on Visualization and Computer Graphics},
+  17(2):320--332.
+
+\bibitem[Eilemann et~al., 2012]{EBAHMP:12}
+Eilemann, S., Bilgili, A., Abdellah, M., Hernando, J., Makhinya, M., Pajarola,
+  R., and Sch{\"u}rmann, F. (2012).
+\newblock {Parallel Rendering on Hybrid Multi-GPU Clusters.}
+\newblock In {\em EGPGV}, pages 109--117.
+
+\bibitem[Eilemann et~al., 2009]{EMP:09}
+Eilemann, S., Makhinya, M., and Pajarola, R. (2009).
+\newblock {Equalizer: A Scalable Parallel Rendering Framework}.
+\newblock {\em IEEE Transactions on Visualization and Computer Graphics},
+  15(3):436--452.
+
+\bibitem[Eilemann and Pajarola, 2007]{EP:07}
+Eilemann, S. and Pajarola, R. (2007).
+\newblock Direct send compositing for parallel sort-last rendering.
+\newblock In {\em Proceedings Eurographics Symposium on Parallel Graphics and
+  Visualization}.
+
+\bibitem[Eilemann et~al., 2018]{ESP:18}
+Eilemann, S., Steiner, D., and Pajarola, R. (2018).
+\newblock {Equalizer 2.0 — Convergence of a Parallel Rendering Framework}.
+\newblock {\em IEEE Transactions on Visualization and Computer Graphics}, pages
+  1--1.
+
+\bibitem[Engel et~al., 2006]{EHKRW:06}
+Engel, K., Hadwiger, M., Kniss, J.~M., Rezk-Salama, C., and Weiskopf, D.
+  (2006).
+\newblock {\em Real-Time Volume Graphics}.
+\newblock AK Peters.
+
+\bibitem[Erol et~al., 2011]{EEP:11}
+Erol, F., Eilemann, S., and Pajarola, R. (2011).
+\newblock Cross-segment load balancing in parallel rendering.
+\newblock In {\em Proceedings Eurographics Symposium on Parallel Graphics and
+  Visualization}, pages 41--50.
+
+\bibitem[{Eyescale Software GmbH and Blue Brain Project}, 2016]{pression}
+{Eyescale Software GmbH and Blue Brain Project} (2016).
+\newblock {Compression and data transfer plugins}.
+\newblock https://github.com/Eyescale/Pression.
+
+\bibitem[Eyles et~al., 1997]{Eyles97}
+Eyles, J., Molnar, S., Poulton, J., Greer, T., Lastra, A., England, N., and
+  Westover, L. (1997).
+\newblock {PixelFlow}: The realization.
+\newblock In {\em Proceedings of the ACM SIGGRAPH/EUROGRAPHICS workshop on
+  Graphics Hardware}, pages 57--68.
+
+\bibitem[Facebook, 2016]{zstd}
+Facebook, I. (2016).
+\newblock {Fast real-time compression algorithm}.
+\newblock https://github.com/facebook/zstd.
+
+\bibitem[Febretti et~al., 2014]{Omegalib}
+Febretti, A., Nishimoto, A., Mateevitsi, V., Renambot, L., Johnson, A., and
+  Leigh, J. (2014).
+\newblock {Omegalib: A multi-view application framework for hybrid reality
+  display environments}.
+\newblock In {\em 2014 IEEE Virtual Reality (VR)}, pages 9--14.
+
+\bibitem[Febretti et~al., 2013]{FNTTL:13}
+Febretti, A., Nishimoto, A., Thigpen, T., Talandis, J., Long, L., Pirtle, J.,
+  Peterka, T., Verlo, A., Brown, M., Plepys, D., et~al. (2013).
+\newblock Cave2: a hybrid reality environment for immersive simulation and
+  information analysis.
+\newblock In {\em IS\&T/SPIE Electronic Imaging}, pages 864903--864903.
+  International Society for `Optic`s and Photonics.
+
+\bibitem[Garcia and Shen, 2002]{GS:02}
+Garcia, A. and Shen, H.-W. (2002).
+\newblock An interleaved parallel volume renderer with {PC}-clusters.
+\newblock In {\em Proceedings Eurographics Workshop on Parallel Graphics and
+  Visualization}, pages 51--60.
+
+\bibitem[Gau et~al., 2002]{Gau:2002}
+Gau, R.-H., Haas, Z.~J., and Krishnamachari, B. (2002).
+\newblock On multicast flow control for heterogeneous receivers.
+\newblock {\em IEEE/ACM Trans. Netw.}, 10(1):86--101.
+
+\bibitem[Gemmell et~al., 2003]{pgm}
+Gemmell, J., Montgomery, T., Speakman, T., and Crowcroft, J. (2003).
+\newblock {The PGM reliable multicast protocol}.
+\newblock {\em IEEE Network}, 17(1):16--22.
+
+\bibitem[Goswami et~al., 2010]{GMBP:10}
+Goswami, P., Makhinya, M., B{\"o}sch, J., and Pajarola, R. (2010).
+\newblock Scalable parallel out-of-core terrain rendering.
+\newblock In {\em Proceedings Eurographics Symposium on Parallel Graphics and
+  Visualization}, pages 63--71.
+
+\bibitem[Hernando et~al., 2013]{HBBES:13}
+Hernando, J.~B., Biddiscombe, J., Bohara, B., Eilemann, S., and Sch\"{u}rmann,
+  F. (2013).
+\newblock {Practical Parallel Rendering of Detailed Neuron Simulations}.
+\newblock In {\em Proceedings of the 13th Eurographics Symposium on Parallel
+  Graphics and Visualization}, EGPGV, pages 49--56, Aire-la-Ville, Switzerland,
+  Switzerland. Eurographics Association.
+
+\bibitem[Hidayat, 2007]{jesperfast}
+Hidayat, A. (2007).
+\newblock {FastLZ - lightning-fast lossless compression library}.
+\newblock http://www.fastlz.org.
+
+\bibitem[Houston, 2005]{Raptor}
+Houston, M. (2005).
+\newblock Raptor.
+\newblock http://graphics.stanford.edu/projects/raptor/.
+
+\bibitem[Huang et~al., 2000]{HSCSM:00}
+Huang, J., Shareef, N., Crawfis, R., Sadayappan, P., and Mueller, K. (2000).
+\newblock A parallel splatting algorithm with occlusion culling.
+\newblock In {\em Proceedings Eurographics Workshop on Parallel Graphics and
+  Visualization}.
+
+\bibitem[Humphreys et~al., 2000]{Humphreys00}
+Humphreys, G., Buck, I., Eldridge, M., and Hanrahan, P. (2000).
+\newblock Distributed rendering for scalable displays.
+\newblock {\em IEEE Supercomputing}.
+
+\bibitem[Humphreys et~al., 2001]{HEBSEH:01}
+Humphreys, G., Eldridge, M., Buck, I., Stoll, G., Everett, M., and Hanrahan, P.
+  (2001).
+\newblock {WireGL}: A scalable graphics system for clusters.
+\newblock In {\em Proceedings Annual Conference on Computer Graphics and
+  Interactive Techniques}, pages 129--140.
+
+\bibitem[Humphreys and Hanrahan, 1999]{Humphreys99}
+Humphreys, G. and Hanrahan, P. (1999).
+\newblock A distributed graphics system for large tiled displays.
+\newblock {\em IEEE Visualization 1999}, pages 215--224.
+
+\bibitem[Humphreys et~al., 2002]{HHNFAKK:02}
+Humphreys, G., Houston, M., Ng, R., Frank, R., Ahern, S., Kirchner, P.~D., and
+  Klosowski, J.~T. (2002).
+\newblock Chromium: A stream-processing framework for interactive rendering on
+  clusters.
+\newblock {\em ACM Transactions on Graphics}, 21(3):693--702.
+
+\bibitem[Igehy et~al., 1998]{Igehy98}
+Igehy, H., Stoll, G., and Hanrahan, P. (1998).
+\newblock The design of a parallel graphics interface.
+\newblock {\em Proceedings of SIGGRAPH 98}, pages 141--150.
+
+\bibitem[Johnson et~al., 2006]{JLMV:06}
+Johnson, A., Leigh, J., Morin, P., and Van~Keken, P. (2006).
+\newblock {GeoWall}: Stereoscopic visualization for geoscience research and
+  education.
+\newblock {\em IEEE Computer Graphics and Applications}, 26(6):10--14.
+
+\bibitem[Johnson et~al., 2012]{DisplayCluster}
+Johnson, G.~P., Abram, G.~D., Westing, B., Navr'til, P., and Gaither, K.
+  (2012).
+\newblock {DisplayCluster: An Interactive Visualization Environment for Tiled
+  Displays}.
+\newblock In {\em 2012 IEEE International Conference on Cluster Computing},
+  pages 239--247.
+
+\bibitem[Jones et~al., 2004]{JDBJBCER:04}
+Jones, K., Danzer, C., Byrnes, J., Jacobson, K., Bouchaud, P., Courvoisier, D.,
+  Eilemann, S., and Robert, P. (2004).
+\newblock {SGI\textregistered OpenGL Multipipe\texttrademark SDK User's Guide}.
+\newblock Technical Report 007-4239-004, Silicon Graphics.
+
+\bibitem[Just et~al., 1998]{JBBC:98}
+Just, C., Bierbaum, A., Baker, A., and Cruz-Neira, C. (1998).
+\newblock {VR Juggler}: A framework for virtual reality development.
+\newblock In {\em Proceedings Immersive Projection Technology Workshop}.
+
+\bibitem[Lever, 2004]{sepia}
+Lever, P.~G. (2004).
+\newblock {SEPIA} -- applicability to {MVC}.
+\newblock White paper Manchester Visualization Centre (MVC), University of
+  Manchester.
+
+\bibitem[Li et~al., 1996]{LDC:96}
+Li, P.~P., Duquette, W.~H., and Curkendall, D.~W. (1996).
+\newblock {RIVA}: A versatile parallel rendering system for interactive
+  scientific visualization.
+\newblock {\em IEEE Transactions on Visualization and Computer Graphics},
+  2(3):186--201.
+
+\bibitem[Li et~al., 1997]{LWMT:97}
+Li, P.~P., Whitman, S., Mendoza, R., and Tsiao, J. (1997).
+\newblock {ParVox}: A parallel splatting volume rendering system for
+  distributed visualization.
+\newblock In {\em Proceedings IEEE Parallel Rendering Symposium}, pages 7--14.
+
+\bibitem[Lombeyda et~al., 2001a]{LMSBHa:01}
+Lombeyda, S., Moll, L., Shand, M., Breen, D., and Heirich, A. (2001a).
+\newblock Scalable interactive volume rendering using off-the-shelf components.
+\newblock Technical Report CACR-2001-189, California Institute of Technology.
+
+\bibitem[Lombeyda et~al., 2001b]{LMSBH:01}
+Lombeyda, S., Moll, L., Shand, M., Breen, D., and Heirich, A. (2001b).
+\newblock Scalable interactive volume rendering using off-the-shelf components.
+\newblock In {\em Proceedings IEEE Symposium on Parallel and Large Data
+  Visualization and Graphics}, pages 115--121.
+
+\bibitem[Makhinya et~al., 2010]{MEP:10}
+Makhinya, M., Eilemann, S., and Pajarola, R. (2010).
+\newblock {Fast Compositing for Cluster-Parallel Rendering}.
+\newblock In {\em Proceedings of the 10th Eurographics Conference on Parallel
+  Graphics and Visualization}, EGPGV, pages 111--120, Aire-la-Ville,
+  Switzerland, Switzerland. Eurographics Association.
+
+\bibitem[Marrinan et~al., 2014]{Sage2}
+Marrinan, T., Aurisano, J., Nishimoto, A., Bharadwaj, K., Mateevitsi, V.,
+  Renambot, L., Long, L., Johnson, A., and Leigh, J. (2014).
+\newblock {SAGE2: A new approach for data intensive collaboration using
+  Scalable Resolution Shared Displays}.
+\newblock In {\em Collaborative Computing: Networking, Applications and
+  Worksharing}, pages 177--186.
+
+\bibitem[Moll et~al., 1999]{MHS:99a}
+Moll, L., Heirich, A., and Shand, M. (1999).
+\newblock Sepia: scalable {3D} compositing using {PCI} pamette.
+\newblock In {\em Proceedings IEEE Symposium on Field-Programmable Custom
+  Computing Machines}, pages 146--155.
+
+\bibitem[Molnar et~al., 1994]{MCEF:94}
+Molnar, S., Cox, M., Ellsworth, D., and Fuchs, H. (1994).
+\newblock A sorting classification of parallel rendering.
+\newblock {\em IEEE Computer Graphics and Applications}, 14(4):23--32.
+
+\bibitem[Molnar et~al., 1992]{Molnar92}
+Molnar, S., Eyles, J., and Poulton, J. (1992).
+\newblock {PixelFlow}: High-speed rendering using image composition.
+\newblock In {\em Proceedings ACM SIGGRAPH}, pages 231--240.
+
+\bibitem[Montrym et~al., 1997]{MBDM:97}
+Montrym, J.~S., Baum, D.~R., Dignam, D.~L., and Migdal, C.~J. (1997).
+\newblock {InfiniteReality}: A real-time graphics system.
+\newblock In {\em Proceedings ACM SIGGRAPH}, pages 293--302.
+
+\bibitem[Mueller, 1995]{Mueller:95}
+Mueller, C. (1995).
+\newblock The sort-first rendering architecture for high-performance graphics.
+\newblock In {\em Proceedings Symposium on Interactive 3D Graphics}, pages
+  75--84. ACM SIGGRAPH.
+
+\bibitem[Mueller, 1997]{Mueller:97}
+Mueller, C. (1997).
+\newblock Hierarchical graphics databases in sort-first.
+\newblock In {\em Proceedings IEEE Symposium on Parallel Rendering}, pages
+  49--. Computer Society Press.
+
+\bibitem[Muraki et~al., 2001]{Muraki01}
+Muraki, S., Ogata, M., Ma, K.-L., Koshizuka, K., Kajihara, K., Liu, X., Nagano,
+  Y., and Shimokawa, K. (2001).
+\newblock Next-generation visual supercomputing using {PC} clusters with volume
+  graphics hardware devices.
+\newblock In {\em Proceedings ACM/IEEE Conference on Supercomputing}, pages
+  51--51.
+
+\bibitem[Nachbaur et~al., 2014]{deflect}
+Nachbaur, D., Dumusc, R., Bilgili, A., Hernando, J., and Eilemann, S. (2014).
+\newblock {Remote parallel rendering for high-resolution tiled display walls}.
+\newblock In {\em Large Data Analysis and Visualization (LDAV), 2014 IEEE 4th
+  Symposium on}, pages 117--118.
+
+\bibitem[Neal et~al., 2011]{NHM:11}
+Neal, B., Hunkin, P., and McGregor, A. (2011).
+\newblock Distributed {OpenGL} rendering in network bandwidth constrained
+  environments.
+\newblock In Kuhlen, T., Pajarola, R., and Zhou, K., editors, {\em Proceedings
+  Eurographics Conference on Parallel Graphics and Visualization}, pages
+  21--29. Eurographics Association.
+
+\bibitem[Nie et~al., 2005]{NSJLYZ:05}
+Nie, W., Sun, J., Jin, J., Li, X., Yang, J., and Zhang, J. (2005).
+\newblock A dynamic parallel volume rendering computation mode based on
+  cluster.
+\newblock In {\em Proceedings Computational Science and its Applications},
+  volume 3482 of {\em Lecture Notes in Computer Science}, pages 416--425.
+
+\bibitem[Niski and Cohen, 2007]{NC:07}
+Niski, K. and Cohen, J.~D. (2007).
+\newblock Tile-based level of detail for the parallel age.
+\newblock {\em IEEE Transactions on Visualization and Computer Graphics},
+  13(6):1352--1359.
+
+\bibitem[opensource@google.com, 2016]{snappy}
+opensource@google.com (2016).
+\newblock {A fast compressor/decompressor}.
+\newblock https://github.com/google/snappy.
+
+\bibitem[Renambot et~al., 2004]{Sage}
+Renambot, L., Rao, A., Singh, R., Jeong, B., Krishnaprasad, N., Vishwanath, V.,
+  Chandrasekhar, V., Schwarz, N., Spale, A., Zhang, C., Goldman, G., Leigh, J.,
+  and Johnson, A. (2004).
+\newblock Sage: the scalable adaptive graphics environment.
+
+\bibitem[Rohlf and Helman, 1994]{RH:94}
+Rohlf, J. and Helman, J. (1994).
+\newblock {IRIS Performer}: A high performance multiprocessing toolkit for
+  real-time {3D} graphics.
+\newblock In {\em Proceedings ACM SIGGRAPH}, pages 381--394. ACM Press.
+
+\bibitem[Samanta et~al., 2001]{SFL:01}
+Samanta, R., Funkhouser, T., and Li, K. (2001).
+\newblock Parallel rendering with {K}-way replication.
+\newblock In {\em Proceedings IEEE Symposium on Parallel and Large-Data
+  Visualization and Graphics}. Computer Society Press.
+
+\bibitem[Samanta et~al., 2000]{SFLS:00}
+Samanta, R., Funkhouser, T., Li, K., and Singh, J.~P. (2000).
+\newblock Hybrid sort-first and sort-last parallel rendering with a cluster of
+  {PCs}.
+\newblock In {\em Proceedings Eurographics Workshop on Graphics Hardware},
+  pages 97--108.
+
+\bibitem[Samanta et~al., 1999]{SZFLS:99}
+Samanta, R., Zheng, J., Funkhouser, T., Li, K., and Singh, J.~P. (1999).
+\newblock Load balancing for multi-projector rendering systems.
+\newblock In {\em Proceedings Eurographics Workshop on Graphics Hardware},
+  pages 107--116.
+
+\bibitem[Schulze and Lang, 2002]{SL:02}
+Schulze, J.~P. and Lang, U. (2002).
+\newblock The parallelization of the perspective shear-warp volume rendering
+  algorithm.
+\newblock In {\em Proceedings Eurographics Workshop on Parallel Graphics and
+  Visualization}, pages 61--70.
+
+\bibitem[Staadt et~al., 2003]{SWNH:03}
+Staadt, O.~G., Walker, J., Nuber, C., and Hamann, B. (2003).
+\newblock A survey and performance analysis of software platforms for
+  interactive cluster-based multi-screen rendering.
+\newblock In {\em Proceedings Eurographics Workshop on Virtual Environments},
+  pages 261--270.
+
+\bibitem[Steiner et~al., 2016]{SPEP:16}
+Steiner, D., Paredes, E.~G., Eilemann, S., and Pajarola, R. (2016).
+\newblock Dynamic work packages in parallel rendering.
+\newblock In {\em Proceedings Eurographics Symposium on Parallel Graphics and
+  Visualization}, pages 89--98.
+
+\bibitem[Stoll et~al., 2001]{Stoll01}
+Stoll, G., Eldridge, M., Patterson, D., Webb, A., Berman, S., Levy, R.,
+  Caywood, C., Taveira, M., Hunt, S., and Hanrahan, P. (2001).
+\newblock {Lightning-2}: A high-performance display subsystem for {PC}
+  clusters.
+\newblock In {\em Proceedings ACM SIGGRAPH}, pages 141--148.
+
+\bibitem[Stompel et~al., 2003]{SMLAP:03}
+Stompel, A., Ma, K.-L., Lum, E.~B., Ahrens, J., and Patchett, J. (2003).
+\newblock {SLIC}: Scheduled linear image compositing for parallel volume
+  rendering.
+\newblock In {\em Proceedings IEEE Symposium on Parallel and Large-Data
+  Visualization and Graphics}, pages 33--40.
+
+\bibitem[Vezina and Robertson, 1991]{VR:91}
+Vezina, G. and Robertson, P.~K. (1991).
+\newblock Terrain perspectives on a massively parallel {SIMD} computer.
+\newblock In {\em Proceedings Computer Graphics International (CGI)}, pages
+  163--188.
+
+\bibitem[Wittenbrink, 1998]{Wittenbrink:98}
+Wittenbrink, C.~M. (1998).
+\newblock Survey of parallel volume rendering algorithms.
+\newblock In {\em Proceedings Parallel and Distributed Processing Techniques
+  and Applications}, pages 1329--1336.
+
+\bibitem[Yang et~al., 2001]{YYC:01}
+Yang, D.-L., Yu, J.-C., and Chung, Y.-C. (2001).
+\newblock Efficient compositing methods for the sort-last-sparse parallel
+  volume rendering system on distributed memory multicomputers.
+\newblock {\em Journal of Supercomputing}, 18(2):201--22--.
+
+\bibitem[Yu et~al., 2008]{Yu:2008:MPV:1413370.1413419}
+Yu, H., Wang, C., and Ma, K.-L. (2008).
+\newblock Massively parallel volume rendering using 2-3 swap image compositing.
+\newblock In {\em Proceedings of the 2008 ACM/IEEE Conference on
+  Supercomputing}, SC '08, pages 48:1--48:11, Piscataway, NJ, USA. IEEE Press.
+
+\bibitem[Zhang et~al., 2001]{Zhang01}
+Zhang, X., Bajaj, C., and Blanke, W. (2001).
+\newblock Scalable isosurface visualization of massive datasets on {COTS}
+  clusters.
+\newblock In {\em Proceedings IEEE Symposium on Parallel and Large Data
+  Visualization and Graphics}, pages 51--58.
+
+\end{thebibliography}

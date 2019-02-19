@@ -1,0 +1,15 @@
+\begin{thebibliography}{}
+
+\bibitem[Eilemann et~al., 2009]{EMP:09}
+Eilemann, S., Makhinya, M., and Pajarola, R. (2009).
+\newblock {Equalizer: A Scalable Parallel Rendering Framework}.
+\newblock {\em IEEE Transactions on Visualization and Computer Graphics},
+  15(3):436--452.
+
+\bibitem[Eilemann et~al., 2018]{ESP:18}
+Eilemann, S., Steiner, D., and Pajarola, R. (2018).
+\newblock {Equalizer 2.0 — Convergence of a Parallel Rendering Framework}.
+\newblock {\em IEEE Transactions on Visualization and Computer Graphics}, pages
+  1--1.
+
+\end{thebibliography}

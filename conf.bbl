@@ -1,0 +1,66 @@
+\begin{thebibliography}{}
+
+\bibitem[Bhaniramka et~al., 2005]{BRE:05}
+Bhaniramka, P., Robert, P. C.~D., and Eilemann, S. (2005).
+\newblock {OpenGL Multipipe SDK}: A toolkit for scalable parallel rendering.
+\newblock In {\em Proceedings IEEE Visualization}, pages 119--126.
+
+\bibitem[Eilemann et~al., 2017]{EAA:17}
+Eilemann, S., Abdellah, M., Antille, N., Bilgili, A., Chevtchenko, G., Dumusc,
+  R., Favreau, C., Hernando, J., Nachbaur, D., Podhajski, P., Villafranca, J.,
+  and Sch{\"u}rmann, F. (2017).
+\newblock {From Big Data to Big Displays: High-Performance Visualization at
+  Blue Brain}.
+\newblock In Kunkel, J.~M., Yokota, R., Taufer, M., and Shalf, J., editors,
+  {\em High Performance Computing}, pages 662--675, Cham. Springer
+  International Publishing.
+
+\bibitem[Eilemann et~al., 2012]{EBAHMP:12}
+Eilemann, S., Bilgili, A., Abdellah, M., Hernando, J., Makhinya, M., Pajarola,
+  R., and Sch{\"u}rmann, F. (2012).
+\newblock {Parallel Rendering on Hybrid Multi-GPU Clusters.}
+\newblock In {\em EGPGV}, pages 109--117.
+
+\bibitem[Eilemann et~al., 2016]{EDB:16}
+Eilemann, S., Delalondre, F., Bernard, J., Planas, J., Schuermann, F.,
+  Biddiscombe, J., Bekas, C., Curioni, A., Metzler, B., Kaltstein, P., et~al.
+  (2016).
+\newblock Key/value-enabled flash memory for complex scientific workflows with
+  on-line analysis and visualization.
+\newblock In {\em Parallel and Distributed Processing Symposium, 2016 IEEE
+  International}, pages 608--617. {IEEE}.
+
+\bibitem[Eilemann and Pajarola, 2007]{EP:07}
+Eilemann, S. and Pajarola, R. (2007).
+\newblock Direct send compositing for parallel sort-last rendering.
+\newblock In {\em Proceedings Eurographics Symposium on Parallel Graphics and
+  Visualization}.
+
+\bibitem[Erol et~al., 2011]{EEP:11}
+Erol, F., Eilemann, S., and Pajarola, R. (2011).
+\newblock Cross-segment load balancing in parallel rendering.
+\newblock In {\em Proceedings Eurographics Symposium on Parallel Graphics and
+  Visualization}, pages 41--50.
+
+\bibitem[Hernando et~al., 2013]{HBBES:13}
+Hernando, J.~B., Biddiscombe, J., Bohara, B., Eilemann, S., and Sch\"{u}rmann,
+  F. (2013).
+\newblock {Practical Parallel Rendering of Detailed Neuron Simulations}.
+\newblock In {\em Proceedings of the 13th Eurographics Symposium on Parallel
+  Graphics and Visualization}, EGPGV, pages 49--56, Aire-la-Ville, Switzerland,
+  Switzerland. Eurographics Association.
+
+\bibitem[Makhinya et~al., 2010]{MEP:10}
+Makhinya, M., Eilemann, S., and Pajarola, R. (2010).
+\newblock {Fast Compositing for Cluster-Parallel Rendering}.
+\newblock In {\em Proceedings of the 10th Eurographics Conference on Parallel
+  Graphics and Visualization}, EGPGV, pages 111--120, Aire-la-Ville,
+  Switzerland, Switzerland. Eurographics Association.
+
+\bibitem[Steiner et~al., 2016]{SPEP:16}
+Steiner, D., Paredes, E.~G., Eilemann, S., and Pajarola, R. (2016).
+\newblock Dynamic work packages in parallel rendering.
+\newblock In {\em Proceedings Eurographics Symposium on Parallel Graphics and
+  Visualization}, pages 89--98.
+
+\end{thebibliography}
